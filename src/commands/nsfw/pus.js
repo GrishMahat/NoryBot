@@ -4,8 +4,8 @@ const config = require("../../config/config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("boobs")
-    .setDescription("img of boobs.")
+    .setName("pus")
+    .setDescription("img of puss.")
     .toJSON(),
 
   userPermissionsBitField: [],
@@ -26,7 +26,7 @@ module.exports = {
         return;
       }
 
-      const res = await axios.get("https://nekobot.xyz/api/image?type=boobs");
+      const res = await axios.get("https://nekobot.xyz/api/image?type=pussy");
       const data = res.data;
 
       if (!data || !data.message) {
@@ -36,7 +36,7 @@ module.exports = {
       const img = data.message;
 
       const wow = new EmbedBuilder() 
-        .setTitle("Here's a Boob Pic for you!")
+        .setTitle("Here's a pussy Pic for you!")
         .setImage(img)
         .setColor(0x88e1fd);
 
@@ -45,6 +45,7 @@ module.exports = {
         interaction.deleteReply().catch(console.error);
     }, 2 * 60 * 1000); // 2 minutes in milliseconds
     
+
     } catch (err) {
       console.error(err);
       const errorEmbed = new EmbedBuilder() 
