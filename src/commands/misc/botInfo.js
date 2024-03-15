@@ -58,7 +58,7 @@ module.exports = {
             },
             {
               name: `\`🧑‍💻\`** | Developer:**`,
-              value: `> \`un7!7l3d\``,
+              value: `> \`Norysight\``,
               inline: true,
             },
             {
