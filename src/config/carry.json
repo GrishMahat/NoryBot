@@ -1,0 +1,18 @@
+{
+  "Voidgloom Seraph": {
+    "T3": {
+      "Price": "700k",
+      "BulkPrice": "600k"
+    },
+    "T4": {
+      "Price": "1.2m",
+      "BulkPrice": "1m"
+    }
+  },
+  "Nether boss": {
+    "Ashfang": {
+      "Price": "6.5m",
+      "BulkPrice": "5m"
+    }
+  }
+}
