@@ -22,19 +22,15 @@ module.exports = {
       const { guild } = interaction;
       await interaction.deferReply();
       try {
-        // Get Discord.js version
         const discordJsVersion = require("discord.js").version;
 
-        // Get Node.js version
         const nodeJsVersion = process.version;
 
-        // Get MongoDB version
         const mongoDbVersion = mongoose.version;
         const activeCommands = await guild.commands.fetch();
 
-        // Get the number of active commands
         const activeCommandCount = activeCommands.size;
-        const embed = new EmbedBuilder() // Constructs a new embed
+        const embed = new EmbedBuilder()
           .setAuthor({
             name: "Bot Info",
             iconURL: `${client.user.displayAvatarURL({ dynamic: true })}`,
@@ -58,7 +54,7 @@ module.exports = {
             },
             {
               name: `\`🧑‍💻\`** | Developer:**`,
-              value: `> \`Norysight\``,
+              value: `> \`Norysight\``, // The developer. Change it to whatever you wish
               inline: true,
             },
             {
@@ -72,29 +68,36 @@ module.exports = {
               inline: true,
             }
           )
-          .setColor("Fuchsia") // Set's the embed color
-          .setTimestamp() // Set's the embed timestamp
+          .setColor("Fuchsia")
+          .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.username}`,
             iconURL: `${interaction.user.displayAvatarURL({
               dynamic: true,
             })}`,
-          }); // Set's the embed footer
+          })
+          .setThumbnail(
+            "https://media.discordapp.net/attachments/1211983642394628136/1221397023715233872/infoIcon.gif"
+          );
 
         await interaction.editReply({ embeds: [embed] });
       } catch (error) {
         console.log(`An error occured in the bot-info command:\n\n${error}`);
+        interaction.editReply({
+          content:
+            "An error occured while processing your command. Try again later.",
+        });
       }
     }
     if (subcommand === "stats") {
       try {
-        const startTime = Date.now(); // Gets the current timestamp to calculate REST latency
+        const startTime = Date.now();
 
-        const placeEmbed = new EmbedBuilder() // Creates a placeholder embed to notify the user
-          .setTitle("Fetching...") // Set's the embed title
-          .setColor("Fuchsia"); // Set's the embed color
+        const placeEmbed = new EmbedBuilder()
+          .setTitle("Fetching...")
+          .setColor("Fuchsia");
 
-        await interaction.reply({ embeds: [placeEmbed] }); // Sends a placeholder embed as a reply to the interaction
+        await interaction.reply({ embeds: [placeEmbed] });
 
         const latency = await client.ws.ping; // Websocket latency
         const restLatency = Date.now() - startTime; // REST latency
@@ -139,10 +142,10 @@ module.exports = {
           return await calculateSize(path);
         }
 
-        const projectDirectoryPath = "E:\\VSC\\Buildify"; // Specify the path to your project directory
-        const projectSize = await getDirectorySize(projectDirectoryPath); // Get the size of the project directory
+        const projectDirectoryPath = "C:\\Users\\grish\\DuOl\\Code\\node.js\\nory"; // Specify the path to your project directory
+        const projectSize = await getDirectorySize(projectDirectoryPath);
 
-        const embed = new EmbedBuilder() // Constructs a new embed
+        const embed = new EmbedBuilder()
           .setAuthor({
             name: "Bot Status",
             iconURL: `${client.user.displayAvatarURL({ dynamic: true })}`,
@@ -186,16 +189,23 @@ module.exports = {
               inline: true,
             }
           )
-          .setColor("Fuchsia") // Set's the embed color
-          .setTimestamp() // Set's the embed timestamp
+          .setColor("Fuchsia")
+          .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.username}`,
             iconURL: `${interaction.user.displayAvatarURL({ dynamic: true })}`,
-          }); // Set's the embed footer
+          }) // Set's the embed footer
+          .setThumbnail(
+            "https://media.discordapp.net/attachments/1211983642394628136/1221395272211497001/serverIcon.gif"
+          );
 
-        await interaction.editReply({ embeds: [embed] }); // Sends the main embed with websocket and REST latencies as a reply to the interaction
+        await interaction.editReply({ embeds: [embed] });
       } catch (error) {
-        console.log(`An error occured in the bot-status command:\n\n${error}`); // Catches any error's and log's it
+        console.log(`An error occured in the bot-status command:\n\n${error}`);
+        interaction.editReply({
+          content:
+            "An error occured while processing your command. Try again later.",
+        });
       }
     }
   },
