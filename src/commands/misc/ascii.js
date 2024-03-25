@@ -12,6 +12,8 @@ module.exports = {
         .setDescription("Enter the text to convert")
         .setRequired(true)
     ),
+    testMode: true,
+    devOnly: true,
   userPermissionsBitField: [],
   bot: [],
 
