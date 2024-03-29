@@ -1,3 +1,5 @@
+const { OpenAI } = require("openai")
+
 module.exports = async (client, message) => {
   // Ignore messages from other bots
   if (message.author.bot) return;
