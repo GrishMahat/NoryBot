@@ -1,26 +1,30 @@
-const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js"); // Imports necessary modules from the discord.js package
+// Import necessary modules from discord.js package
+const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 const fs = require("fs");
 
+// Export the module to be used elsewhere
 module.exports = {
-  // Exporting the module to be used elsewhere
-
-  data: new SlashCommandBuilder() // Defines the command data using SlashCommandBuilder
+  // Slash command data
+  data: new SlashCommandBuilder()
     .setName("stats") // Sets the command name
     .setDescription("Get the bot status") // Sets the command description
     .toJSON(), // Converts the data to JSON format
 
-  userPermissions: [], // Defines user permissions (omitted for simplicity)
-  botPermissions: [], // Defines bot permissions (omitted for simplicity)
+  // Define user permissions (omitted for simplicity)
+  userPermissions: [],
+  
+  // Define bot permissions (omitted for simplicity)
+  botPermissions: [],
 
+  // Function to be executed when the command is used
   run: async (client, interaction) => {
-    // Defines the function to be executed when the command is used
     try {
       const startTime = Date.now(); // Gets the current timestamp to calculate REST latency
 
-      const placeEmbed = new EmbedBuilder() // Creates a placeholder embed to notify the user
-        .setTitle("Fetching...") // Set's the embed title
-        .setColor("Fuchsia"); // Set's the embed color
-
+      // Placeholder embed to notify the user
+      const placeEmbed = new EmbedBuilder()
+        .setTitle("Fetching...") // Set the embed title
+        .setColor("Fuchsia"); // Set the embed color
       await interaction.reply({ embeds: [placeEmbed] }); // Sends a placeholder embed as a reply to the interaction
 
       const latency = await client.ws.ping; // Websocket latency
@@ -33,12 +37,10 @@ module.exports = {
         if (bytes === 0) return "0 Byte";
         const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         const result = (bytes / Math.pow(1024, i)).toFixed(2);
-
         if (isNaN(result)) {
           console.log("Error: Result is NaN. Bytes:", bytes);
           return "Error";
         }
-
         return result + " " + sizes[i];
       }
 
@@ -66,14 +68,16 @@ module.exports = {
         return await calculateSize(path);
       }
 
-      const projectDirectoryPath = "Path\\To\\Project"; // Specify the path to your project directory
+      // Dynamically determine the project directory path
+      const projectDirectoryPath = "Path\\To\\Project"; // Replace with your dynamic logic
       const projectSize = await getDirectorySize(projectDirectoryPath); // Get the size of the project directory
 
-      const embed = new EmbedBuilder() // Constructs a new embed
+      // Construct the main embed with bot status information
+      const embed = new EmbedBuilder()
         .setAuthor({
           name: "Bot Status",
-          iconURL: `${client.user.displayAvatarURL({ dynamic: true })}`,
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          iconURL: `${client.user.displayAvatarURL({ dynamic: true })}`, // Set author icon URL
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Set author URL
         })
         .addFields(
           {
@@ -93,18 +97,12 @@ module.exports = {
           },
           {
             name: `\`💻\`** | CPU:**`,
-            value: `> *\`${(process.cpuUsage().system / 1024 / 1024).toFixed(
-              2
-            )}%\`*`,
+            value: `> *\`${(process.cpuUsage().system / 1024 / 1024).toFixed(2)}%\`*`,
             inline: true,
           },
           {
             name: `\`💽\`** | RAM:**`,
-            value: `> *\`${(
-              process.memoryUsage().heapUsed /
-              1024 /
-              1024
-            ).toFixed(2)}MB\`*`,
+            value: `> *\`${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB\`*`,
             inline: true,
           },
           {
@@ -113,16 +111,16 @@ module.exports = {
             inline: true,
           }
         )
-        .setColor("Fuchsia") // Set's the embed color
-        .setTimestamp() // Set's the embed timestamp
+        .setColor("Fuchsia") // Set embed color
+        .setTimestamp() // Set timestamp
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
           iconURL: `${interaction.user.displayAvatarURL({ dynamic: true })}`,
-        }); // Set's the embed footer
+        }); // Set footer
 
-      await interaction.editReply({ embeds: [embed] }); // Sends the main embed with websocket and REST latencies as a reply to the interaction
+      await interaction.editReply({ embeds: [embed] }); // Send the main embed with websocket and REST latencies as a reply to the interaction
     } catch (error) {
-      console.log(`An error occured in the bot-status command:\n\n${error}`); // Catches any error's and log's it
+      console.log(`An error occurred in the bot-status command:\n\n${error}`); // Catch any errors and log them
     }
   },
 };

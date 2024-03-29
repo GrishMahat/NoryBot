@@ -1,35 +1,47 @@
+// Import necessary modules from discord.js package
 const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 const mongoose = require("mongoose");
 const fs = require("fs");
 
+// Export the module to be used elsewhere
 module.exports = {
+  // Slash command data
   data: new SlashCommandBuilder()
-    .setName("bot")
-    .setDescription("Get bot info or bot stats")
+    .setName("bot") // Sets the command name
+    .setDescription("Get bot info or bot stats") // Sets the command description
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("info")
+        .setName("info") // Subcommand to get bot information
         .setDescription("Get information about the bot.")
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName("stats").setDescription("Get the bot status")
+      subcommand
+        .setName("stats") // Subcommand to get bot status
+        .setDescription("Get the bot status")
     )
-    .toJSON(),
+    .toJSON(), // Converts the data to JSON format
 
+  // Function to be executed when the command is used
   run: async (client, interaction) => {
+    // Get the subcommand used
     const subcommand = interaction.options.getSubcommand();
+
+    // Check which subcommand was used
     if (subcommand === "info") {
       const { guild } = interaction;
-      await interaction.deferReply();
+      await interaction.deferReply(); // Defer the interaction to ensure the bot is allowed to send messages
+
       try {
+        // Get versions of Discord.js, Node.js, and MongoDB
         const discordJsVersion = require("discord.js").version;
-
         const nodeJsVersion = process.version;
-
         const mongoDbVersion = mongoose.version;
-        const activeCommands = await guild.commands.fetch();
 
+        // Get active commands in the guild
+        const activeCommands = await guild.commands.fetch();
         const activeCommandCount = activeCommands.size;
+
+        // Construct embed to display bot information
         const embed = new EmbedBuilder()
           .setAuthor({
             name: "Bot Info",
@@ -59,12 +71,12 @@ module.exports = {
             },
             {
               name: `\`🗓️\`** | Created:**`,
-              value: `> \`14/02/2024\``,
+              value: `> \`14/02/2024\``, // Date of creation
               inline: true,
             },
             {
               name: `\`⚙️\`** | Active Commands:**`,
-              value: `> \`${activeCommandCount}\``,
+              value: `> \`${activeCommandCount}\``, // Number of active commands
               inline: true,
             }
           )
@@ -80,28 +92,35 @@ module.exports = {
             "https://media.discordapp.net/attachments/1211983642394628136/1221397023715233872/infoIcon.gif"
           );
 
+        // Send the bot information embed as a reply
         await interaction.editReply({ embeds: [embed] });
       } catch (error) {
         console.log(`An error occured in the bot-info command:\n\n${error}`);
+        // Send an error message if an error occurs
         interaction.editReply({
           content:
             "An error occured while processing your command. Try again later.",
         });
       }
     }
+
     if (subcommand === "stats") {
       try {
-        const startTime = Date.now();
+        const startTime = Date.now(); // Get the start time of the command execution
 
-        const placeEmbed = new EmbedBuilder()
+        const placeEmbed = new EmbedBuilder() // Construct a placeholder embed
           .setTitle("Fetching...")
           .setColor("Fuchsia");
 
+        // Send the placeholder embed as a reply
         await interaction.reply({ embeds: [placeEmbed] });
 
-        const latency = await client.ws.ping; // Websocket latency
-        const restLatency = Date.now() - startTime; // REST latency
-        const uptime = new Date(Date.now() - client.uptime); // Calculate uptime of the bot
+        // Get websocket latency
+        const latency = await client.ws.ping;
+        // Calculate REST latency
+        const restLatency = Date.now() - startTime;
+        // Calculate bot uptime
+        const uptime = new Date(Date.now() - client.uptime);
 
         // Function to format bytes into a human-readable format with decimal points
         function formatBytes(bytes) {
@@ -143,8 +162,9 @@ module.exports = {
         }
 
         const projectDirectoryPath = "C:\\Users\\grish\\DuOl\\Code\\node.js\\nory"; // Specify the path to your project directory
-        const projectSize = await getDirectorySize(projectDirectoryPath);
+        const projectSize = await getDirectorySize(projectDirectoryPath); // Get the size of the project directory
 
+        // Construct embed to display bot status
         const embed = new EmbedBuilder()
           .setAuthor({
             name: "Bot Status",
@@ -199,9 +219,11 @@ module.exports = {
             "https://media.discordapp.net/attachments/1211983642394628136/1221395272211497001/serverIcon.gif"
           );
 
+        // Send the bot status embed as a reply
         await interaction.editReply({ embeds: [embed] });
       } catch (error) {
         console.log(`An error occured in the bot-status command:\n\n${error}`);
+        // Send an error message if an error occurs
         interaction.editReply({
           content:
             "An error occured while processing your command. Try again later.",
