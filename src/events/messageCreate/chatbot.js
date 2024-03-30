@@ -1,10 +1,29 @@
-const fs = require('fs');
-const { OpenAI } = require('openai');
+const axios = require("axios");
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const buttonPagination = require('../../utils/buttonPagination');
 
 const CHATBOT_CHANNEL_ID = '1223237611632595055';
 const LOG_FILE_PATH = 'logs/channel_log.txt';
 
 module.exports = async (client, message) => {
+  const duol = [
+    "maid",
+    "waifu",
+    "marin-kitagawa",
+    "mori-calliope",
+    "raiden-shogun",
+    "oppai",
+    "selfies",
+    "uniform",
+    "ass",
+    "hentai",
+    "milf",
+    "oral",
+    "paizuri",
+    "ecchi",
+    "ero"
+  ];
+
   // Ignore messages from other bots
   if (message.author.bot) return;
 
@@ -12,46 +31,55 @@ module.exports = async (client, message) => {
   if (message.channel.id !== CHATBOT_CHANNEL_ID) return;
 
   try {
-    await message.channel.sendTyping();
+    // Check if the message content contains any word from the 'duol' array
+    const includesDuol = duol.some(tag => message.content.toLowerCase().includes(tag));
 
-    // Clear typing indicator after 5 seconds
-    const typingInterval = setInterval(() => {
-      message.channel.stopTyping();
-      clearInterval(typingInterval);
-    }, 5000);
+    // Proceed with image search if the message includes any word from the 'duol' array
+    if (includesDuol) {
+    
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+      const includedTags = duol.filter(tag => message.content.toLowerCase().includes(tag));
 
-    // Write the message content to a log file
-    const logMessage = `[${new Date().toISOString()}] ${message.author.tag}[${
-      message.author.id
-    }]: ${message.content}\n`;
-    fs.appendFileSync(LOG_FILE_PATH, logMessage);
+      const apiUrl = 'https://api.waifu.im/search';
+      const params = {
+        included_tags: includedTags,
+        many: true, // Return an array of files
+        height: '>=2000', // Example height condition
+        width: '>=2000', // Example width condition
+        is_nsfw: 'false', // Exclude NSFW images
+        order_by: 'favorites', // Order by favorites
+        // Add more parameters as needed
+      };
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: "nory is bot for Hypixel Skyblock guild discord server",
-        },
-        {
-          role: 'user',
-          content: message.content,
-        },
-      ],
-    });
+      const queryParams = new URLSearchParams();
+      for (const key in params) {
+        if (Array.isArray(params[key])) {
+          params[key].forEach(value => {
+            queryParams.append(key, value);
+          });
+        } else {
+          queryParams.set(key, params[key]);
+        }
+      }
+      const requestUrl = `${apiUrl}?${queryParams.toString()}`;
 
-    clearInterval(typingInterval);
+      const response = await axios.get(requestUrl);
 
-    if (!response || !response.choices || response.choices.length === 0) {
-      message.reply('Sorry, I could not generate a response at the moment.');
-      return;
+
+
+      if (!response || !response.data || !response.data.images || response.data.images.length === 0) {
+        message.reply('Sorry, I could not retrieve images at the moment.');
+        return;
+      }
+
+      // Process the response data
+      const images = response.data.images.map(image => ({ url: image.url }));
+
+      // Send images with pagination
+      await buttonPagination(message, images);
+
     }
 
-    message.reply(response.choices[0].message.content);
   } catch (error) {
     console.error('Error processing message:', error);
     message.reply('Sorry, there was an error processing your request.');
