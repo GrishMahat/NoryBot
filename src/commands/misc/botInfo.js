@@ -161,7 +161,8 @@ module.exports = {
           return await calculateSize(path);
         }
 
-        const projectDirectoryPath = "C:\\Users\\grish\\DuOl\\Code\\node.js\\nory"; // Specify the path to your project directory
+        const projectDirectoryPath =
+          "C:\\Users\\grish\\DuOl\\Code\\node.js\\nory"; // Specify the path to your project directory
         const projectSize = await getDirectorySize(projectDirectoryPath); // Get the size of the project directory
 
         // Construct embed to display bot status

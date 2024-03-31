@@ -1,5 +1,6 @@
 // Import necessary modules from discord.js package
 const { EmbedBuilder, SlashCommandBuilder } = require('discord.js');
+const { formatDistanceToNow } = require('date-fns');
 
 // Export the module to be used elsewhere
 module.exports = {
@@ -19,8 +20,8 @@ module.exports = {
             return;
         }
 
-        let pingColor;
-        const ping = interaction.client.ws.ping; // Get the websocket ping of the client
+        let pingColor = '';
+        const ping = interaction.client.ws.ping;
 
         // Determine color based on ping value
         if (ping < 150) {
@@ -31,11 +32,29 @@ module.exports = {
             pingColor = '#ff0000'; // Red color for high ping
         }
 
+        const uptime = formatDistanceToNow(client.readyAt, { includeSeconds: true });
+
+        // Initialize commandStats if it's undefined
+        if (!client.commandStats) {
+            client.commandStats = {};
+        }
+
+        // Increment command usage counter
+        client.commandStats.ping = (client.commandStats.ping || 0) + 1;
+
+        // Calculate average ping (just for demonstration, you might want to store ping times over a period)
+        const totalPing = (client.commandStats.totalPing || 0) + ping;
+        const averagePing = totalPing / client.commandStats.ping;
+
         // Construct embed to display ping
         const pongEmbed = new EmbedBuilder()
             .setColor(pingColor) // Set embed color based on ping
             .setTitle('Pong') // Set embed title
-            .setDescription(`**${ping} ms**`) // Set embed description with ping value
+            .setDescription(`**Ping:** ${ping} ms\n**Average Ping:** ${averagePing.toFixed(2)} ms\n**Uptime:** ${uptime}\n**Command Usage:** ${client.commandStats.ping}`)
+            .setFooter({
+                text: `Requested by ${interaction.user.username}`,
+                iconURL: `${interaction.user.displayAvatarURL({ dynamic: true })}`,
+            })
             .setTimestamp(); // Set embed timestamp
 
         // Send the embed as a reply to the interaction

@@ -4,15 +4,12 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("test")
     .setDescription("Test if everything works.")
-    .addStringOption((o) => o
-      .setName("test-option")
-      .setDescription("This is a test option.")
+    .addStringOption((o) =>
+      o.setName("test-option").setDescription("This is a test option.")
     )
-    .toJSON()
-  ,
+    .toJSON(),
   userPermissions: [],
   botPermissions: [],
 
-  run: (client, interaction) => {
-  }
+  run: (client, interaction) => {},
 };

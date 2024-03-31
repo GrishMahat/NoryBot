@@ -12,7 +12,7 @@ module.exports = {
 
   // Define user permissions (omitted for simplicity)
   userPermissions: [],
-  
+
   // Define bot permissions (omitted for simplicity)
   botPermissions: [],
 
@@ -97,12 +97,18 @@ module.exports = {
           },
           {
             name: `\`💻\`** | CPU:**`,
-            value: `> *\`${(process.cpuUsage().system / 1024 / 1024).toFixed(2)}%\`*`,
+            value: `> *\`${(process.cpuUsage().system / 1024 / 1024).toFixed(
+              2
+            )}%\`*`,
             inline: true,
           },
           {
             name: `\`💽\`** | RAM:**`,
-            value: `> *\`${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB\`*`,
+            value: `> *\`${(
+              process.memoryUsage().heapUsed /
+              1024 /
+              1024
+            ).toFixed(2)}MB\`*`,
             inline: true,
           },
           {

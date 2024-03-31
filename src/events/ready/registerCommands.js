@@ -67,4 +67,3 @@ module.exports = async (client) => {
     console.log(`An error occurred while registering commands! ${err}`.red);
   }
 };
-

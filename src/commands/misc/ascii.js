@@ -1,6 +1,9 @@
-const { CommandInteraction, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const {
+  CommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} = require("discord.js");
 const figlet = require("figlet");
-
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,8 +15,8 @@ module.exports = {
         .setDescription("Enter the text to convert")
         .setRequired(true)
     ),
-    testMode: true,
-    devOnly: true,
+  testMode: true,
+  devOnly: true,
   userPermissionsBitField: [],
   bot: [],
 
