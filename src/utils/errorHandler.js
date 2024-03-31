@@ -1,8 +1,15 @@
 const { WebhookClient, Constants ,EmbedBuilder} = require("discord.js");
 const mConfig = require("../config/messageConfig.json");
 
-const webhook = new WebhookClient({ url: process.env.WEBHOOK_URL });
-const summaryWebhook = new WebhookClient({ url: process.env.SUMMARY_WEBHOOK_URL });
+
+const webhookURL = process.env.WEBHOOK_URL;
+const summaryWebhookURL = process.env.SUMMARY_WEBHOOK_URL;
+
+if (!webhookURL || !summaryWebhookURL) {
+    console.error("Error: Webhook URLs are not defined.");
+    process.exit(1);
+}
+
 
 
 // Error tracking variables
