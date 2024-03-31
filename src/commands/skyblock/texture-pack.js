@@ -46,7 +46,7 @@ module.exports = {
             inline: true,
           }
         )
-        .setColor("FUCHSIA")
+        .setColor(0xff00ff)
         .setTimestamp()
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
