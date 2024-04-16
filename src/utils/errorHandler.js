@@ -10,7 +10,12 @@ if (!webhookURL || !summaryWebhookURL) {
     process.exit(1);
 }
 
-
+/**
+ * Handles errors by sending a Discord webhook notification.
+ *
+ * This function checks if the required webhook URLs are defined in the environment variables.
+ * If the URLs are not defined, it logs an error and exits the process.
+ */
 
 // Error tracking variables
 let errorCounts = {};
@@ -37,6 +42,7 @@ async function generateErrorSummary(errorCounts) {
 
   return embed;
 }
+
 
 // Function to send error summary report to a webhook and reset error counts
 async function sendDailyErrorSummaryReport(errorCounts) {

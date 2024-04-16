@@ -1,4 +1,9 @@
-// Import necessary modules from discord.js package
+/**
+ * Provides a slash command for the Discord bot to display information about the bot, including the versions of Discord.js, Node.js, and MongoDB being used, as well as the number of active commands in the guild.
+ *
+ * @format
+ */
+
 const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 const mongoose = require("mongoose");
 const fs = require("fs");
