@@ -6,7 +6,7 @@ const config = require("../../config/config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("cat")
+    .setName("catt")
     .setDescription("Random cat's pic"),
   run: async (client, interaction) => {
     try {
