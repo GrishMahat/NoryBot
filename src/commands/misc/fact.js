@@ -21,9 +21,6 @@ module.exports = {
         .setColor(mconfig.embedColorSuccess)
         .setTitle("fact")
         .setDescription(fact)
-        
-    
-
 
       await interaction.reply({ embeds: [rembed] });
 
