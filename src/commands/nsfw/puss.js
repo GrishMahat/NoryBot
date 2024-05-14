@@ -8,8 +8,9 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("puss")
     .setDescription("Random cat's pic"),
-    nsfw: true,
-    run: async (client, interaction) => {
+    nwfwMode: true,
+    testMode: false,
+    devOnly: false,    run: async (client, interaction) => {
     try {
 
       const response = await axios.get(
