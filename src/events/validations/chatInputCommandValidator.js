@@ -17,10 +17,6 @@ module.exports = async (client, interaction) => {
       (cmd) => cmd.data.name === interaction.commandName
     );
     if (!commandObject) return;
-    console.log(`check nwfw ${commandObject.nwfwMode}`);
-    console.log(`check dev ${commandObject.devOnly}`);
-    console.log(`check test ${commandObject.testMode}`);
-
 
 
     if (commandObject.devOnly) {
