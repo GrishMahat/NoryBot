@@ -35,6 +35,7 @@ module.exports = async (client, interaction) => {
       }
     }
 
+
     if (menuObject.userPermissions?.length) {
       for (const permission of menuObject.userPermissions) {
         if (interaction.member.permissions.has(permission)) {

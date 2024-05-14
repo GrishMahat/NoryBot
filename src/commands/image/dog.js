@@ -9,6 +9,9 @@ module.exports = {
     .setName("dog")
     .setDescription("send random dog image")
     .toJSON(),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   userPermissionsBitField: [],
   bot: [],
@@ -16,7 +19,7 @@ module.exports = {
     try {
       const res = await axios.get("https://dog.ceo/api/breeds/image/random");
       const imgurl = res.data.message;
-    
+
       if (!imgurl) {
         throw new Error("Failed to get Dog Image .");
       }

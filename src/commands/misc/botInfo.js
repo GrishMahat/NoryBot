@@ -10,7 +10,7 @@ const fs = require("fs");
 
 // Export the module to be used elsewhere
 module.exports = {
-  // Slash command data
+  // Slash command dataF
   data: new SlashCommandBuilder()
     .setName("bot") // Sets the command name
     .setDescription("Get bot info or bot stats") // Sets the command description
@@ -25,7 +25,9 @@ module.exports = {
         .setDescription("Get the bot status")
     )
     .toJSON(), // Converts the data to JSON format
-
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   // Function to be executed when the command is used
   run: async (client, interaction) => {
     // Get the subcommand used

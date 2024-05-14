@@ -8,20 +8,9 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("puss")
     .setDescription("Random cat's pic"),
-  run: async (client, interaction) => {
+    nsfw: true,
+    run: async (client, interaction) => {
     try {
-      const nsfwChannelId = config.nwfw;
-      const errMessage = "This command can only be used in NSFW channels.";
-
-      // Check if the command was used in an NSFW channel
-      if (interaction.channelId !== nsfwChannelId) {
-        const err = new EmbedBuilder()
-          .setDescription(`**${errMessage}**`)
-          .setColor(0x88e1fd);
-
-        await interaction.reply({ embeds: [err], ephemeral: true });
-        return;
-      }
 
       const response = await axios.get(
         "https://www.reddit.com/r/cat/random/.json"

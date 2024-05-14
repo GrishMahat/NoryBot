@@ -1,3 +1,5 @@
+/** @format */
+
 // Import necessary modules from discord.js package
 const {
   SlashCommandBuilder,
@@ -60,6 +62,9 @@ module.exports = {
 
   // Define bot permissions (omitted for simplicity)
   botPermissions: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   // Function to be executed when the command is used
   async run(client, interaction) {

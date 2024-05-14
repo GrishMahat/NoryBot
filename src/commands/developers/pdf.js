@@ -17,6 +17,9 @@ module.exports = {
   userPermissions: [PermissionFlagsBits.ADMINISTRATOR], // Ensure correct casing
   botPermissions: [], // You may add bot permissions if needed
 
+  nwfwMode: false,
+  testMode: false,
+  devOnly: true,
   run: async (client, interaction) => {
     try {
       const embeds = [];

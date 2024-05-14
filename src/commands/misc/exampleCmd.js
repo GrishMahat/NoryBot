@@ -1,3 +1,5 @@
+/** @format */
+
 const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
@@ -10,6 +12,9 @@ module.exports = {
     .toJSON(),
   userPermissions: [],
   botPermissions: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   run: (client, interaction) => {},
 };

@@ -1,3 +1,5 @@
+/** @format */
+
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
 const mconfig = require("../../config/messageConfig.json");
@@ -6,7 +8,11 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("cat")
     .setDescription("send random cat img")
+
     .toJSON(),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   userPermissionsBitField: [],
   bot: [],

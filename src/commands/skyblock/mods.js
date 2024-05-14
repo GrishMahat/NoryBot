@@ -1,7 +1,12 @@
+/** @format */
+
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder().setName("mods").setDescription("Get mods"),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   async run(client, interaction) {
     try {

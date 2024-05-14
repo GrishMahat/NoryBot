@@ -1,3 +1,5 @@
+/** @format */
+
 const { SlashCommandBuilder, ButtonStyle } = require("discord.js");
 const { AnimeWallpaper } = require("anime-wallpaper");
 const buttonPagination = require("../../utils/buttonPagination");
@@ -15,6 +17,9 @@ module.exports = {
     .toJSON(),
   userPermissionsBitFieldBitField: [],
   botPermissionsBitFieldBitField: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   run: async (client, interaction) => {
     try {
       const wallpapers = await fetchRandomWallpapers();

@@ -1,3 +1,5 @@
+/** @format */
+
 // Import necessary modules from discord.js package
 const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 const fs = require("fs");
@@ -15,6 +17,9 @@ module.exports = {
 
   // Define bot permissions (omitted for simplicity)
   botPermissions: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   // Function to be executed when the command is used
   run: async (client, interaction) => {

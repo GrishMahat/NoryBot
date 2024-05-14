@@ -12,6 +12,10 @@ module.exports = {
     userPermissions: [],
 
     bot: [],
+    nwfwMode: true,
+    testMode: false,
+    devOnly: false,
+
 
     // Function to be executed when the command is used
     run: async (client, interaction) => {

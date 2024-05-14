@@ -4,7 +4,7 @@ const { EmbedBuilder } = require("discord.js");
 const {
   developersId,
   testServerId,
-} = require("../../config/messageConfig.json");
+} = require("../../config/config.json");
 const mConfig = require("../../config/messageConfig.json");
 const getLocalCommands = require("../../utils/getLocalCommands");
 
@@ -17,6 +17,11 @@ module.exports = async (client, interaction) => {
       (cmd) => cmd.data.name === interaction.commandName
     );
     if (!commandObject) return;
+    console.log(`check nwfw ${commandObject.nwfwMode}`);
+    console.log(`check dev ${commandObject.devOnly}`);
+    console.log(`check test ${commandObject.testMode}`);
+
+
 
     if (commandObject.devOnly) {
       if (!developersId.includes(interaction.member.id)) {
@@ -38,6 +43,18 @@ module.exports = async (client, interaction) => {
       }
     }
 
+
+    if (commandObject.nwfwMode) {
+      console.log(commandObject)
+      if (!interaction.channel.nsfw) {
+        const rEmbed = new EmbedBuilder()
+          .setColor(`${mConfig.embedColorError}`)
+          .setDescription(`${mConfig.nsfw}`);
+        interaction.reply({ embeds: [rEmbed], ephemeral: true });
+        return;
+      }
+    }
+    
     if (commandObject.userPermissions?.length) {
       for (const permission of commandObject.userPermissions) {
         if (interaction.member.permissions.has(permission)) {

@@ -1,3 +1,4 @@
+/** @format */
 
 const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 
@@ -5,6 +6,9 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("texturepack")
     .setDescription("Get texture pack"),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   run: async (client, interaction) => {
     try {

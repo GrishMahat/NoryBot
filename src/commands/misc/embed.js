@@ -1,3 +1,5 @@
+/** @format */
+
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
@@ -12,6 +14,9 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   userPermissions: [PermissionFlagsBits.Administrator],
   bot: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   run: async (client, interaction) => {
     try {
       const embeds = [];

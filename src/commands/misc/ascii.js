@@ -1,3 +1,5 @@
+/** @format */
+
 const {
   CommandInteraction,
   EmbedBuilder,
@@ -15,8 +17,9 @@ module.exports = {
         .setDescription("Enter the text to convert")
         .setRequired(true)
     ),
-  testMode: true,
-  devOnly: true,
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   userPermissionsBitField: [],
   bot: [],
 

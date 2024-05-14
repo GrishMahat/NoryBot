@@ -1,3 +1,5 @@
+/** @format */
+
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const axios = require("axios");
 
@@ -11,6 +13,9 @@ module.exports = {
         .setDescription("The name of the anime to search")
         .setRequired(true)
     ),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   userPermissionsBitField: [],
   bot: [],

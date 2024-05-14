@@ -1,3 +1,4 @@
+/** @format */
 
 // Import necessary modules from discord.js package
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
@@ -17,6 +18,9 @@ module.exports = {
 
   userPermissions: [], // No user permissions required
   botPermissions: [], // No bot permissions required
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   // Function to be executed when the command is used
   run: async (client, interaction) => {
