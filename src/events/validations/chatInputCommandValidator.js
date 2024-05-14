@@ -41,7 +41,6 @@ module.exports = async (client, interaction) => {
 
 
     if (commandObject.nwfwMode) {
-      console.log(commandObject)
       if (!interaction.channel.nsfw) {
         const rEmbed = new EmbedBuilder()
           .setColor(`${mConfig.embedColorError}`)
