@@ -1,20 +1,19 @@
 import 'colors';
 import { EmbedBuilder } from 'discord.js';
-import config from '../../config/config.json' with { type: "json" };
-import mConfig from '../../config/messageConfig.json' with { type: "json" };
+import config from '../../config/config.json' assert { type: 'json' };
+import mConfig from '../../config/messageConfig.json' assert { type: 'json' };
 import getLocalCommands from '../../utils/getLocalCommands.js';
 
 export default async (client, interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const localCommands = await getLocalCommands();
-  
+
   const { developersId, testServerId }= config
 
   try {
     const commandObject = localCommands.find(
       (cmd) => cmd.data.name === interaction.commandName
     );
-    console.log(commandObject)
     if (!commandObject) return;
 
 

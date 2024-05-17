@@ -2,7 +2,7 @@ import 'colors';
 import commandComparing from '../../utils/commandComparing.js';
 import getApplicationCommands from '../../utils/getApplicationCommands.js';
 import getLocalCommands from '../../utils/getLocalCommands.js';
-import config from '../../config/config.json' with { type: "json" };
+import config from '../../config/config.json' assert { type: 'json' };
 import { AutoModerationRuleKeywordPresetType } from 'discord.js';
 
 export default async (client) => {

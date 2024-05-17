@@ -8,7 +8,7 @@ import {
   ButtonStyle,
 } from 'discord.js';
 
-import mConfig from '../config/messageConfig.json' with { type: "json" };
+import mConfig from '../config/messageConfig.json' assert { type: 'json' };
 
 export default {
   data: new ContextMenuCommandBuilder()

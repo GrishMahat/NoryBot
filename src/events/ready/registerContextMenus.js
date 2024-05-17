@@ -1,5 +1,5 @@
 import 'colors';
-import config from '../../config/config.json'with { type: "json" };
+import config from '../../config/config.json'assert { type: 'json' };
 import getApplicationContextMenus from '../../utils/getApplicationCommands.js';
 import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
 

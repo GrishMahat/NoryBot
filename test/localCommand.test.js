@@ -1,6 +1,7 @@
 import getLocalCommands from "../src/utils/getLocalCommands.js";
 import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
+import config from "../src/config/config.json"
 
 export default async (client) => {
   try {

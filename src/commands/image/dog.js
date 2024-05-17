@@ -3,7 +3,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
 import axios from 'axios';
-import mconfig from '../../config/messageConfig.json' with { type: "json" };
+import mconfig from '../../config/messageConfig.json' assert { type: 'json' };
 
 export default {
   data: new SlashCommandBuilder()

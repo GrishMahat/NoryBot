@@ -9,7 +9,7 @@ import {
   ButtonStyle,
 } from 'discord.js';
 
-import mConfig from '../config/messageConfig.json' with { type: "json" };
+import mConfig from '../config/messageConfig.json' assert { type: 'json' };
 import moderationSchema from '../schemas/moderation.js';
 
 export default {

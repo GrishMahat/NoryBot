@@ -1,5 +1,5 @@
 import { WebhookClient, Constants, EmbedBuilder } from 'discord.js';
-import mConfig from '../config/messageConfig.json' with { type: "json" };
+import mConfig from '../config/messageConfig.json' assert { type: 'json' };
 
 
 const webhookURL = process.env.WEBHOOK_URL;

@@ -1,7 +1,7 @@
 import 'colors';
 import { EmbedBuilder } from 'discord.js';
-import config from '../../config/config.json' with { type: "json" };
-import mConfig from '../../config/messageConfig.json' with { type: "json" };
+import config from '../../config/config.json' assert { type: 'json' };
+import mConfig from '../../config/messageConfig.json' assert { type: 'json' };
 import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
 
 export default async (client, interaction) => {
