@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
+import errorHandler from './utils/errorHandler.js';
 
 if (!process.env.TOKEN) {
   console.error("TOKEN is not defined in the environment variables");
@@ -18,8 +19,18 @@ if (!process.env.TOKEN) {
       GatewayIntentBits.DirectMessages,
     ],
   });
+  errorHandler.errorHandler(client);
+  await eventHandler(client);
 
-  eventHandler(client);
-
-  client.login(process.env.TOKEN).catch(console.error);
+  try {
+    await client.login(process.env.TOKEN);
+  } catch (error) {
+    console.error('Error logging in:', error);
+    process.exit(1);
+  }
+    // Schedule daily error summary report
+    setInterval(() => {
+      errorHandler.sendDailyErrorSummaryReport(errorHandler.errorCounts);
+    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+  
 })();

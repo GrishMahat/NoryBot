@@ -16,10 +16,14 @@ export default async (client) => {
       eventName = "interactionCreate";
     }
 
-    client.on(eventName, async (arg) => {
+    client.on(eventName, async (...args) => {
       for (const eventFile of eventFiles) {
-        const { default: eventFunction } = await import(`file://${eventFile}`);
-        await eventFunction(client, arg);
+        try {
+          const { default: eventFunction } = await import(`file://${eventFile}`);
+          await eventFunction(client, ...args);
+        } catch (error) {
+          console.error(`Error loading event file ${eventFile}:`, error);
+        }
       }
     });
   }
