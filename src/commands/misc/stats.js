@@ -1,11 +1,12 @@
 /** @format */
 
 // Import necessary modules from discord.js package
-const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
-const fs = require("fs");
+import { SlashCommandBuilder, EmbedBuilder, time } from 'discord.js';
+
+import fs from 'fs';
 
 // Export the module to be used elsewhere
-module.exports = {
+export default {
   // Slash command data
   data: new SlashCommandBuilder()
     .setName("stats") // Sets the command name

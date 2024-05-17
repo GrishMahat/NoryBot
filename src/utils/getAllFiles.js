@@ -1,7 +1,7 @@
-const fs = require("fs");
-const path = require("path");
+import fs from 'fs';
+import path from 'path';
 
-module.exports = (directory, foldersOnly = false) => {
+export default (directory, foldersOnly = false) => {
   let fileNames = [];
 
   const files = fs.readdirSync(directory, { withFileTypes: true });

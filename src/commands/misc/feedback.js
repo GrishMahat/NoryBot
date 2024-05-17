@@ -1,15 +1,12 @@
 /** @format */
 
 // Import necessary modules from discord.js package
-const {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  PermissionsBitField,
-} = require("discord.js");
-const Feedback = require("../../schemas/feedback");
+import { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } from 'discord.js';
+
+import Feedback from '../../schemas/feedback.js';
 
 // Export the module to be used elsewhere
-module.exports = {
+export default {
   // Slash command data
   data: new SlashCommandBuilder()
     .setName("feedback") // Sets the command name

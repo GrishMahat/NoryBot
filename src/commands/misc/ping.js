@@ -1,9 +1,10 @@
 // Import necessary modules from discord.js package
-const { EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { formatDistanceToNow } = require('date-fns');
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+
+import { formatDistanceToNow } from 'date-fns';
 
 // Export the module to be used elsewhere
-module.exports = {
+export default {
     // Slash command data
     data: new SlashCommandBuilder()
         .setName('ping') // Sets the command name

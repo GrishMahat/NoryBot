@@ -1,4 +1,4 @@
-const {
+import {
   Client,
   ChatInputCommandInteraction,
   ActionRowBuilder,
@@ -6,10 +6,10 @@ const {
   ButtonStyle,
   EmbedBuilder,
   PermissionFlagsBits,
-} = require("discord.js");
+} from 'discord.js';
 
 
-module.exports = {
+export default {
   customId: "addrole_modal",
   userPermissions: [PermissionFlagsBits.ManageRoles],
   botPermissions: [PermissionFlagsBits.ManageRoles],

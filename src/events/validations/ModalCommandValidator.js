@@ -1,13 +1,14 @@
-require("colors");
+import 'colors';
+import { EmbedBuilder } from 'discord.js';
+import config from '../../config/config.json' assert { type: 'json' };
+import mConfig from '../../config/messageConfig.json' assert { type: 'json' };
+import getModals from '../../utils/getModals.js';
 
-const { EmbedBuilder } = require("discord.js");
-const { developersId, testServerId } = require("../../config/config.json");
-const mConfig = require("../../config/messageConfig.json");
-const getModals = require("../../utils/getModals");
-
-module.exports = async (client, interaction) => {
+export default async (client, interaction) => {
   if (!interaction.isModalSubmit()) return;
   const modals = getModals();
+  const { developersId, testServerId } = config;
+
 
   try {
     const modalObject = modals.find(

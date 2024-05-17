@@ -1,10 +1,10 @@
 /** @format */
 
 // Import necessary modules from discord.js package
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 
 // Export the modulFe to be used elsewhere
-module.exports = {
+export default {
   // Slash command data
   data: new SlashCommandBuilder()
     .setName("avatar") // Sets the command name

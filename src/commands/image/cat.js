@@ -1,10 +1,11 @@
 /** @format */
 
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const axios = require("axios");
-const mconfig = require("../../config/messageConfig.json");
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-module.exports = {
+import axios from 'axios';
+import mconfig from '../../config/messageConfig.json' assert { type: 'json' };
+
+export default {
   data: new SlashCommandBuilder()
     .setName("cat")
     .setDescription("send random cat img")

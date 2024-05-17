@@ -1,12 +1,19 @@
-const path = require("path");
-const getAllFiles = require("./getAllFiles");
+import path from 'path';
+import { fileURLToPath } from 'url';
+import getAllFiles from './getAllFiles.js';
 
-module.exports = (exceptions = []) => {
+// Get the directory name of the current module's file
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default async (exceptions = []) => {
   let localContextMenus = [];
-  const menuFiles = getAllFiles(path.join(__dirname, "..", "contextmenus"));
+  
+  // Use path.join to construct the directory path
+  const menuFiles = getAllFiles(path.join(__dirname, '..', 'contextmenus'));
 
   for (const menuFile of menuFiles) {
-    const menuObject = require(menuFile);
+    // Assuming `menuFile` contains the exported object directly
+    const menuObject = await import(menuFile);
 
     if (exceptions.includes(menuObject.name)) continue;
     localContextMenus.push(menuObject);

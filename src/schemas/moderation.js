@@ -1,6 +1,6 @@
 // src/schemas/moderation.js
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const moderationSchema = new mongoose.Schema({
   GuildID: {
@@ -11,4 +11,4 @@ const moderationSchema = new mongoose.Schema({
   // Define other moderation-related fields here as needed
 });
 
-module.exports = mongoose.model('Moderation', moderationSchema);
+export default mongoose.model('Moderation', moderationSchema);

@@ -1,7 +1,7 @@
-const path = require("path");
-const getAllFiles = require("./getAllFiles");
+import path from 'path';
+import getAllFiles from './getAllFiles.js';
 
-module.exports = (exceptions = []) => {
+export default (exceptions = []) => {
   let modals = [];
   const modalFiles = getAllFiles(path.join(__dirname, "..", "modals"));
 

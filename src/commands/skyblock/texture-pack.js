@@ -1,8 +1,8 @@
 /** @format */
 
-const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
+import { SlashCommandBuilder, EmbedBuilder, time } from 'discord.js';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName("texturepack")
     .setDescription("Get texture pack"),

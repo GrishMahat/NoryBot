@@ -1,10 +1,11 @@
 /** @format */
 
-const { SlashCommandBuilder ,EmbedBuilder} = require("discord.js");
-const anime = require("random-anime");
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+
+import anime from 'random-anime';
 
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName("randanime")
     .setDescription("Get random anime image")

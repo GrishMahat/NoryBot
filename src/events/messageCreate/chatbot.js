@@ -1,11 +1,11 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.geminiapi);
 const MODEL_NAME = "gemini-pro";
 const conversationHistory = [];
 
 
-module.exports = async (client, message) => {
+export default async (client, message) => {
   // // Check if the message is from a bot or not
   // if (message.author.bot) return;
 

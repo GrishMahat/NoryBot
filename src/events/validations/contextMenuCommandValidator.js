@@ -1,13 +1,14 @@
-require("colors");
+import 'colors';
+import { EmbedBuilder } from 'discord.js';
+import config from '../../config/config.json' assert { type: 'json' };
+import mConfig from '../../config/messageConfig.json' assert { type: 'json' };
+import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
 
-const { EmbedBuilder } = require("discord.js");
-const { developersId, testServerId } = require("../../config/config.json");
-const mConfig = require("../../config/messageConfig.json");
-const getLocalContextMenus = require("../../utils/getLocalContextMenus");
-
-module.exports = async (client, interaction) => {
+export default async (client, interaction) => {
   if (!interaction.isContextMenuCommand()) return;
   const localContextMenus = getLocalContextMenus();
+  const { developersId, testServerId } = config;
+
 
   try {
     const menuObject = localContextMenus.find(

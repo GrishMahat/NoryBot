@@ -1,4 +1,4 @@
-module.exports = (existing, local) => {
+export default (existing, local) => {
   const changed = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
 
   if (changed(existing.name, local.data.name) || changed(existing.description || undefined, local.data.description || undefined)) {

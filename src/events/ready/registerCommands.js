@@ -1,14 +1,14 @@
-require("colors");
+import 'colors';
+import commandComparing from '../../utils/commandComparing.js';
+import getApplicationCommands from '../../utils/getApplicationCommands.js';
+import getLocalCommands from '../../utils/getLocalCommands.js';
+import config from '../../config/config.json' assert { type: 'json' };
+import { AutoModerationRuleKeywordPresetType } from 'discord.js';
 
-const commandComparing = require("../../utils/commandComparing");
-const getApplicationCommands = require("../../utils/getApplicationCommands");
-const getLocalCommands = require("../../utils/getLocalCommands");
-const { testServerId } = require("../../config/config.json");
-const { AutoModerationRuleKeywordPresetType } = require("discord.js");
-
-module.exports = async (client) => {
+export default async (client) => {
   try {
-    const localCommands = getLocalCommands();
+    const { testServerId } = config;
+    const localCommands = await getLocalCommands();
     const applicationCommands = await getApplicationCommands(
       client,
       testServerId

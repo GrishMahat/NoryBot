@@ -4,12 +4,13 @@
  * @format
  */
 
-const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
-const mongoose = require("mongoose");
-const fs = require("fs");
+import { SlashCommandBuilder, EmbedBuilder, time } from 'discord.js';
+
+import mongoose from 'mongoose';
+import fs from 'fs';
 
 // Export the module to be used elsewhere
-module.exports = {
+export default {
   // Slash command dataF
   data: new SlashCommandBuilder()
     .setName("bot") // Sets the command name
