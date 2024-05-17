@@ -1,5 +1,5 @@
 
-module.exports = async (client, message) => {
+export default async (client, message) => {
   // Ignore messages from other bots
   if (message.author.bot) return;
 

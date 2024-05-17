@@ -1,11 +1,11 @@
-require("colors");
+import 'colors';
+import { EmbedBuilder } from 'discord.js';
+import  config from '../../config/config.json' with { type: "json" };
+import mConfig from '../../config/messageConfig.json' with { type: "json" };
+import getButtons from '../../utils/getButtons.js';
 
-const { EmbedBuilder } = require("discord.js");
-const { developersId, testServerId } = require("../../config/config.json");
-const mConfig = require("../../config/messageConfig.json");
-const getButtons = require("../../utils/getButtons");
-
-module.exports = async (client, interaction) => {
+export default async (client, interaction) => {
+  const { developersId, testServerId } = config;
   if (!interaction.isButton()) return;
   const buttons = getButtons();
 

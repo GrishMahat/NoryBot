@@ -1,5 +1,5 @@
-const { WebhookClient, Constants ,EmbedBuilder} = require("discord.js");
-const mConfig = require("../config/messageConfig.json");
+import { WebhookClient, Constants, EmbedBuilder } from 'discord.js';
+import mConfig from '../config/messageConfig.json' with { type: "json" };
 
 
 const webhookURL = process.env.WEBHOOK_URL;
@@ -116,7 +116,7 @@ function handleError(errorType, error, additionalInfo = {}) {
   }
 }
 
-module.exports = {
+export default {
   sendDailyErrorSummaryReport,
   errorHandler: async (client) => {
     process.on("unhandledRejection", async (reason) => {

@@ -1,13 +1,10 @@
 /** @format */
 
-const {
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-  EmbedBuilder,
-} = require("discord.js");
-const buttonPagination = require("../../utils/buttonPagination");
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 
-module.exports = {
+import buttonPagination from '../../utils/buttonPagination.js';
+
+export default {
   data: new SlashCommandBuilder()
     .setName("embed")
     .setDescription("Send an embed")

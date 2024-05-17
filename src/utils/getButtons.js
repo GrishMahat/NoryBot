@@ -1,7 +1,7 @@
-const path = require("path");
-const getAllFiles = require("./getAllFiles");
+import path from 'path';
+import getAllFiles from './getAllFiles.js';
 
-module.exports = (exepctions = []) => {
+export default (exepctions = []) => {
   let buttons = [];
   const buttonFiles = getAllFiles(path.join(__dirname, "..", "buttons"));
 

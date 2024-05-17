@@ -1,5 +1,5 @@
 
-const {
+import {
   ContextMenuCommandBuilder,
   ApplicationCommandType,
   EmbedBuilder,
@@ -7,11 +7,12 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-} = require("discord.js");
-const mConfig = require("../config/messageConfig.json");
-const moderationSchema = require("../schemas/moderation");
+} from 'discord.js';
 
-module.exports = {
+import mConfig from '../config/messageConfig.json' with { type: "json" };
+import moderationSchema from '../schemas/moderation.js';
+
+export default {
   data: new ContextMenuCommandBuilder()
     .setName("Moderate User")
     .setType(ApplicationCommandType.User),

@@ -1,24 +1,24 @@
-require("colors");
+import 'colors';
+import config from '../../config/config.json'with { type: "json" };
+import getApplicationContextMenus from '../../utils/getApplicationCommands.js';
+import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
 
-const { testServerId } = require("../../config/config.json");
-const getApplicationContextMenus = require("../../utils/getApplicationCommands");
-const getLocalContextMenus = require("../../utils/getLocalContextMenus");
-
-module.exports = async (client) => {
+export default async (client) => {
   try {
-    const localContextMenus = getLocalContextMenus();
-    const applicationContextMenus = await getApplicationContextMenus(
-      client,
-      testServerId
-    );
+    const { testServerId } = config;
 
-    for (const localContextMenu of localContextMenus) {
-      const { data } = localContextMenu;
+    const localContextMenus = await getLocalContextMenus();
+    const applicationContextMenus = await getApplicationContextMenus(client, testServerId);
+
+
+    for (const localContextMenuModule of localContextMenus) {
+      const localContextMenu = localContextMenuModule.default; // Access the default property
+      const { data } = localContextMenu; // Destructure data from localContextMenu
 
       const contextMenuName = data.name;
       const contextMenuType = data.type;
 
-      const existingContextMenu = await applicationContextMenus.cache.find(
+      const existingContextMenu = applicationContextMenus.cache.find(
         (cmd) => cmd.name === contextMenuName
       );
 

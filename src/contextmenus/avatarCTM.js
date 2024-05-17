@@ -1,4 +1,4 @@
-const {
+import {
   ContextMenuCommandBuilder,
   ApplicationCommandType,
   EmbedBuilder,
@@ -6,10 +6,11 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-} = require("discord.js");
-const mConfig = require("../config/messageConfig.json");
+} from 'discord.js';
 
-module.exports = {
+import mConfig from '../config/messageConfig.json' with { type: "json" };
+
+export default {
   data: new ContextMenuCommandBuilder()
     .setName("User Avatar")
     .setType(ApplicationCommandType.User),

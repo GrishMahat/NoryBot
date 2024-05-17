@@ -1,5 +1,5 @@
-const { v4: uuidv4 } = require("uuid");
-const { Schema, model } = require("mongoose");
+import { v4 as uuidv4 } from 'uuid';
+import { Schema, model } from 'mongoose';
 
 const suggestionSchema = new Schema(
   {
@@ -39,4 +39,4 @@ const suggestionSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("Suggestion", suggestionSchema);
+export default model("Suggestion", suggestionSchema);
