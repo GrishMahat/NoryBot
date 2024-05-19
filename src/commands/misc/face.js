@@ -1,42 +1,43 @@
 /** @format */
 
-import { SlashCommandBuilder , ActionRowBuilder, ButtonBuilder, ButtonStyle} from 'discord.js';
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import Image from '../../schemas/image.js';
+import mconfig from "../../config/messageConfig.json" assert { type: 'json' };
 import mongoose from 'mongoose';
 
 export default {
   data: new SlashCommandBuilder()
-    .setName('face')
-    .setDescription('Manage face images.')
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName('add')
-        .setDescription('Add a new face image.')
-        .addStringOption((option) =>
-          option
-            .setName('image-url')
-            .setDescription('The URL of the image.')
-            .setRequired(true)
-        )
-        .addUserOption((option) =>
-          option
-            .setName('user')
-            .setDescription('The user whose image you are adding.')
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName('show')
-        .setDescription('Show a user\'s face image.')
-        .addUserOption((option) =>
-          option
-            .setName('user')
-            .setDescription('The user whose image you want to see.')
-            .setRequired(true)
-        )
-    )
-    .toJSON(),
+      .setName('face')
+      .setDescription('Manage face images.')
+      .addSubcommand((subcommand) =>
+          subcommand
+              .setName('add')
+              .setDescription('Add a new face image.')
+              .addStringOption((option) =>
+                  option
+                      .setName('image-url')
+                      .setDescription('The URL of the image.')
+                      .setRequired(true)
+              )
+              .addUserOption((option) =>
+                  option
+                      .setName('user')
+                      .setDescription('The user whose image you are adding.')
+                      .setRequired(true)
+              )
+      )
+      .addSubcommand((subcommand) =>
+          subcommand
+              .setName('show')
+              .setDescription('Show a user\'s face image.')
+              .addUserOption((option) =>
+                  option
+                      .setName('user')
+                      .setDescription('The user whose image you want to see.')
+                      .setRequired(true)
+              )
+      )
+      .toJSON(),
   userPermissions: [],
   botPermissions: [],
   nsfwMode: false,
@@ -66,6 +67,7 @@ const handleAddCommand = async (client, interaction) => {
     userId,
     userTag,
     addedBy,
+    approved: false,  // Assuming you have an approved field in your schema
   });
 
   await newImage.save();
@@ -74,21 +76,28 @@ const handleAddCommand = async (client, interaction) => {
   const adminUser = await client.users.fetch(adminUserId);
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`approve_${newImage._id}`)
-      .setLabel('Approve')
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(`reject_${newImage._id}`)
-      .setLabel('Reject')
-      .setStyle(ButtonStyle.Danger)
+      new ButtonBuilder()
+          .setCustomId(`approve_${newImage._id}`)
+          .setLabel('Approve')
+          .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+          .setCustomId(`reject_${newImage._id}`)
+          .setLabel('Reject')
+          .setStyle(ButtonStyle.Danger)
   );
 
+  const embed = new EmbedBuilder()
+      .setTitle('New Face Image Submission')
+      .setDescription(`A new image has been submitted by ${interaction.user.tag} for ${userTag}. Please review it.`)
+      .setImage(imageUrl)
+      .setColor(mconfig.embedColorWarning)
+      .setTimestamp();
+
   await adminUser.send({
-    content: `A new image has been added by ${interaction.user.tag} for ${userTag}. Please review it.\nImage URL: ${imageUrl}`,
+    content: 'A new image has been submitted for approval.',
+    embeds: [embed],
     components: [row],
   });
-  
 
   await interaction.reply({
     content: 'The image has been submitted for approval.',
@@ -108,7 +117,32 @@ const handleShowCommand = async (client, interaction) => {
     });
   }
 
+  const addedByUser = await client.users.fetch(image.addedBy);
+
+  const embed = new EmbedBuilder()
+      .setTitle(`Face Image for ${user.tag}`)
+      .setImage(image.imageUrl)
+      .setColor(mconfig.embedColorSuccess)
+      .setTimestamp()
+      .setFooter({
+        text: `Added by ${addedByUser.username}`,
+        iconURL: addedByUser.displayAvatarURL({ dynamic: true }),
+      })
+      .addFields(
+          {
+            name: "Added At",
+            value: new Date(image.addedAt).toLocaleString(),
+            inline: true
+          },
+          {
+            name: "Added By",
+            value: addedByUser.tag,
+            inline: true
+          }
+      );
+
   await interaction.reply({
-    content: `Here is the image for ${user.tag}:\n${image.imageUrl}`,
+    embeds: [embed],
   });
 };
+
