@@ -8,29 +8,36 @@ if (!process.env.TOKEN) {
 }
 
 (async () => {
-  const { default: eventHandler } = await import('./handlers/eventHandler.js');
-
-  const client = new Client({
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMembers,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent,
-      GatewayIntentBits.DirectMessages,
-    ],
-  });
-  errorHandler.errorHandler(client);
-  await eventHandler(client);
-
   try {
-    await client.login(process.env.TOKEN);
-  } catch (error) {
-    console.error('Error logging in:', error);
-    process.exit(1);
-  }
+    const { default: eventHandler } = await import('./handlers/eventHandler.js');
+
+    const client = new Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages,
+      ],
+    });
+
+    // Initialize error handling
+    errorHandler.errorHandler(client);
+
+    // Initialize event handling
+    await eventHandler(client);
+
+    // Login the bot
+    await client.login(process.env.TTOKEN);
+
     // Schedule daily error summary report
     setInterval(() => {
       errorHandler.sendDailyErrorSummaryReport(errorHandler.errorCounts);
     }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
-  
+
+
+  } catch (error) {
+    console.error('Error during bot initialization:', error);
+    process.exit(1);
+  }
 })();
