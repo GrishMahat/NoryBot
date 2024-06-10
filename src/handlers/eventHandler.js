@@ -1,3 +1,18 @@
+/**
+ * Registers event handlers for the Discord client.
+ *
+ * This function iterates through all event folders in the "events" directory,
+ * loads the event handlers from each file, and registers them with the provided
+ * Discord client.
+ *
+ * The event name is determined by the name of the event folder, with the
+ * exception of the "validations" folder, which is mapped to the "interactionCreate"
+ * event.
+ *
+ * @format
+ * @param {Discord.Client} client - The Discord client to register the event handlers with.
+ */
+
 const path = require("path");
 const getAllFiles = require("../utils/getAllFiles");
 

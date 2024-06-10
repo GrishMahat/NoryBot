@@ -2,7 +2,7 @@
 // Import necessary modules from discord.js package
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 
-// Export the modulFe to be used elsewhere
+// Export the modul Fe to be used elsewhere
 module.exports = {
   // Slash command data
   data: new SlashCommandBuilder()
