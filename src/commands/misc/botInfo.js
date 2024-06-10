@@ -4,16 +4,9 @@
  * @format
  */
 
-<<<<<<< HEAD
 const { SlashCommandBuilder, EmbedBuilder, time } = require("discord.js");
 const mongoose = require("mongoose");
 const fs = require("fs");
-=======
-import { SlashCommandBuilder, EmbedBuilder, time } from 'discord.js';
-
-import mongoose from 'mongoose';
-import fs from 'fs';
->>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
 
 // Export the module to be used elsewhere
 export default {
