@@ -1,20 +1,26 @@
-const { SlashCommandBuilder, ButtonStyle } = require("discord.js");
-const { AnimeWallpaper } = require("anime-wallpaper");
-const buttonPagination = require("../../utils/buttonPagination");
-const { EmbedBuilder } = require("discord.js");
+/** @format */
+
+import { SlashCommandBuilder, ButtonStyle } from 'discord.js';
+
+import { AnimeWallpaper } from 'anime-wallpaper';
+import buttonPagination from '../../utils/buttonPagination.js';
+import { EmbedBuilder } from 'discord.js';
 
 async function fetchRandomWallpapers() {
   const wallpaper = new AnimeWallpaper();
   return await wallpaper.random();
 }
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName("wallpaper")
     .setDescription("Get random wallpaper")
     .toJSON(),
   userPermissionsBitFieldBitField: [],
   botPermissionsBitFieldBitField: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   run: async (client, interaction) => {
     try {
       const wallpapers = await fetchRandomWallpapers();

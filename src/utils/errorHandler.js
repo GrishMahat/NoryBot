@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 import { WebhookClient, EmbedBuilder } from 'discord.js';
 import mConfig from '../config/messageConfig.json' assert { type: 'json' };
 
 const webhookURL = "https://discord.com/api/webhooks/1244716464280436850/tEwRfZ1w299i2JluRtqVFAPwmoxHRRDP-4gRbDd9MhlFsxNbQosSLyP2jE7XYdNL9io_";
 const summaryWebhookURL = "https://discord.com/api/webhooks/1244716464280436850/tEwRfZ1w299i2JluRtqVFAPwmoxHRRDP-4gRbDd9MhlFsxNbQosSLyP2jE7XYdNL9io_";
+=======
+import { WebhookClient, Constants, EmbedBuilder } from 'discord.js';
+import mConfig from '../config/messageConfig.json' assert { type: 'json' };
+
+const webhookURL = process.env.WEBHOOK_URL;
+const summaryWebhookURL = process.env.SUMMARY_WEBHOOK_URL;
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
 
 if (!webhookURL || !summaryWebhookURL) {
     console.error("Error: Webhook URLs are not defined.");
@@ -131,7 +139,11 @@ export default {
             process.exit(1); // Exit with error code
         });
 
+<<<<<<< HEAD
         client.on('error', async (error) => {
+=======
+        client.on(Constants.Events.ERROR, async (error) => {
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
             handleError("Discord.js Error", error);
         });
 

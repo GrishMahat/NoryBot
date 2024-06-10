@@ -1,13 +1,23 @@
-require("colors");
-const mongoose = require("mongoose");
+import 'colors';
+import mongoose from 'mongoose';
+
 const mongoURI = process.env.MONGODB_TOKEN;
 
-module.exports = async (client) => {
-  console.log(`${client.user.username} is online.`.blue);
-  if (!mongoURI) return;
-  mongoose.set("strictQuery", true);
+export default async (client) => {
+  try {
+    console.log(`${client.user.username} is online.`.blue);
 
-  if (await mongoose.connect(mongoURI)) {
+    if (!mongoURI) {
+      console.log('MongoDB URI not found. Skipping MongoDB connection.'.yellow);
+      return;
+    }
+
+    mongoose.set("strictQuery", true);
+
+    await mongoose.connect(mongoURI);
+
     console.log(`Connected to the MongoDB database.`.green);
+  } catch (error) {
+    console.error(`Error connecting to MongoDB: ${error.message}`.red);
   }
 };

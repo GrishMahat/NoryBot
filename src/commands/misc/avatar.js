@@ -1,9 +1,15 @@
+/** @format */
 
 // Import necessary modules from discord.js package
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 
+<<<<<<< HEAD
 // Export the modul Fe to be used elsewhere
 module.exports = {
+=======
+// Export the modulFe to be used elsewhere
+export default {
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
   // Slash command data
   data: new SlashCommandBuilder()
     .setName("avatar") // Sets the command name
@@ -17,6 +23,9 @@ module.exports = {
 
   userPermissions: [], // No user permissions required
   botPermissions: [], // No bot permissions required
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   // Function to be executed when the command is used
   run: async (client, interaction) => {

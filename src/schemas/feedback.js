@@ -1,8 +1,8 @@
-const { Schema, model } = require('mongoose');
- 
+import { Schema, model } from 'mongoose';
+
 const feedbackschema = new Schema({
     Guild: String,
     FeedbackChannel: String,
 });
- 
-module.exports = model('feedbackSchema', feedbackschema);
+
+export default model('feedbackSchema', feedbackschema);

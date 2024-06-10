@@ -1,11 +1,10 @@
-const {
-  CommandInteraction,
-  EmbedBuilder,
-  SlashCommandBuilder,
-} = require("discord.js");
-const figlet = require("figlet");
+/** @format */
 
-module.exports = {
+import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+
+import figlet from 'figlet';
+
+export default {
   data: new SlashCommandBuilder()
     .setName("ascii")
     .setDescription("Convert text to ASCII art")
@@ -15,8 +14,9 @@ module.exports = {
         .setDescription("Enter the text to convert")
         .setRequired(true)
     ),
-  testMode: true,
-  devOnly: true,
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
   userPermissionsBitField: [],
   bot: [],
 

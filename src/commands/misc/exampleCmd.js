@@ -1,6 +1,8 @@
-const { SlashCommandBuilder } = require("discord.js");
+/** @format */
 
-module.exports = {
+import { SlashCommandBuilder } from 'discord.js';
+
+export default {
   data: new SlashCommandBuilder()
     .setName("test")
     .setDescription("Test if everything works.")
@@ -10,6 +12,9 @@ module.exports = {
     .toJSON(),
   userPermissions: [],
   botPermissions: [],
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   run: (client, interaction) => {},
 };

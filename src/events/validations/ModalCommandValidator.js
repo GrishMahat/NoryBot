@@ -6,7 +6,11 @@ import getModals from '../../utils/getModals.js';
 
 export default async (client, interaction) => {
   if (!interaction.isModalSubmit()) return;
+<<<<<<< HEAD
   const modals = await getModals();
+=======
+  const modals = getModals();
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
   const { developersId, testServerId } = config;
 
 

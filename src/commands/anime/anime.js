@@ -1,7 +1,10 @@
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const axios = require("axios");
+/** @format */
 
-module.exports = {
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+
+import axios from 'axios';
+
+export default {
   data: new SlashCommandBuilder()
     .setName("anime")
     .setDescription("Search for information about a specific anime.")
@@ -11,6 +14,9 @@ module.exports = {
         .setDescription("The name of the anime to search")
         .setRequired(true)
     ),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   userPermissionsBitField: [],
   bot: [],

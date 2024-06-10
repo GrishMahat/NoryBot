@@ -6,10 +6,16 @@ import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
 
 export default async (client, interaction) => {
   if (!interaction.isContextMenuCommand()) return;
+<<<<<<< HEAD
   const localContextMenus = await getLocalContextMenus();
   const { developersId, testServerId } = config;
 
 
+=======
+  const localContextMenus = getLocalContextMenus();
+  const { developersId, testServerId } = config;
+
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
 
   try {
     const menuObject = localContextMenus.find(

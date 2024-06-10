@@ -2,7 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 export default (directory, foldersOnly = false) => {
+<<<<<<< HEAD
   const items = [];
+=======
+  let fileNames = [];
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
 
   const files = fs.readdirSync(directory, { withFileTypes: true });
 

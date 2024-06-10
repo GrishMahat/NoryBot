@@ -1,7 +1,12 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+/** @format */
 
-module.exports = {
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+
+export default {
   data: new SlashCommandBuilder().setName("mods").setDescription("Get mods"),
+  nwfwMode: false,
+  testMode: false,
+  devOnly: false,
 
   async run(client, interaction) {
     try {

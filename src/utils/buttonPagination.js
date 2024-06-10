@@ -1,8 +1,13 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 
 export default async (interaction, pages, time = 30 * 1000) => {
+<<<<<<< HEAD
   try {
     if (!interaction || !pages || pages.length === 0) throw new Error('Invalid arguments');
+=======
+	try {
+		if (!interaction || !pages || !pages.length > 0) throw new Error('Invalid arguments');
+>>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
 
     await interaction.deferReply();
 

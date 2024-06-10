@@ -1,7 +1,7 @@
-const { PermissionFlagsBits, EmbedBuilder } = require("discord.js");
+import { PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 
 
-module.exports = {
+export default {
   customId: "kickBtn",
   userPermissions: [],
   botPermissions: [],
@@ -11,4 +11,4 @@ module.exports = {
 
   }
 
-}
+};
