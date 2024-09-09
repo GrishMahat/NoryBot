@@ -1,5 +1,4 @@
 import path from 'path';
-<<<<<<< HEAD
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
 
@@ -7,28 +6,35 @@ import getAllFiles from './getAllFiles.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default async (exceptions = []) => {
-=======
-import getAllFiles from './getAllFiles.js';
+   const modalFiles = getAllFiles(path.join(__dirname, '..', 'modals'));
 
-export default (exceptions = []) => {
->>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
-  let modals = [];
-  const modalFiles = getAllFiles(path.join(__dirname, '..', 'modals'));
+   // Function to import and validate a single modal file
+   const importAndValidateModal = async (modalFile) => {
+      try {
+         // Convert the modal file path to a file URL
+         const modalFileURL = pathToFileURL(modalFile).href;
 
-  for (const modalFile of modalFiles) {
-    try {
-      // Convert the modal file path to a file URL
-      const modalFileURL = pathToFileURL(modalFile).href;
+         // Dynamically import the module using the file URL
+         const { default: modalObject } = await import(modalFileURL);
 
-      // Dynamically import the module using the file URL
-      const { default: modalObject } = await import(modalFileURL);
+         // Check if the modal name is in the exceptions list
+         if (exceptions.includes(modalObject.name)) return null;
 
-      if (exceptions.includes(modalObject.name)) continue;
-      modals.push(modalObject);
-    } catch (error) {
-      console.error(`Error importing modal file ${modalFile}: ${error}`);
-    }
-  }
+         return modalObject;
+      } catch (error) {
+         console.error(
+            `Error importing modal file ${modalFile}: ${error.message}`
+         );
+         return null;
+      }
+   };
 
-  return modals;
+   // Import all modal files in parallel
+   const modalPromises = modalFiles.map(importAndValidateModal);
+   const modalObjects = await Promise.all(modalPromises);
+
+   // Filter out any null values (failed imports or exceptions)
+   const modals = modalObjects.filter((modalObject) => modalObject !== null);
+
+   return modals;
 };

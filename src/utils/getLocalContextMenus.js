@@ -1,50 +1,64 @@
 import path from 'path';
-<<<<<<< HEAD
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default async (exceptions = []) => {
-  const localContextMenus = [];
-  const contextmenuCategories = getAllFiles(path.join(__dirname, '..', 'contextmenus'), true);
-=======
-import { fileURLToPath } from 'url';
-import getAllFiles from './getAllFiles.js';
+   const localContextMenus = [];
+   const contextmenuCategories = getAllFiles(
+      path.join(__dirname, '..', 'contextmenus'),
+      true
+   );
 
-// Get the directory name of the current module's file
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export default async (exceptions = []) => {
-  let localContextMenus = [];
-  
-  // Use path.join to construct the directory path
-  const menuFiles = getAllFiles(path.join(__dirname, '..', 'contextmenus'));
-
-  for (const menuFile of menuFiles) {
-    // Assuming `menuFile` contains the exported object directly
-    const menuObject = await import(menuFile);
->>>>>>> 8cca8a2f208c8cfde72a01dbc48df9abd2e90f85
-
-
-  for (const contextmenuCategory of contextmenuCategories) {
-    const contextmenuFiles = getAllFiles(contextmenuCategory);
-
-    for (const contextmenuFile of contextmenuFiles) {
+   // Function to import and validate a single context menu file
+   const importAndValidateContextMenu = async (contextmenuFile) => {
       try {
-        const contextmenuFileURL = pathToFileURL(contextmenuFile).href;
-        const { default: contextmenuModule } = await import(contextmenuFileURL);
+         const contextmenuFileURL = pathToFileURL(contextmenuFile).href;
+         const { default: contextmenuModule } = await import(
+            contextmenuFileURL
+         );
 
-        if (contextmenuModule && contextmenuModule.data && contextmenuModule.data.name && !exceptions.includes(contextmenuModule.data.name)) {
-          localContextMenus.push(contextmenuModule);
-        } else {
-          console.warn(`Context menu file ${contextmenuFile} does not have a valid export or name property.`);
-        }
+         if (
+            contextmenuModule &&
+            contextmenuModule.data &&
+            contextmenuModule.data.name &&
+            !exceptions.includes(contextmenuModule.data.name)
+         ) {
+            return contextmenuModule;
+         } else {
+            console.warn(
+               `Context menu file ${contextmenuFile} does not have a valid export or name property.`
+            );
+            return null;
+         }
       } catch (error) {
-        console.error(`Error importing context menu file ${contextmenuFile}: ${error}`);
+         console.error(
+            `Error importing context menu file ${contextmenuFile}: ${error}`
+         );
+         return null;
       }
-    }
-  }
+   };
 
-  return localContextMenus;
+   // Process all context menu categories in parallel
+   const allContextMenuPromises = contextmenuCategories.map(
+      async (contextmenuCategory) => {
+         const contextmenuFiles = getAllFiles(contextmenuCategory);
+
+         // Import all files in the category in parallel
+         return Promise.all(contextmenuFiles.map(importAndValidateContextMenu));
+      }
+   );
+
+   // Wait for all context menu imports to complete
+   const allContextMenus = (await Promise.all(allContextMenuPromises)).flat();
+
+   // Filter out null values
+   allContextMenus.forEach((contextmenu) => {
+      if (contextmenu) {
+         localContextMenus.push(contextmenu);
+      }
+   });
+
+   return localContextMenus;
 };

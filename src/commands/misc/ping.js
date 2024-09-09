@@ -1,68 +1,105 @@
-// Import necessary modules from discord.js package
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-
+import {
+   EmbedBuilder,
+   SlashCommandBuilder,
+   version as discordJsVersion,
+} from 'discord.js';
 import { formatDistanceToNow } from 'date-fns';
+import os from 'os';
 
-// Export the module to be used elsewhere
 export default {
-    // Slash command data
-    data: new SlashCommandBuilder()
-        .setName('ping') // Sets the command name
-        .setDescription('Bot ping'), // Sets the command description
+   data: new SlashCommandBuilder()
+      .setName('ping')
+      .setDescription('Shows bot latency and other stats'),
 
-    userPermissions: [],
+   userPermissions: [],
+   botPermissions: [],
+   category: 'Misc',
+   cooldown: 5,
+   nwfwMode: false,
+   testMode: false,
+   devOnly: false,
+   prefix: true,
 
-    bot: [],
-    nwfwMode: true,
-    testMode: false,
-    devOnly: false,
+   run: async (client, interaction) => {
+      try {
+         const start = Date.now();
+         await interaction.deferReply();
+         const latency = Date.now() - start;
+         const apiPing = Math.round(client.ws.ping);
 
+         const getPingColor = (ping) =>
+            ping < 150 ? '#00ff00' : ping < 250 ? '#ffff00' : '#ff0000';
 
-    // Function to be executed when the command is used
-    run: async (client, interaction) => {
-        // Check if interaction has already been replied to or deferred
-        if (interaction.replied || interaction.deferred) {
-            return;
-        }
+         client.commandStats ??= { pingCount: 0, totalPing: 0, totalCommands: 0 };
+         client.commandStats.pingCount++;
+         client.commandStats.totalPing += apiPing;
+         client.commandStats.totalCommands++;
 
-        let pingColor = '';
-        const ping = interaction.client.ws.ping;
+         const averagePing = (
+            client.commandStats.totalPing / client.commandStats.pingCount
+         ).toFixed(2);
+         const uptime = client.readyAt
+            ? formatDistanceToNow(client.readyAt, { addSuffix: true })
+            : 'Bot not ready';
 
-        // Determine color based on ping value
-        if (ping < 150) {
-            pingColor = '#00ff00'; // Green color for low ping
-        } else if (ping >= 150 && ping <= 250) {
-            pingColor = '#ffff00'; // Yellow color for moderate ping
-        } else {
-            pingColor = '#ff0000'; // Red color for high ping
-        }
+         const { heapUsed, rss } = process.memoryUsage();
+         const totalMem = os.totalmem() / 1024 / 1024;
+         const freeMem = os.freemem() / 1024 / 1024;
+         const systemUptime = os.uptime();
 
-        const uptime = formatDistanceToNow(client.readyAt, { includeSeconds: true });
+         const stats = [
+            { name: '🏓 **Bot Latency**', value: `\`${latency}ms\`` },
+            { name: '🌐 **API Latency**', value: `\`${apiPing}ms\`` },
+            { name: '📊 **Average Ping**', value: `\`${averagePing}ms\`` },
+            { name: '⏳ **Uptime**', value: `\`${uptime}\`` },
+            {
+               name: '💾 **Memory Usage**',
+               value: `\`${(heapUsed / 1024 / 1024).toFixed(2)} MB / ${(rss / 1024 / 1024).toFixed(2)} MB\``,
+            },
+            {
+               name: '🧠 **System Memory**',
+               value: `\`Total: ${totalMem.toFixed(2)} MB, Free: ${freeMem.toFixed(2)} MB\``,
+            },
+            { name: '📚 **Discord.js Version**', value: `\`${discordJsVersion}\`` },
+            { name: '🛠️ **Node.js Version**', value: `\`${process.version}\`` },
+            {
+               name: '⚙️ **System Uptime**',
+               value: `\`${formatDistanceToNow(Date.now() - systemUptime * 1000, {
+                  addSuffix: true,
+               })}\``,
+            },
+            {
+               name: '💻 **OS Info**',
+               value: `\`${os.type()} ${os.release()}\``,
+            },
+            {
+               name: '🖥️ **CPU Info**',
+               value: `\`${os.cpus()[0].model} (${os.cpus().length} cores)\``,
+            },
+            {
+               name: '🔢 **Command Usage**',
+               value: `\`Total Executed: ${client.commandStats.totalCommands}\``,
+            },
+         ];
 
-        // Initialize commandStats if it's undefined
-        if (!client.commandStats) {
-            client.commandStats = {};
-        }
-
-        // Increment command usage counter
-        client.commandStats.ping = (client.commandStats.ping || 0) + 1;
-
-        // Calculate average ping (just for demonstration, you might want to store ping times over a period)
-        const totalPing = (client.commandStats.totalPing || 0) + ping;
-        const averagePing = totalPing / client.commandStats.ping;
-
-        // Construct embed to display ping
-        const pongEmbed = new EmbedBuilder()
-            .setColor(pingColor) // Set embed color based on ping
-            .setTitle('Pong') // Set embed title
-            .setDescription(`**Ping:** ${ping} ms\n**Average Ping:** ${averagePing.toFixed(2)} ms\n**Uptime:** ${uptime}\n**Command Usage:** ${client.commandStats.ping}`)
+         const pongEmbed = new EmbedBuilder()
+            .setColor(getPingColor(apiPing))
+            .setTitle('🏓 **Pong!**')
+            .addFields(stats.map((stat) => ({ ...stat, inline: true })))
             .setFooter({
-                text: `Requested by ${interaction.user.username}`,
-                iconURL: `${interaction.user.displayAvatarURL({ dynamic: true })}`,
+               text: `Requested by ${interaction.user.username}`,
+               iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
             })
-            .setTimestamp(); // Set embed timestamp
+            .setTimestamp();
 
-        // Send the embed as a reply to the interaction
-        await interaction.reply({ embeds: [pongEmbed] });
-    }
+         await interaction.editReply({ embeds: [pongEmbed] });
+      } catch (error) {
+         console.error('Error in ping command:', error);
+
+
+         await interaction.editReply(
+            '❌ An error occurred while processing the command. Please try again later.'
+         );
+      }
+   },
 };
