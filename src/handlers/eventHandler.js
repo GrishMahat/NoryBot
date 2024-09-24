@@ -1,5 +1,5 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { pathToFileURL, fileURLToPath } from 'url';
 import getAllFiles from '../utils/getAllFiles.js';
 import fs from 'fs';
 
@@ -33,7 +33,7 @@ const loadEventFile = async (
 ) => {
    try {
       const { default: eventFunction } = await import(
-         encodeURI(`file://${eventFile}`)
+         pathToFileURL(eventFile).href
       );
       if (typeof eventFunction !== 'function') {
          throw new Error(`Invalid or missing event function in ${eventFile}`);

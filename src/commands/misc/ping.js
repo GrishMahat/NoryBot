@@ -30,7 +30,11 @@ export default {
          const getPingColor = (ping) =>
             ping < 150 ? '#00ff00' : ping < 250 ? '#ffff00' : '#ff0000';
 
-         client.commandStats ??= { pingCount: 0, totalPing: 0, totalCommands: 0 };
+         client.commandStats ??= {
+            pingCount: 0,
+            totalPing: 0,
+            totalCommands: 0,
+         };
          client.commandStats.pingCount++;
          client.commandStats.totalPing += apiPing;
          client.commandStats.totalCommands++;
@@ -60,13 +64,19 @@ export default {
                name: '🧠 **System Memory**',
                value: `\`Total: ${totalMem.toFixed(2)} MB, Free: ${freeMem.toFixed(2)} MB\``,
             },
-            { name: '📚 **Discord.js Version**', value: `\`${discordJsVersion}\`` },
+            {
+               name: '📚 **Discord.js Version**',
+               value: `\`${discordJsVersion}\``,
+            },
             { name: '🛠️ **Node.js Version**', value: `\`${process.version}\`` },
             {
                name: '⚙️ **System Uptime**',
-               value: `\`${formatDistanceToNow(Date.now() - systemUptime * 1000, {
-                  addSuffix: true,
-               })}\``,
+               value: `\`${formatDistanceToNow(
+                  Date.now() - systemUptime * 1000,
+                  {
+                     addSuffix: true,
+                  }
+               )}\``,
             },
             {
                name: '💻 **OS Info**',
@@ -95,7 +105,6 @@ export default {
          await interaction.editReply({ embeds: [pongEmbed] });
       } catch (error) {
          console.error('Error in ping command:', error);
-
 
          await interaction.editReply(
             '❌ An error occurred while processing the command. Please try again later.'

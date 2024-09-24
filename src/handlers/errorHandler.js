@@ -85,6 +85,7 @@ class DiscordBotErrorHandler {
 
    async handleError(error, context = {}) {
       try {
+         console.debug('Handling error:', error, context);
          const errorDetails = await this.formatErrorDetails(error, context);
          await this.processError(errorDetails);
       } catch (err) {
