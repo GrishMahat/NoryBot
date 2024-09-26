@@ -8,7 +8,7 @@ import {
    ButtonBuilder,
    ButtonStyle,
 } from 'discord.js';
-import paginateEmbeds from '../../utils/buttonPagination.js';
+import buttonPagination from '../../utils/buttonPagination.js';
 import mconfig from '../../config/messageConfig.js';
 
 export default {
@@ -86,7 +86,7 @@ export default {
    nsfwMode: false,
    testMode: false,
    devOnly: true,
-   category: 'Devloper',
+   category: 'Developer',
 
    run: async (client, interaction) => {
       await interaction.deferReply();
@@ -179,7 +179,11 @@ async function handleListSubcommand(client, interaction) {
       isDetailed,
       sortOption
    );
-   await paginateEmbeds(interaction, embeds);
+   await buttonPagination(interaction, embeds, {
+      time: 5 * 60 * 1000, // 5 minutes
+      showPageIndicator: true,
+      allowUserNavigation: true,
+   });
 }
 
 function createServerListEmbeds(
@@ -202,7 +206,7 @@ function createServerListEmbeds(
          .setColor(mconfig.embedColorSuccess)
          .setThumbnail(client.user.displayAvatarURL())
          .setFooter({
-            text: `Page ${Math.floor(i / MAX_FIELDS) + 1}/${Math.ceil(guilds.length / MAX_FIELDS)} • Requested by ${interaction.user.username}`,
+            text: `Requested by ${interaction.user.username}`,
             iconURL: interaction.user.displayAvatarURL({
                format: 'png',
                dynamic: true,
@@ -331,7 +335,11 @@ async function handleCheckSubcommand(client, interaction) {
       })
    );
 
-   await interaction.editReply({ embeds: results });
+   await buttonPagination(interaction, results, {
+      time: 5 * 60 * 1000, // 5 minutes
+      showPageIndicator: true,
+      allowUserNavigation: true,
+   });
 }
 
 async function handleUserSubcommand(client, interaction) {

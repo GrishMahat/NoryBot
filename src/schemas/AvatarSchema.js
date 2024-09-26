@@ -32,12 +32,21 @@ const AvatarChallengeSchema = new mongoose.Schema({
    winner: { type: String },
 });
 
+// Avatar Customization Schema
+const AvatarCustomizationSchema = new mongoose.Schema({
+   userId: { type: String, required: true },
+   guildId: { type: String, required: true },
+   frame: { type: String },
+   background: { type: String },
+   overlay: { type: String },
+   effects: [{ type: String }],
+   lastUpdated: { type: Date, default: Date.now },
+});
+
 // Create models
 const Avatar = mongoose.model('Avatar', AvatarSchema);
 const AvatarRating = mongoose.model('AvatarRating', AvatarRatingSchema);
-const AvatarChallenge = mongoose.model(
-   'AvatarChallenge',
-   AvatarChallengeSchema
-);
+const AvatarChallenge = mongoose.model('AvatarChallenge', AvatarChallengeSchema);
+const AvatarCustomization = mongoose.model('AvatarCustomization', AvatarCustomizationSchema);
 
-export { Avatar, AvatarRating, AvatarChallenge };
+export { Avatar, AvatarRating, AvatarChallenge, AvatarCustomization };

@@ -4,23 +4,37 @@ import {
    ActionRowBuilder,
    ButtonBuilder,
    ButtonStyle,
-   PermissionFlagsBits,
+   AttachmentBuilder,
 } from 'discord.js';
 import {
    Avatar,
-   AvatarRating,
    AvatarChallenge,
+   AvatarCustomization,
 } from '../../schemas/AvatarSchema.js';
+import { createCanvas, loadImage } from 'canvas';
+import axios from 'axios';
+import { fileTypeFromBuffer } from 'file-type';
 
 export default {
    data: new SlashCommandBuilder()
       .setName('avatar')
-      .setDescription('Show avatar of any user')
+      .setDescription('Show and interact with user avatars')
       .addUserOption((option) =>
          option
             .setName('user')
-            .setDescription('User whose avatar you want to see:')
+            .setDescription('User whose avatar you want to see')
             .setRequired(false)
+      )
+      .addStringOption((option) =>
+         option
+            .setName('style')
+            .setDescription('Apply a style to the avatar')
+            .setRequired(false)
+            .addChoices(
+               { name: 'Pixelate', value: 'pixelate' },
+               { name: 'Sepia', value: 'sepia' },
+               { name: 'Invert', value: 'invert' }
+            )
       ),
 
    userPermissions: [],
@@ -39,6 +53,7 @@ export default {
 
          const user = interaction.options.getUser('user') || interaction.user;
          const member = interaction.guild.members.cache.get(user.id);
+         const style = interaction.options.getString('style');
 
          const getAvatarUrl = (userOrMember, size = 1024) => {
             return userOrMember.displayAvatarURL({
@@ -75,20 +90,6 @@ export default {
             .sort({ timestamp: -1 })
             .limit(5);
 
-         // Fetch avatar rating
-         const avatarRatings = await AvatarRating.find({
-            avatarId: newAvatar._id,
-         });
-         const averageRating =
-            avatarRatings.length > 0
-               ? (
-                    avatarRatings.reduce(
-                       (sum, rating) => sum + rating.rating,
-                       0
-                    ) / avatarRatings.length
-                 ).toFixed(1)
-               : 'No ratings yet';
-
          // Fetch active avatar challenge
          const activeChallenge = await AvatarChallenge.findOne({
             guildId: interaction.guild.id,
@@ -96,10 +97,80 @@ export default {
             endDate: { $gte: new Date() },
          });
 
+         // Fetch avatar customization
+         const avatarCustomization = await AvatarCustomization.findOne({
+            userId: user.id,
+            guildId: interaction.guild.id,
+         });
+
+         // Apply style if specified
+         let styledAvatarAttachment;
+         if (style) {
+            try {
+               const avatarBuffer = await axios.get(userAvatar, { responseType: 'arraybuffer' }).then(response => Buffer.from(response.data, 'binary'));
+               
+               // Add this check to ensure the image is in a supported format
+               const supportedFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+               const fileType = await import('file-type');
+               const type = await fileType.fileTypeFromBuffer(avatarBuffer);
+               
+               if (!type || !supportedFormats.includes(type.mime)) {
+                  throw new Error('Unsupported image format');
+               }
+
+               const image = await loadImage(avatarBuffer);
+               const canvas = createCanvas(image.width, image.height);
+               const ctx = canvas.getContext('2d');
+               ctx.drawImage(image, 0, 0);
+
+               switch (style) {
+                  case 'pixelate':
+                     const pixelSize = 10;
+                     ctx.imageSmoothingEnabled = false;
+                     ctx.drawImage(canvas, 0, 0, canvas.width / pixelSize, canvas.height / pixelSize);
+                     ctx.drawImage(canvas, 0, 0, canvas.width / pixelSize, canvas.height / pixelSize, 0, 0, canvas.width, canvas.height);
+                     break;
+                  case 'sepia':
+                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                     const data = imageData.data;
+                     for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        data[i] = (r * 0.393) + (g * 0.769) + (b * 0.189);
+                        data[i + 1] = (r * 0.349) + (g * 0.686) + (b * 0.168);
+                        data[i + 2] = (r * 0.272) + (g * 0.534) + (b * 0.131);
+                     }
+                     ctx.putImageData(imageData, 0, 0);
+                     break;
+                  case 'invert':
+                     const invertedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                     const invertedData = invertedImageData.data;
+                     for (let i = 0; i < invertedData.length; i += 4) {
+                        invertedData[i] = 255 - invertedData[i];
+                        invertedData[i + 1] = 255 - invertedData[i + 1];
+                        invertedData[i + 2] = 255 - invertedData[i + 2];
+                     }
+                     ctx.putImageData(invertedImageData, 0, 0);
+                     break;
+               }
+
+               const styledAvatarBuffer = canvas.toBuffer();
+               styledAvatarAttachment = new AttachmentBuilder(styledAvatarBuffer, { name: 'styled_avatar.png' });
+            } catch (error) {
+               console.error('Error applying style to avatar:', error);
+               await interaction.editReply({
+                  content: 'Unable to apply the style to this avatar. It might be in an unsupported format or temporarily unavailable.',
+                  ephemeral: true,
+               });
+               return;
+            }
+         }
+
          const embed = new EmbedBuilder()
             .setTitle(`${user.username}'s Avatar`)
             .setDescription(`[Avatar URL](${userAvatar})`)
-            .setImage(userAvatar)
+            .setImage(style ? 'attachment://styled_avatar.png' : userAvatar)
             .setColor(member?.displayHexColor || '#eb3434')
             .addFields(
                { name: '🆔 User ID', value: user.id, inline: true },
@@ -140,13 +211,6 @@ export default {
                         )
                         .join(' | ') || 'No history available',
                   inline: false,
-               },
-               {
-                  name: '⭐ Average Rating',
-                  value:
-                     averageRating +
-                     (averageRating !== 'No ratings yet' ? '/5' : ''),
-                  inline: true,
                }
             )
             .setFooter({
@@ -167,6 +231,14 @@ export default {
             embed.addFields({
                name: '🏆 Active Avatar Challenge',
                value: `"${activeChallenge.title}" - Ends <t:${Math.floor(activeChallenge.endDate.getTime() / 1000)}:R>`,
+               inline: false,
+            });
+         }
+
+         if (avatarCustomization) {
+            embed.addFields({
+               name: '🎨 Avatar Customization',
+               value: `Frame: ${avatarCustomization.frame || 'None'}, Background: ${avatarCustomization.background || 'None'}`,
                inline: false,
             });
          }
@@ -193,18 +265,24 @@ export default {
 
          const row2 = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-               .setCustomId('avatar_rate')
-               .setLabel('⭐ Rate Avatar')
-               .setStyle(ButtonStyle.Success)
+               .setCustomId('avatar_customize')
+               .setLabel('🎨 Customize Avatar')
+               .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+               .setCustomId('avatar_challenge')
+               .setLabel('🏆 Start Challenge')
+               .setStyle(ButtonStyle.Secondary)
+               .setDisabled(!!activeChallenge)
          );
 
          const response = await interaction.editReply({
             embeds: [embed],
             components: [row1, row2],
+            files: styledAvatarAttachment ? [styledAvatarAttachment] : [],
          });
 
          const collector = response.createMessageComponentCollector({
-            time: 60000,
+            time: 300000, // 5 minutes
          });
 
          collector.on('collect', async (i) => {
@@ -235,44 +313,19 @@ export default {
                   await i.update({ embeds: [compareEmbed] });
                   break;
 
-               case 'avatar_rate':
-                  const existingRating = await AvatarRating.findOne({
-                     avatarId: newAvatar._id,
-                     raterId: i.user.id,
+               case 'avatar_customize':
+                  // Implement avatar customization logic here
+                  await i.reply({
+                     content: 'Avatar customization feature coming soon!',
+                     ephemeral: true,
                   });
+                  break;
 
-                  if (existingRating) {
-                     return i.reply({
-                        content: 'You have already rated this avatar.',
-                        ephemeral: true,
-                     });
-                  }
-
-                  const rating = Math.floor(Math.random() * 5) + 1;
-                  const newRating = new AvatarRating({
-                     avatarId: newAvatar._id,
-                     raterId: i.user.id,
-                     rating: rating,
-                  });
-                  await newRating.save();
-
-                  // Update the average rating in the embed
-                  const updatedRatings = await AvatarRating.find({
-                     avatarId: newAvatar._id,
-                  });
-                  const newAverageRating = (
-                     updatedRatings.reduce((sum, r) => sum + r.rating, 0) /
-                     updatedRatings.length
-                  ).toFixed(1);
-                  embed.spliceFields(-2, 1, {
-                     name: '⭐ Average Rating',
-                     value: `${newAverageRating}/5`,
-                     inline: true,
-                  });
-
-                  await i.update({
-                     content: `You rated this avatar ${rating}/5 stars!`,
-                     embeds: [embed],
+               case 'avatar_challenge':
+                  // Implement avatar challenge creation logic here
+                  await i.reply({
+                     content: 'Avatar challenge creation feature coming soon!',
+                     ephemeral: true,
                   });
                   break;
             }

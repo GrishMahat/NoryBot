@@ -1,6 +1,6 @@
 export const config = {
    testServerId: '1207374906296246282',
-   logChannel: '1244852688106295316',
+   logChannel: '1285572012135415888',
    developersId: [
       '660117771421614085',
       '598554287244574731',

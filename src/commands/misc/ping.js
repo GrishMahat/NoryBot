@@ -5,11 +5,12 @@ import {
 } from 'discord.js';
 import { formatDistanceToNow } from 'date-fns';
 import os from 'os';
+import { performance } from 'perf_hooks';
 
 export default {
    data: new SlashCommandBuilder()
       .setName('ping')
-      .setDescription('Shows bot latency and other stats'),
+      .setDescription('Shows bot latency and other detailed system stats'),
 
    userPermissions: [],
    botPermissions: [],
@@ -22,13 +23,13 @@ export default {
 
    run: async (client, interaction) => {
       try {
-         const start = Date.now();
+         const start = performance.now();
          await interaction.deferReply();
-         const latency = Date.now() - start;
+         const latency = Math.round(performance.now() - start);
          const apiPing = Math.round(client.ws.ping);
 
          const getPingColor = (ping) =>
-            ping < 150 ? '#00ff00' : ping < 250 ? '#ffff00' : '#ff0000';
+            ping < 100 ? '#00ff00' : ping < 200 ? '#ffff00' : '#ff0000';
 
          client.commandStats ??= {
             pingCount: 0,
@@ -50,52 +51,29 @@ export default {
          const totalMem = os.totalmem() / 1024 / 1024;
          const freeMem = os.freemem() / 1024 / 1024;
          const systemUptime = os.uptime();
+         const cpuUsage = os.loadavg()[0].toFixed(2);
 
          const stats = [
-            { name: '🏓 **Bot Latency**', value: `\`${latency}ms\`` },
-            { name: '🌐 **API Latency**', value: `\`${apiPing}ms\`` },
-            { name: '📊 **Average Ping**', value: `\`${averagePing}ms\`` },
-            { name: '⏳ **Uptime**', value: `\`${uptime}\`` },
-            {
-               name: '💾 **Memory Usage**',
-               value: `\`${(heapUsed / 1024 / 1024).toFixed(2)} MB / ${(rss / 1024 / 1024).toFixed(2)} MB\``,
-            },
-            {
-               name: '🧠 **System Memory**',
-               value: `\`Total: ${totalMem.toFixed(2)} MB, Free: ${freeMem.toFixed(2)} MB\``,
-            },
-            {
-               name: '📚 **Discord.js Version**',
-               value: `\`${discordJsVersion}\``,
-            },
-            { name: '🛠️ **Node.js Version**', value: `\`${process.version}\`` },
-            {
-               name: '⚙️ **System Uptime**',
-               value: `\`${formatDistanceToNow(
-                  Date.now() - systemUptime * 1000,
-                  {
-                     addSuffix: true,
-                  }
-               )}\``,
-            },
-            {
-               name: '💻 **OS Info**',
-               value: `\`${os.type()} ${os.release()}\``,
-            },
-            {
-               name: '🖥️ **CPU Info**',
-               value: `\`${os.cpus()[0].model} (${os.cpus().length} cores)\``,
-            },
-            {
-               name: '🔢 **Command Usage**',
-               value: `\`Total Executed: ${client.commandStats.totalCommands}\``,
-            },
+            { name: '🏓 Bot Latency', value: `${latency}ms`, inline: true },
+            { name: '🌐 API Latency', value: `${apiPing}ms`, inline: true },
+            { name: '📊 Average Ping', value: `${averagePing}ms`, inline: true },
+            { name: '⏳ Uptime', value: uptime, inline: true },
+            { name: '💾 Memory Usage', value: `${(heapUsed / 1024 / 1024).toFixed(2)} MB / ${(rss / 1024 / 1024).toFixed(2)} MB`, inline: true },
+            { name: '🧠 System Memory', value: `${((totalMem - freeMem) / totalMem * 100).toFixed(2)}% used`, inline: true },
+            { name: '📚 Discord.js', value: discordJsVersion, inline: true },
+            { name: '🛠️ Node.js', value: process.version, inline: true },
+            { name: '⚙️ System Uptime', value: formatDistanceToNow(Date.now() - systemUptime * 1000, { addSuffix: true }), inline: true },
+            { name: '💻 OS', value: `${os.type()} ${os.release()}`, inline: true },
+            { name: '🖥️ CPU', value: `${os.cpus()[0].model.split(' ')[0]} (${os.cpus().length} cores)`, inline: true },
+            { name: '📈 CPU Usage', value: `${cpuUsage}%`, inline: true },
+            { name: '🔢 Commands Run', value: client.commandStats.totalCommands.toString(), inline: true },
          ];
 
          const pongEmbed = new EmbedBuilder()
             .setColor(getPingColor(apiPing))
-            .setTitle('🏓 **Pong!**')
-            .addFields(stats.map((stat) => ({ ...stat, inline: true })))
+            .setTitle('🚀 Bot Status')
+            .setDescription('Here\'s a detailed overview of the bot\'s current performance and system statistics.')
+            .addFields(stats)
             .setFooter({
                text: `Requested by ${interaction.user.username}`,
                iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
@@ -106,9 +84,10 @@ export default {
       } catch (error) {
          console.error('Error in ping command:', error);
 
-         await interaction.editReply(
-            '❌ An error occurred while processing the command. Please try again later.'
-         );
+         await interaction.editReply({
+            content: '❌ An error occurred while processing the command. Please try again later.',
+            ephemeral: true
+         });
       }
    },
 };

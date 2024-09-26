@@ -4,6 +4,7 @@ import {
    ActionRowBuilder,
    ButtonBuilder,
    ButtonStyle,
+   EmbedBuilder,
 } from 'discord.js';
 import Bottleneck from 'bottleneck';
 
@@ -12,27 +13,35 @@ const limiter = new Bottleneck({
    maxConcurrent: 1,
 });
 
+const funnyMessages = [
+   "Oops! Looks like we're playing hide and seek with your DMs!",
+   "Houston, we have a problem... Your DMs are in stealth mode!",
+   "Knock knock! Who's there? Not your DMs, apparently!",
+   "Your DMs are like my ex - they won't let me in!",
+   "I tried to slide into your DMs, but they're too slippery!",
+];
+
 export default {
    data: new SlashCommandBuilder()
       .setName('dm')
       .setDescription(
-         'Send a direct message to a user, role, or all members in the server'
+         'Send a fun direct message to a user, role, or all members in the server'
       )
       .addSubcommand((subcommand) =>
          subcommand
             .setName('user')
-            .setDescription('Send a DM to a specific user')
+            .setDescription('Send a quirky DM to a specific user')
             .addUserOption((option) =>
                option
                   .setName('target')
-                  .setDescription('The user to send the DM to')
+                  .setDescription('The lucky user to receive your message')
                   .setRequired(true)
             )
             .addStringOption((option) =>
                option
                   .setName('message')
                   .setDescription(
-                     "The message to send (Use {user} for recipient's name)"
+                     "Your witty message (Use {user} for recipient's name and {emoji} for a random emoji)"
                   )
                   .setRequired(true)
             )
@@ -40,18 +49,31 @@ export default {
       .addSubcommand((subcommand) =>
          subcommand
             .setName('role')
-            .setDescription('Send a DM to all users with a specific role')
+            .setDescription('Send a hilarious DM to all users with a specific role')
             .addRoleOption((option) =>
                option
                   .setName('target')
-                  .setDescription('The role to send the DM to')
+                  .setDescription('The role to bombard with fun')
                   .setRequired(true)
             )
             .addStringOption((option) =>
                option
                   .setName('message')
                   .setDescription(
-                     "The message to send (Use {user} for recipient's name)"
+                     "Your comedic message (Use {user} for recipient's name and {emoji} for a random emoji)"
+                  )
+                  .setRequired(true)
+            )
+      )
+      .addSubcommand((subcommand) =>
+         subcommand
+            .setName('all')
+            .setDescription('Send a jolly DM to all members in the server')
+            .addStringOption((option) =>
+               option
+                  .setName('message')
+                  .setDescription(
+                     "Your merry message (Use {user} for recipient's name and {emoji} for a random emoji)"
                   )
                   .setRequired(true)
             )
@@ -64,7 +86,7 @@ export default {
    nwfwMode: false,
    testMode: false,
    devOnly: true,
-   category: 'Devloper',
+   category: 'Developer',
    prefix: false,
 
    run: async (client, interaction) => {
@@ -77,23 +99,13 @@ export default {
          }
 
          try {
-            const personalizedMessage = message.replace(
-               /{user}/g,
-               user.displayName
-            );
+            const personalizedMessage = message
+               .replace(/{user}/g, user.displayName)
+               .replace(/{emoji}/g, getRandomEmoji());
             await limiter.schedule(() => user.send(personalizedMessage));
             return { success: true };
          } catch (error) {
-            if (error.code === 50007) {
-               return { success: false, reason: 'DM_CLOSED' };
-            } else if (error.code === 10013) {
-               return { success: false, reason: 'USER_NOT_FOUND' };
-            } else if (error.code === 50013) {
-               return { success: false, reason: 'MISSING_PERMISSIONS' };
-            } else if (error.code === 50016) {
-               return { success: false, reason: 'RATE_LIMIT' };
-            }
-            return { success: false, reason: 'UNKNOWN', error };
+            return { success: false, reason: error.code };
          }
       };
 
@@ -101,16 +113,28 @@ export default {
          const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                .setCustomId('confirm')
-               .setLabel('Confirm')
-               .setStyle(ButtonStyle.Primary),
+               .setLabel('Let\'s do this!')
+               .setStyle(ButtonStyle.Primary)
+               .setEmoji('🎉'),
             new ButtonBuilder()
                .setCustomId('cancel')
-               .setLabel('Cancel')
+               .setLabel('Oops, nevermind!')
                .setStyle(ButtonStyle.Danger)
+               .setEmoji('🙈')
          );
 
+         const confirmEmbed = new EmbedBuilder()
+            .setColor("Green")
+            .setTitle('Time for some fun! 🎈')
+            .setDescription(`Are you ready to spread joy to ${members.size} ${description}?`)
+            .addFields(
+               { name: 'Your Masterpiece', value: message.substring(0, 1024) }
+            )
+            .setFooter({ text: 'Brought to you by the Ministry of Silly Messages' })
+            .setTimestamp();
+
          await interaction.reply({
-            content: `Are you sure you want to send this message to ${members.size} ${description}?`,
+            embeds: [confirmEmbed],
             components: [row],
             ephemeral: true,
          });
@@ -122,8 +146,9 @@ export default {
 
          if (!confirmation || confirmation.customId === 'cancel') {
             return interaction.editReply({
-               content: 'Command cancelled.',
+               content: 'Mission aborted! The fun police caught us. 👮‍♂️',
                components: [],
+               embeds: [],
             });
          }
 
@@ -131,7 +156,7 @@ export default {
          let failureCount = 0;
          let count = 0;
          const totalMembers = members.size;
-         const updateInterval = Math.max(1, Math.floor(totalMembers / 20)); // Update every 5%
+         const updateInterval = Math.max(1, Math.floor(totalMembers / 20));
          let cancelled = false;
 
          const processMember = async (member) => {
@@ -144,16 +169,30 @@ export default {
             if (count % updateInterval === 0 || count === totalMembers) {
                const progress = ((count / totalMembers) * 100).toFixed(2);
                const progressBar =
-                  '█'.repeat(Math.floor(progress / 5)) +
-                  '░'.repeat(20 - Math.floor(progress / 5));
+                  '🟩'.repeat(Math.floor(progress / 5)) +
+                  '⬜'.repeat(20 - Math.floor(progress / 5));
+               
+               const progressEmbed = new EmbedBuilder()
+                  .setColor("Yellow")
+                  .setTitle('Fun-O-Meter 📊')
+                  .setDescription(`${progressBar} ${progress}%`)
+                  .addFields(
+                     { name: 'Joy Spread', value: `${count}/${totalMembers}`, inline: true },
+                     { name: 'Smiles Delivered', value: successCount.toString(), inline: true },
+                     { name: 'Party Poopers', value: failureCount.toString(), inline: true }
+                  )
+                  .setFooter({ text: 'Spreading happiness, one DM at a time!' })
+                  .setTimestamp();
+
                await interaction.editReply({
-                  content: `Progress: ${progressBar} ${progress}%\n${count}/${totalMembers} messages sent`,
+                  embeds: [progressEmbed],
                   components: [
                      new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                            .setCustomId('cancel_sending')
-                           .setLabel('Cancel Sending')
+                           .setLabel('Stop the madness!')
                            .setStyle(ButtonStyle.Danger)
+                           .setEmoji('🛑')
                      ),
                   ],
                   ephemeral: true,
@@ -170,8 +209,9 @@ export default {
             if (i.customId === 'cancel_sending') {
                cancelled = true;
                await i.update({
-                  content: 'Cancelling the operation. Please wait...',
+                  content: 'Whoa there! Putting the brakes on this fun train. 🚂💨',
                   components: [],
+                  embeds: [],
                });
             }
          });
@@ -184,11 +224,18 @@ export default {
          cancelListener.stop();
 
          const finalMessage = cancelled
-            ? `Operation cancelled. ${successCount} messages sent, ${failureCount} failed.`
-            : `Finished! ${successCount} messages sent, ${failureCount} failed.`;
+            ? `Operation cancelled. ${successCount} people got a dose of fun, ${failureCount} missed out.`
+            : `Mission accomplished! ${successCount} people are now slightly happier, ${failureCount} need more coffee.`;
+
+         const finalEmbed = new EmbedBuilder()
+            .setColor(cancelled ? '#ff9999' : '#99ff99')
+            .setTitle(cancelled ? 'Fun Fiesta Fizzled Out 😢' : 'Epic Fun Mission Complete! 🎊')
+            .setDescription(finalMessage)
+            .setFooter({ text: 'Remember, laughter is the best medicine (except for actual medicine)' })
+            .setTimestamp();
 
          await interaction.editReply({
-            content: finalMessage,
+            embeds: [finalEmbed],
             components: [],
          });
       };
@@ -199,37 +246,21 @@ export default {
 
          if (result.success) {
             await interaction.reply({
-               content: `Message sent to ${user.tag}`,
+               content: `Message successfully sneaked into ${user.tag}'s DMs! 🕵️‍♂️`,
                ephemeral: true,
             });
          } else {
-            let errorMessage = `Failed to send message to ${user.tag}. `;
-            switch (result.reason) {
-               case 'DM_CLOSED':
-                  errorMessage += 'They have their DMs closed.';
-                  break;
-               case 'USER_NOT_FOUND':
-                  errorMessage += 'User not found.';
-                  break;
-               case 'MISSING_PERMISSIONS':
-                  errorMessage += 'Missing permissions to send message.';
-                  break;
-               case 'RATE_LIMIT':
-                  errorMessage += 'Rate limit hit. Please try again later.';
-                  break;
-               default:
-                  errorMessage += 'An unknown error occurred.';
-            }
-            await interaction.reply({ content: errorMessage, ephemeral: true });
+            const funnyMessage = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+            await interaction.reply({ content: `${funnyMessage} (Error: ${result.reason})`, ephemeral: true });
          }
       } else if (subcommand === 'role') {
          const role = interaction.options.getRole('target');
          const members = role.members;
-         await handleProcess(members, `members with the ${role.name} role`);
+         await handleProcess(members, `lucky ducks with the ${role.name} role`);
       } else if (subcommand === 'all') {
          const members = await interaction.guild.members.fetch();
          const humanMembers = members.filter((member) => !member.user.bot);
-         await handleProcess(humanMembers, 'members in the server');
+         await handleProcess(humanMembers, 'unsuspecting victims... I mean, valued server members');
       }
    },
 };

@@ -22,7 +22,11 @@ export default {
             .addChoices(
                { name: 'Random', value: 'random' },
                { name: 'Today', value: 'today' },
-               { name: 'Year', value: 'year' }
+               { name: 'Year', value: 'year' },
+               { name: 'Science', value: 'science' },
+               { name: 'History', value: 'history' },
+               { name: 'Math', value: 'math' },
+               { name: 'Animal', value: 'animal' }
             )
       )
       .toJSON(),
@@ -35,7 +39,7 @@ export default {
    userPermissionsBitField: [],
    bot: [],
    category: 'Misc',
-   cooldown: 19,
+   cooldown: 15,
    nsfwMode: false,
    testMode: false,
    devOnly: false,
@@ -53,18 +57,22 @@ export default {
             new ButtonBuilder()
                .setCustomId('regenerate_fact')
                .setLabel('Get New Fact')
-               .setStyle(ButtonStyle.Primary)
+               .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+               .setCustomId('share_fact')
+               .setLabel('Share Fact')
+               .setStyle(ButtonStyle.Secondary)
          );
 
          await interaction.editReply({ embeds: [embed], components: [row] });
 
          const filter = (i) =>
-            i.customId === 'regenerate_fact' &&
+            (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
             i.user.id === interaction.user.id;
 
          const collector = interaction.channel.createMessageComponentCollector({
             filter,
-            time: 60000,
+            time: 120000,
          });
 
          collector.on('collect', async (i) => {
@@ -72,6 +80,8 @@ export default {
                const newFact = await getFact(category);
                const newEmbed = createFactEmbed(newFact, category);
                await i.update({ embeds: [newEmbed], components: [row] });
+            } else if (i.customId === 'share_fact') {
+               await i.reply({ content: `${interaction.user} shared a fact: ${fact}`, allowedMentions: { parse: [] } });
             }
          });
 
@@ -81,6 +91,11 @@ export default {
                   .setCustomId('regenerate_fact')
                   .setLabel('Get New Fact')
                   .setStyle(ButtonStyle.Primary)
+                  .setDisabled(true),
+               new ButtonBuilder()
+                  .setCustomId('share_fact')
+                  .setLabel('Share Fact')
+                  .setStyle(ButtonStyle.Secondary)
                   .setDisabled(true)
             );
             await interaction.editReply({ components: [disabledRow] });
@@ -113,24 +128,55 @@ export default {
 };
 
 async function getFact(category) {
-   let url = 'https://uselessfacts.jsph.pl/random.json?language=en';
-
-   if (category === 'today') {
-      url = 'https://uselessfacts.jsph.pl/today.json?language=en';
-   } else if (category === 'year') {
-      const currentYear = new Date().getFullYear();
-      url = `https://numbersapi.com/${currentYear}/year`;
+   let url;
+   switch (category) {
+      case 'today':
+         url = 'https://uselessfacts.jsph.pl/today.json?language=en';
+         break;
+      case 'year':
+         const currentYear = new Date().getFullYear();
+         url = `https://numbersapi.com/${currentYear}/year`;
+         break;
+      case 'science':
+         url = 'https://uselessfacts.jsph.pl/random.json?language=en&category=science';
+         break;
+      case 'history':
+         url = 'https://uselessfacts.jsph.pl/random.json?language=en&category=history';
+         break;
+      case 'math':
+         url = 'https://numbersapi.com/random/math';
+         break;
+      case 'animal':
+         url = 'https://some-random-api.ml/animal/fact';
+         break;
+      default:
+         url = 'https://uselessfacts.jsph.pl/random.json?language=en';
    }
 
-   const response = await axios.get(url);
-   return category === 'year' ? response.data : response.data.text;
+   try {
+      const response = await axios.get(url, { timeout: 5000 });
+      return category === 'animal' ? response.data.fact : (category === 'year' || category === 'math' ? response.data : response.data.text);
+   } catch (error) {
+      console.error(`Error fetching fact from ${url}:`, error.message);
+      return 'Unable to fetch a fact at this time. Please try again later.';
+   }
 }
 
 function createFactEmbed(fact, category) {
+   const categoryIcons = {
+      random: '🎲',
+      today: '📅',
+      year: '🗓️',
+      science: '🔬',
+      history: '📜',
+      math: '🔢',
+      animal: '🐾'
+   };
+
    return new EmbedBuilder()
       .setColor(mConfig.embedColorSuccess)
-      .setTitle(`${category.charAt(0).toUpperCase() + category.slice(1)} Fact`)
+      .setTitle(`${categoryIcons[category] || '❓'} ${category.charAt(0).toUpperCase() + category.slice(1)} Fact`)
       .setDescription(fact)
-      .setFooter({ text: 'Click the button to get a new fact' })
+      .setFooter({ text: 'Click the button to get a new fact or share this fact' })
       .setTimestamp();
 }

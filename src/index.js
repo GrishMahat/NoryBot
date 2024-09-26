@@ -64,9 +64,7 @@ const main = async () => {
       errorHandler.initialize(client);
       client.errorHandler = errorHandler;
 
-      await client.login(
-         'MTI0Mjg5MjUwMjc2ODU0OTk2OQ.GZXEgc.876_Z6d81b3loURDEH3AZm1SXzN7sQhOEj4jLU'
-      );
+      await client.login(process.env.TOKEN);
    } catch (error) {
       console.error('ERROR: Logging into Discord failed:', error);
       process.exit(1);
