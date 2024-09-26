@@ -1,7 +1,7 @@
 {
   "name": "nory",
   "version": "0.9.8",
-  "description": "",
+  "description": "discord bot",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -9,7 +9,6 @@
     "dev": "nodemon src/index.js",
     "pre": "npx prettier --write .",
     "lint": "npx eslint . --fix",
-    "clean": "rm -rf dist",
     "precommit": "lint-staged",
     "prettify": "npx prettier --write .",
     "check-deps": "npm-check-updates",

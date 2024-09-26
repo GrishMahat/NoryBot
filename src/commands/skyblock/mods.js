@@ -1,14 +1,14 @@
 /** @format */
 
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import  ButtonPagination  from '../../utils/buttonPagination.js';
+import ButtonPagination from '../../utils/buttonPagination.js';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('mods')
-      .setDescription('Get a list of recommended Skyblock mods')
-      .setContexts()
-      .toJSON(),
+    .setDescription('Get a list of recommended Skyblock mods')
+    .setContexts()
+    .toJSON(),
   nwfwMode: false,
   testMode: false,
   devOnly: false,
@@ -190,10 +190,6 @@ export default {
 
         return embed;
       });
-       
-
-
-
 
       // Send the embed to the interaction channel
       await ButtonPagination(interaction, pages);
@@ -206,4 +202,3 @@ export default {
     }
   },
 };
-
