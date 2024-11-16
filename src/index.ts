@@ -52,7 +52,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.DirectMessages,
-      GatewayIntentBits.GuildVoiceStates,
+      // GatewayIntentBits.GuildVoiceStates,
     ],
   });
 
