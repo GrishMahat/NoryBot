@@ -41,6 +41,6 @@
     }
   },
 
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts",  "src/types/global.d.ts", "src/**/*.json"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

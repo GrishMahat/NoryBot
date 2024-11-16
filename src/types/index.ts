@@ -13,6 +13,7 @@ import {
   ModalSubmitInteraction,
   ChatInputCommandInteraction,
   TimestampStylesString,
+  AutocompleteInteraction,
 } from 'discord.js';
 
 // Define the structure of individual command options
@@ -50,7 +51,6 @@ export interface ApplicationCommandOption {
   options?: ApplicationCommandOption[];
 }
 
-
 // Define types for context and integration types
 export type ApplicationCommandType = 1 | 2 | 3 | 4;
 export type ApplicationCommandContextType = 0 | 1 | 2;
@@ -82,6 +82,10 @@ export interface LocalCommand {
   run: (
     client: Client,
     interaction: ChatInputCommandInteraction
+  ) => Promise<void>;
+  autocomplete?: (
+    client: Client,
+    interaction: AutocompleteInteraction
   ) => Promise<void>;
 }
 

@@ -29,6 +29,9 @@ const factCommand: LocalCommand = {
           { name: 'Animal', value: 'animal' }
         )
     )
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1])
+
     .toJSON(),
   userPermissions: [],
   botPermissions: [],

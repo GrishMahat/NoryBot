@@ -5,7 +5,6 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const beautifulCommand: LocalCommand = {
@@ -29,9 +28,10 @@ const beautifulCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client, interaction) => {
     try {
       await interaction.deferReply();
+      
 
       const targetUser =
         interaction.options.get('user')?.user || interaction.user;

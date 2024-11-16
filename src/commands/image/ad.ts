@@ -5,7 +5,6 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const admixCommand: LocalCommand = {
@@ -18,6 +17,9 @@ const admixCommand: LocalCommand = {
         .setDescription('User whose avatar you want to apply the effect to')
         .setRequired(false)
     )
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1])
+
     .toJSON(),
   userPermissions: [],
   botPermissions: [],
@@ -31,7 +33,8 @@ const admixCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const userOption = interaction.options.get('user')?.user || interaction.user;
+      const userOption =
+        interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = userOption.displayAvatarURL({
         extension: 'png',

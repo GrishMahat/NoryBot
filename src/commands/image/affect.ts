@@ -5,7 +5,6 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const affectCommand: LocalCommand = {
@@ -20,6 +19,9 @@ const affectCommand: LocalCommand = {
         .setDescription('The user to put in the affect meme')
         .setRequired(false)
     )
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1])
+
     .toJSON(),
   userPermissions: [],
   botPermissions: [],

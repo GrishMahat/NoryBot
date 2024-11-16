@@ -11,8 +11,15 @@ import os from 'os';
 const pingCommand: LocalCommand = {
   data: new SlashCommandBuilder()
     .setName('ping')
-    .setDescription('Shows detailed system statistics and bot performance metrics')
+    .setDescription(
+      'Shows detailed system statistics and bot performance metrics'
+    )
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1])
+
     .toJSON(),
+  devOnly: true,
+  
 
   run: async (client: Client, interaction: CommandInteraction) => {
     try {
@@ -41,16 +48,16 @@ const pingCommand: LocalCommand = {
       const cpuCount = os.cpus().length;
       const cpuModel = os.cpus()[0].model;
       const loadAvg = os.loadavg()[0];
-      const cpuUsage = (loadAvg * 100 / cpuCount).toFixed(2);
+      const cpuUsage = ((loadAvg * 100) / cpuCount).toFixed(2);
 
       // Calculate command execution time
       const execEnd = process.hrtime(execStart);
       const execTime = Math.round((execEnd[0] * 1e9 + execEnd[1]) / 1e6);
 
       const pongEmbed = new EmbedBuilder()
-        .setAuthor({ 
-          name: client.user?.username || 'Bot Status', 
-          iconURL: client.user?.displayAvatarURL() 
+        .setAuthor({
+          name: client.user?.username || 'Bot Status',
+          iconURL: client.user?.displayAvatarURL(),
         })
         .setTitle('📊 System Statistics')
         .setColor('#2F3136')
@@ -106,7 +113,7 @@ const pingCommand: LocalCommand = {
               `**Arch:** \`${os.arch()}\``,
             ].join('\n'),
             inline: true,
-          },
+          }
         )
         .setFooter({ text: `Last Updated • Host: ${os.hostname()}` })
         .setTimestamp();
@@ -115,7 +122,7 @@ const pingCommand: LocalCommand = {
     } catch (error) {
       console.error('Error in ping command:', error);
       await interaction.editReply({
-        content: '❌ An error occurred while fetching system statistics.'
+        content: '❌ An error occurred while fetching system statistics.',
       });
     }
   },

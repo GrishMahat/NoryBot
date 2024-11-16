@@ -222,7 +222,6 @@ const checkPermissions = (
 export default async (client: Client, interaction: Interaction): Promise<void> => {
 
   if (!interaction) {
-    console.error('Interaction is undefined');
     return;
   }
 

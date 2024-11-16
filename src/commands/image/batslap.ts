@@ -5,7 +5,6 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const batslapCommand: LocalCommand = {

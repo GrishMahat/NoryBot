@@ -21,6 +21,9 @@ const avatarCommand: LocalCommand = {
         .setDescription('User whose avatar you want to see')
         .setRequired(false)
     )
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1])
+
     .toJSON(),
 
   run: async (client: Client, interaction: CommandInteraction) => {
