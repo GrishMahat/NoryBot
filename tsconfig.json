@@ -1,0 +1,46 @@
+
+{
+  "compilerOptions": {
+    // Module settings for Node.js ESM
+    "target": "ES2022",
+    "module": "es2020",
+    "moduleResolution": "node",
+
+    // "allowJs": true,
+
+    // Output configuration
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "declaration": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "incremental": true,
+
+    // Decorator support
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    // Type checking and safety
+    "strict": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+
+    // Module resolution and imports
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+
+    // Type definitions
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
