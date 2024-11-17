@@ -6,43 +6,51 @@ import {
   ChatInputCommandInteraction,
   CacheType,
   InteractionEditReplyOptions,
-  MessagePayload
+  MessagePayload,
+  time,
 } from 'discord.js';
 import axios from 'axios';
 import fs from 'fs/promises';
 import path from 'path';
 import mConfig from '../../config/messageConfig';
+import emojiConfig from '../../config/emoji.js';
 import {
   commonCurrencies,
   allCurrencies,
   Currency,
 } from '../../types/currency.js';
 
-const apiUrl = 'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
-const CACHE_FILE = path.join(process.cwd(), 'src/assets/json/exchangeRates.json');
+const apiUrl =
+  'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
+const CACHE_FILE = path.join(
+  process.cwd(),
+  'src/assets/json/exchangeRates.json'
+);
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
 const currencyCommand: LocalCommand = {
   data: new SlashCommandBuilder()
     .setName('currency_converter')
     .setDescription('Convert an amount between currencies')
-    .addNumberOption(option =>
+    .addNumberOption((option) =>
       option
         .setName('amount')
         .setDescription('The amount of money to convert')
         .setRequired(true)
     )
-    .addStringOption(option =>
+    .addStringOption((option) =>
       option
         .setName('source_currency')
         .setDescription('The currency you want to convert from (e.g., USD)')
         .setRequired(true)
         .setAutocomplete(true)
     )
-    .addStringOption(option =>
+    .addStringOption((option) =>
       option
         .setName('target_currency')
-        .setDescription('The currency you want to convert to (e.g., EUR,GBP,JPY)')
+        .setDescription(
+          'The currency you want to convert to (e.g., EUR,GBP,JPY)'
+        )
         .setRequired(true)
         .setAutocomplete(true)
     )
@@ -57,69 +65,98 @@ const currencyCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client<boolean>, interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
+  run: async (
+    client: Client<boolean>,
+    interaction: ChatInputCommandInteraction<CacheType>
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
       const amount = interaction.options.getNumber('amount', true);
-      const sourceCurrency = interaction.options.getString('source_currency', true).toUpperCase();
-      const targetCurrencies = interaction.options.getString('target_currency', true)
+      const sourceCurrency = interaction.options
+        .getString('source_currency', true)
+        .toUpperCase();
+      const targetCurrencies = interaction.options
+        .getString('target_currency', true)
         .toUpperCase()
         .split(',')
-        .map(c => c.trim());
+        .map((c) => c.trim());
 
       const exchangeRates = await getExchangeRates();
 
       // Validate all currencies
       const invalidCurrencies = [sourceCurrency, ...targetCurrencies].filter(
-        currency => !exchangeRates[currency]
+        (currency) => !exchangeRates[currency]
       );
 
       if (invalidCurrencies.length > 0) {
         await interaction.editReply({
-          content: `❌ The following currencies are not supported: ${invalidCurrencies.join(', ')}`
+          content: `❌ The following currencies are not supported: ${invalidCurrencies.join(
+            ', '
+          )}`,
         });
         return;
       }
 
       const embed = new EmbedBuilder()
-        .setColor('#36393f') // Discord dark theme color
-        .setTitle('🌍 International Currency Exchange')
-        .setDescription([
-          '```ml',
-          `From: ${getFlag(sourceCurrency)} ${sourceCurrency}`,
-          `Amount: ${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sourceCurrency}`,
-          '```',
-          '\n📊 **Exchange Results:**'
-        ].join('\n'))
+        .setColor('#2b2d31') // Modern Discord theme color
+        .setTitle(`${emojiConfig.money} International Currency Exchange`)
+        .setDescription(
+          [
+            '```ml',
+            `From: ${getFlag(sourceCurrency)} ${sourceCurrency}`,
+            `Amount: ${amount.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })} ${sourceCurrency}`,
+            '```',
+            `\n${emojiConfig.chart_increasing} **Exchange Results:**`,
+          ].join('\n')
+        );
 
       // Add conversions for each target currency
-      targetCurrencies.forEach(targetCurrency => {
-        const convertedAmount = (amount / exchangeRates[sourceCurrency]) * exchangeRates[targetCurrency];
-        const exchangeRate = exchangeRates[targetCurrency] / exchangeRates[sourceCurrency];
+      targetCurrencies.forEach((targetCurrency) => {
+        const convertedAmount =
+          (amount / exchangeRates[sourceCurrency]) *
+          exchangeRates[targetCurrency];
+        const exchangeRate =
+          exchangeRates[targetCurrency] / exchangeRates[sourceCurrency];
 
         embed.addFields({
           name: `${getFlag(targetCurrency)} ${targetCurrency}`,
           value: [
             '```swift',
-            `Converted: ${convertedAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${targetCurrency}`,
-            `Rate: 1 ${sourceCurrency} = ${exchangeRate.toFixed(4)} ${targetCurrency}`,
-            `Inverse: 1 ${targetCurrency} = ${(1/exchangeRate).toFixed(4)} ${sourceCurrency}`,
-            '```'
+            `Converted: ${convertedAmount.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })} ${targetCurrency}`,
+            `Rate: 1 ${sourceCurrency} = ${exchangeRate.toFixed(
+              4
+            )} ${targetCurrency}`,
+            `Inverse: 1 ${targetCurrency} = ${(1 / exchangeRate).toFixed(
+              4
+            )} ${sourceCurrency}`,
+            '```',
           ].join('\n'),
-          inline: true
+          inline: true,
         });
       });
 
       const lastUpdated = new Date(exchangeRates['timestamp'] || Date.now());
+
       embed
         .addFields({
-          name: '\u200b',
-          value: '\u200b',
-          inline: false
+          name: `${emojiConfig.statistics} Exchange Rate Information`,
+          value: [
+            `• Next Update: <t:${Math.floor((lastUpdated.getTime() + CACHE_DURATION) / 1000)}:R>`,
+            `• Last Updated: <t:${Math.floor(lastUpdated.getTime() / 1000)}:F>`,
+            `• Available Currencies: ${Object.keys(exchangeRates).length - 1}`,
+          ].join('\n'),
+          inline: false,
         })
-        .setFooter({ 
-          text: `Last Updated: ${lastUpdated.toLocaleString()} • Powered by ExchangeRate-API` 
+        .setFooter({
+          text: `Requested by ${interaction.user.tag} • Data updates every 4 hours`,
+          iconURL: interaction.user.displayAvatarURL(),
         })
         .setTimestamp();
 
@@ -127,7 +164,8 @@ const currencyCommand: LocalCommand = {
     } catch (error) {
       console.error('Error in currency conversion:', error);
       await interaction.editReply({
-        content: '❌ An error occurred while converting currencies. Please try again later.'
+        content:
+          '❌ An error occurred while converting currencies. Please try again later.',
       });
     }
   },
@@ -293,7 +331,6 @@ function getFlag(currency: string): string {
   };
   return flagMap[currency] || '🏳️';
 }
-
 
 async function getExchangeRates(): Promise<Record<string, number>> {
   try {

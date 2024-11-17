@@ -10,6 +10,7 @@ import {
   version as discordVersion,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
+import emojiConfig from '../../config/emoji.js';
 
 const avatarCommand: LocalCommand = {
   data: new SlashCommandBuilder()
@@ -23,7 +24,6 @@ const avatarCommand: LocalCommand = {
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
-
     .toJSON(),
 
   run: async (client: Client, interaction: CommandInteraction) => {
@@ -55,19 +55,24 @@ const avatarCommand: LocalCommand = {
       );
 
       const embedDescription = [
-        `👤 **User:** ${targetUser.toString()} (${targetUser.id})`,
-        `🔷 **Global Avatar:** ${targetUser.avatar ? '✅' : '❌'}`,
-        `🔶 **Server Avatar:** ${targetMember.avatar ? '✅' : '❌'}`,
-        `🎬 **Animated:** ${targetUser.avatar?.startsWith('a_') ? '✅' : '❌'}`,
-        `📏 **Available Sizes:** ${sizes.join(', ')}px`,
+        `${emojiConfig.user} **User:** ${targetUser.toString()} (${targetUser.id})`,
+        `${emojiConfig.avatar_gold} **Global Avatar:** ${targetUser.avatar ? emojiConfig.yestag : emojiConfig.notag}`,
+        `${emojiConfig.avatar_gold} **Server Avatar:** ${targetMember.avatar ? emojiConfig.yestag : emojiConfig.notag}`,
+        `${emojiConfig.GIF_Animation} **Animated:** ${targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_') ? emojiConfig.yestag : emojiConfig.notag}`,
+        `${emojiConfig.avatar_platinum} **Available Sizes:** ${sizes.join(', ')}px`,
       ];
 
+      // Check for banner and handle GIF banners
       if (targetUser.banner) {
-        embedDescription.push(
-          `🎌 **Banner:** [View Banner](${targetUser.bannerURL({
-            size: 4096,
-          })})`
-        );
+        const bannerURL = targetUser.bannerURL({
+          size: 4096,
+          extension: targetUser.banner.startsWith('a_') ? 'gif' : 'png'
+        });
+        if (bannerURL) {
+          embedDescription.push(
+            `🎌 **Banner:** [View Banner](${bannerURL})`
+          );
+        }
       }
 
       const embed = new EmbedBuilder()
@@ -75,9 +80,12 @@ const avatarCommand: LocalCommand = {
           name: targetUser.tag,
           iconURL: targetUser.displayAvatarURL({ extension: 'png', size: 16 }),
         })
-        .setTitle('🖼️ Avatar Information')
+        .setTitle(`${emojiConfig.avatar_diamond} Avatar Information`)
         .setDescription(embedDescription.join('\n'))
-        .setImage(defaultAvatar)
+        .setImage(targetUser.displayAvatarURL({ 
+          size: 4096,
+          extension: targetUser.avatar?.startsWith('a_') ? 'gif' : 'png'
+        }))
         .setColor(targetMember.displayColor || '#2F3136')
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -92,7 +100,7 @@ const avatarCommand: LocalCommand = {
     } catch (error) {
       console.error('Error in avatar command:', error);
       await interaction.editReply({
-        content: '❌ An error occurred while fetching the user avatar.',
+        content: `${emojiConfig.notag} An error occurred while fetching the user avatar.`,
       });
     }
   },
