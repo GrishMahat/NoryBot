@@ -1,10 +1,11 @@
-import { DiscordAPIError, } from "discord.js"
+import { DiscordAPIError } from 'discord.js';
+
 /**
  * Determines the category of an error
  * @param error The error to determine the category of
  * @returns The category of the error
  */
-export default function determineErrorCategory(error: DiscordAPIError): string { 
+export default function determineErrorCategory(error: DiscordAPIError): string {
   if (error instanceof DiscordAPIError) {
     switch (error.code) {
       case 10001:
@@ -270,7 +271,6 @@ export default function determineErrorCategory(error: DiscordAPIError): string {
       default:
         return 'Unknown Discord API Error';
     }
-
   }
   /* !fix this later 
   const message = error.message.toLowerCase()|| '';

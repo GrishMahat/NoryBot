@@ -8,9 +8,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  GuildMember,
 } from 'discord.js';
-import { LocalContextMenu } from '../../types/index.js';
+import { LocalContextMenu } from '@/src/types';
 
 const UserAvatarContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()

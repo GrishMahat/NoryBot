@@ -3,12 +3,8 @@ import {
   SlashCommandBuilder,
   CommandInteraction,
   Client,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   AttachmentBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const blurCommand: LocalCommand = {
@@ -60,25 +56,24 @@ const blurCommand: LocalCommand = {
       // Create an attachment using AttachmentBuilder
       const attachment = new AttachmentBuilder(img).setName('blur.png');
 
-            const embed = new EmbedBuilder()
-              .setTitle('🌫️ Blur Effect')
-              .setColor('Blue')
-              .setDescription(`${user.toString()}'s avatar has been blurred!`)
-              .addFields(
-                {
-                  name: 'Requested by',
-                  value: interaction.user.toString(),
-                  inline: true,
-                },
-                { name: 'Blur Level', value: `\`${blurLevel}\``, inline: true },
-
-              )
-              .setImage('attachment://blur.png')
-              .setTimestamp()
-              .setFooter({
-                text: 'Nory',
-                iconURL: client.user.displayAvatarURL(),
-              });
+      const embed = new EmbedBuilder()
+        .setTitle('🌫️ Blur Effect')
+        .setColor('Blue')
+        .setDescription(`${user.toString()}'s avatar has been blurred!`)
+        .addFields(
+          {
+            name: 'Requested by',
+            value: interaction.user.toString(),
+            inline: true,
+          },
+          { name: 'Blur Level', value: `\`${blurLevel}\``, inline: true }
+        )
+        .setImage('attachment://blur.png')
+        .setTimestamp()
+        .setFooter({
+          text: 'Nory',
+          iconURL: client.user.displayAvatarURL(),
+        });
 
       // Send the image as a reply
       await interaction.editReply({

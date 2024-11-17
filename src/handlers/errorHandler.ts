@@ -1,16 +1,22 @@
-import { WebhookClient, EmbedBuilder, Events, Client, DiscordAPIError } from 'discord.js';
+import {
+  WebhookClient,
+  EmbedBuilder,
+  Events,
+  Client,
+  DiscordAPIError,
+} from 'discord.js';
 import { createHash } from 'crypto';
-import { 
-    ErrorInfo, 
-    ErrorHandlerConfig, 
-    ErrorSeverity, 
-    ErrorDetails, 
-    ErrorGroup, 
-    ErrorContext, 
-    ErrorMetrics,
-    PerformanceMetrics,
-    ShardStats,
-    ShardStatus 
+import {
+  ErrorInfo,
+  ErrorHandlerConfig,
+  ErrorSeverity,
+  ErrorDetails,
+  ErrorGroup,
+  ErrorContext,
+  ErrorMetrics,
+  PerformanceMetrics,
+  ShardStats,
+  ShardStatus,
 } from '../types/error.js';
 import determineErrorCategory from '../utils/error/determineErrorCategory.js';
 import getRecoverySuggestions from '../utils/error/getRecoverySuggestions.js';
@@ -145,10 +151,10 @@ class ErrorHandler {
   private isErrorRecoverable(error: Error): boolean {
     if (error instanceof DiscordAPIError) {
       // Check if error.code is a number before performing the includes check
-        const recoverableCodes = [
-          50001, 50013, 50014, 40001, 40002, 10003, 10008, 10011, 10015, 50035,
-          50036,
-        ];
+      const recoverableCodes = [
+        50001, 50013, 50014, 40001, 40002, 10003, 10008, 10011, 10015, 50035,
+        50036,
+      ];
       return (
         typeof error.code === 'number' && !recoverableCodes.includes(error.code)
       );

@@ -343,13 +343,13 @@ async function getExchangeRates(): Promise<Record<string, number>> {
     } catch {
       cacheExists = false;
     }
-    
+
     if (cacheExists) {
       try {
         const cacheContent = await fs.readFile(CACHE_FILE, 'utf-8');
         if (cacheContent) {
           const cacheData = JSON.parse(cacheContent);
-          
+
           if (Date.now() - cacheData.timestamp < CACHE_DURATION) {
             return { ...cacheData.rates, timestamp: cacheData.timestamp };
           }
@@ -363,11 +363,11 @@ async function getExchangeRates(): Promise<Record<string, number>> {
     const timestamp = Date.now();
     const newData = {
       timestamp,
-      rates: response.data.conversion_rates
+      rates: response.data.conversion_rates,
     };
-    
+
     await fs.writeFile(CACHE_FILE, JSON.stringify(newData, null, 2));
-    
+
     return { ...newData.rates, timestamp };
   } catch (error) {
     console.error('Error fetching exchange rates:', error);

@@ -28,11 +28,11 @@ const emojiConfig: EmojiConfig = {
   cpu: '<:CPU:1307560976077426728>',
   OfficeComputer: '<a:OldOfficeComputer:1307561506925314089>',
   user: '<:User:1307562047311052852>',
-  avatar_gold:'<:avatar_gold:1307562727597936761>',
+  avatar_gold: '<:avatar_gold:1307562727597936761>',
   avatar_diamond: '<:avatar_diamond:1307562756802613298>',
   avatar_platinum: '<:avatar_platinum:1307562799978909766>',
-  GIF_Animation:'<a:GIF_Animation:1307563865050972270>',
-  money:'<:money:1307565726105604136>',
+  GIF_Animation: '<a:GIF_Animation:1307563865050972270>',
+  money: '<:money:1307565726105604136>',
 };
 
 export default emojiConfig;

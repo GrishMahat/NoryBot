@@ -1,6 +1,7 @@
 import 'colors';
 import { Client } from 'discord.js';
 import mongoose from 'mongoose';
+
 const mongoURI = process.env.MONGODB_TOKEN;
 
 /**
@@ -54,7 +55,9 @@ const formatLogOutput = (config: LogConfig): void => {
   console.log(SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH).cyan);
   console.log(`Servers  : ${config.serverCount.toString().yellow}`);
   console.log(`Users    : ${config.userCount.toString().yellow}`);
-  console.log(`Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}`);
+  console.log(
+    `Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}`
+  );
   console.log(SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH).cyan);
 };
 
@@ -65,17 +68,17 @@ const formatLogOutput = (config: LogConfig): void => {
  * @param {Client} client - Discord.js client instance
  * @returns {Promise<void>} Resolves when logging is complete
  * @throws {Error} Database connection errors or general execution errors
- * 
+ *
  * @description
  * This function performs the following operations:
  * 1. Retrieves bot statistics from the Discord client
  * 2. Attempts to establish a database connection
  * 3. Formats and displays the information in the console
  * 4. Ensures proper database disconnection
- * 
+ *
  * @example
  * await consoleLog(discordClient);
- * 
+ *
  * @see {@link LogConfig} for the structure of logging configuration
  * @see {@link formatLogOutput} for console output formatting
  */
@@ -91,20 +94,26 @@ const consoleLog = async (client: Client): Promise<void> => {
     };
 
     try {
-    mongoose.set('strictQuery', true);
+      mongoose.set('strictQuery', true);
 
-    await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 15000,
-    });
+      await mongoose.connect(mongoURI, {
+        serverSelectionTimeoutMS: 15000,
+      });
       logConfig.dbStatus = 'connected';
     } catch (error) {
-      console.error('Database connection error:', error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        'Database connection error:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
       logConfig.dbStatus = 'disconnected';
     }
 
     formatLogOutput(logConfig);
   } catch (error) {
-    console.error('Error in consoleLog:'.red, error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      'Error in consoleLog:'.red,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
   } finally {
     await mongoose
       .disconnect()
@@ -114,7 +123,6 @@ const consoleLog = async (client: Client): Promise<void> => {
           error instanceof Error ? error.message : 'Unknown error'
         )
       );
-
   }
 };
 

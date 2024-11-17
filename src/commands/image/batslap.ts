@@ -43,7 +43,7 @@ const batslapCommand: LocalCommand = {
         interaction.options.get('slapper')?.user || interaction.user;
 
       if (!targetUser) {
-        return
+        return;
       }
 
       const targetAvatar = targetUser.displayAvatarURL({

@@ -1,4 +1,4 @@
-export type Currency = string; 
+export type Currency = string;
 
 export const commonCurrencies: Currency[] = [
   'USD',

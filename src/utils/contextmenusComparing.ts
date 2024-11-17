@@ -57,9 +57,9 @@ const compareContextMenuCommands = (
 
   interface Comparison {
     key: string;
-    existing: any;
-    local: any;
-    defaultValue: any;
+    existing: unknown;
+    local: unknown;
+    defaultValue: unknown;
   }
 
   const comparisons: Comparison[] = [

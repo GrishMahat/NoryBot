@@ -15,7 +15,7 @@ import LRUCache from '../utils/Cache/LRUCache.js';
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = path.dirname(__filename);
 
-/** 
+/**
  * Cache to store loaded event modules to prevent redundant imports
  * @type {LRUCache<string, EventInfo>}
  */
@@ -26,7 +26,7 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
   evictionPolicy: 'LRU',
   onExpiry: (key, value) => {
     console.log(`Event module cache expired: ${key}`.yellow);
-  }
+  },
 });
 
 /**
@@ -66,7 +66,7 @@ const loadEventFile = async (
 
     const fileUrl = pathToFileURL(eventFile).href;
     const { default: eventFunction } = await import(fileUrl);
-    
+
     if (typeof eventFunction !== 'function') {
       throw new EventError('Invalid event handler', { eventFile });
     }
@@ -80,10 +80,9 @@ const loadEventFile = async (
     eventModuleCache.set(eventFile, eventInfo);
     registerEvent(eventRegistry, eventName, eventInfo);
   } catch (error) {
-    throw new EventError(
-      `Failed to load event file: ${eventFile}`,
-      { cause: error }
-    );
+    throw new EventError(`Failed to load event file: ${eventFile}`, {
+      cause: error,
+    });
   }
 };
 
@@ -99,30 +98,31 @@ const processEventFolder = async (
 ): Promise<void> => {
   try {
     const files = await fs.readdir(eventFolder);
-    const eventName = path.basename(eventFolder) === 'validations' 
-      ? 'interactionCreate' 
-      : path.basename(eventFolder);
+    const eventName =
+      path.basename(eventFolder) === 'validations'
+        ? 'interactionCreate'
+        : path.basename(eventFolder);
 
-    const eventFiles = files.filter(file => 
-      /\.(js|ts)$/.test(file) && 
-      !file.endsWith('.d.ts') && 
-      !file.endsWith('.js.map')
+    const eventFiles = files.filter(
+      (file) =>
+        /\.(js|ts)$/.test(file) &&
+        !file.endsWith('.d.ts') &&
+        !file.endsWith('.js.map')
     );
 
     await Promise.all(
-      eventFiles.map(file => 
+      eventFiles.map((file) =>
         loadEventFile(
           path.join(eventFolder, file),
           eventName,
           eventRegistry
-        ).catch(error => console.error(error))
+        ).catch((error) => console.error(error))
       )
     );
   } catch (error) {
-    throw new EventError(
-      `Failed to process event folder: ${eventFolder}`,
-      { cause: error }
-    );
+    throw new EventError(`Failed to process event folder: ${eventFolder}`, {
+      cause: error,
+    });
   }
 };
 
@@ -130,7 +130,7 @@ const processEventFolder = async (
  * Main function to load and register all event handlers for the Discord client
  * @param {Client} client - The Discord.js client instance
  * @throws {EventError} When event handler setup fails
- * 
+ *
  * @remarks
  * This function performs the following steps:
  * 1. Discovers all event folders in the events directory
@@ -149,9 +149,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
     );
 
     await Promise.all(
-      eventFolders.map(folder => 
-        processEventFolder(folder, eventRegistry)
-      )
+      eventFolders.map((folder) => processEventFolder(folder, eventRegistry))
     );
 
     for (const [eventName, handlers] of eventRegistry) {
@@ -165,10 +163,10 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
             await Promise.resolve(handler(client, ...args));
           } catch (error) {
             console.error(
-              new EventError(
-                `Handler execution failed: ${fileName}`,
-                { eventName, error }
-              )
+              new EventError(`Handler execution failed: ${fileName}`, {
+                eventName,
+                error,
+              })
             );
           }
         }
@@ -184,6 +182,5 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
 export const cleanup = () => {
   eventModuleCache.close();
 };
-
 
 export default loadEventHandlers;

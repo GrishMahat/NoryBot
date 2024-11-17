@@ -66,12 +66,10 @@ const avatarCommand: LocalCommand = {
       if (targetUser.banner) {
         const bannerURL = targetUser.bannerURL({
           size: 4096,
-          extension: targetUser.banner.startsWith('a_') ? 'gif' : 'png'
+          extension: targetUser.banner.startsWith('a_') ? 'gif' : 'png',
         });
         if (bannerURL) {
-          embedDescription.push(
-            `🎌 **Banner:** [View Banner](${bannerURL})`
-          );
+          embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
         }
       }
 
@@ -82,10 +80,12 @@ const avatarCommand: LocalCommand = {
         })
         .setTitle(`${emojiConfig.avatar_diamond} Avatar Information`)
         .setDescription(embedDescription.join('\n'))
-        .setImage(targetUser.displayAvatarURL({ 
-          size: 4096,
-          extension: targetUser.avatar?.startsWith('a_') ? 'gif' : 'png'
-        }))
+        .setImage(
+          targetUser.displayAvatarURL({
+            size: 4096,
+            extension: targetUser.avatar?.startsWith('a_') ? 'gif' : 'png',
+          })
+        )
         .setColor(targetMember.displayColor || '#2F3136')
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,

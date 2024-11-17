@@ -1,8 +1,6 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
-  Client,
   AttachmentBuilder,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
@@ -31,7 +29,6 @@ const beautifulCommand: LocalCommand = {
   run: async (client, interaction) => {
     try {
       await interaction.deferReply();
-      
 
       const targetUser =
         interaction.options.get('user')?.user || interaction.user;
