@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import os from 'os';
+import emojiConfig from '../../config/emoji.js';
 
 const pingCommand: LocalCommand = {
   data: new SlashCommandBuilder()
@@ -16,16 +17,15 @@ const pingCommand: LocalCommand = {
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
-
     .toJSON(),
   devOnly: true,
-  
 
   run: async (client: Client, interaction: CommandInteraction) => {
     try {
       const execStart = process.hrtime();
       const startTime = Date.now();
-      const message = await interaction.deferReply({ fetchReply: true });
+      await interaction.deferReply();
+      const message = await interaction.fetchReply();
       const endTime = Date.now();
 
       const botLatency = endTime - startTime;
@@ -59,60 +59,64 @@ const pingCommand: LocalCommand = {
           name: client.user?.username || 'Bot Status',
           iconURL: client.user?.displayAvatarURL(),
         })
-        .setTitle('📊 System Statistics')
-        .setColor('#2F3136')
-        .setThumbnail(client.user?.displayAvatarURL() || '')
+        .setTitle(`${emojiConfig.statistics} System Statistics`)
+        .setColor('#2b2d31')
         .addFields(
           {
-            name: '🤖 Bot Performance',
+            name: `${emojiConfig.OfficeComputer} Bot Performance`,
             value: [
-              `**Bot Latency:** \`${botLatency}ms\``,
-              `**API Latency:** \`${apiLatency}ms\``,
-              `**Execution Time:** \`${execTime}ms\``,
-              `**Discord.js:** \`v${discordVersion}\``,
+              `${emojiConfig.goodconnection} Bot Latency: \`${botLatency}ms\``,
+              `${emojiConfig.lowconnection} API Latency: \`${apiLatency}ms\``,
+              `${emojiConfig.chart_increasing} Execution Time: \`${execTime}ms\``,
+              `${emojiConfig.live} Discord.js: \`v${discordVersion}\``
             ].join('\n'),
-            inline: false,
+            inline: false
           },
           {
-            name: '📈 Bot Statistics',
+            name: `${emojiConfig.statistics} Bot Statistics`,
             value: [
-              `**Servers:** \`${client.guilds.cache.size}\``,
-              `**Users:** \`${client.users.cache.size}\``,
-              `**Channels:** \`${client.channels.cache.size}\``,
+              `${emojiConfig.admintag} Servers: \`${client.guilds.cache.size}\``,
+              `${emojiConfig.user} Users: \`${client.users.cache.size}\``,
+              `${emojiConfig.mic} Channels: \`${client.channels.cache.size}\``
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
-            name: '⏰ Uptime',
+            name: `${emojiConfig.chart_increasing} Uptime`,
             value: `\`${days}d ${hours}h ${minutes}m ${seconds}s\``,
-            inline: true,
+            inline: true
           },
           {
-            name: '💾 Memory',
-            value: [
-              `**Used:** \`${usedMemory} MB\``,
-              `**Total:** \`${totalMemory} GB\``,
-              `**Free:** \`${freeMemory} GB\``,
-            ].join('\n'),
-            inline: true,
+            name: '\u200b',
+            value: '\u200b',
+            inline: true
           },
           {
-            name: '🔧 CPU',
+            name: `${emojiConfig.statistics} Memory`,
             value: [
-              `**Model:** \`${cpuModel.split(' ')[0]}\``,
-              `**Cores:** \`${cpuCount}\``,
-              `**Usage:** \`${cpuUsage}%\``,
+              `${emojiConfig.yestag} Used: \`${usedMemory} MB\``,
+              `${emojiConfig.yestag} Total: \`${totalMemory} GB\``,
+              `${emojiConfig.yestag} Free: \`${freeMemory} GB\``
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
-            name: '💻 System',
+            name: `${emojiConfig.cpu} CPU`,
             value: [
-              `**OS:** \`${os.platform()} ${os.release()}\``,
-              `**Node:** \`${process.version}\``,
-              `**Arch:** \`${os.arch()}\``,
+              `${emojiConfig.yestag} Model: \`${cpuModel.split(' ')[0]}\``,
+              `${emojiConfig.yestag} Cores: \`${cpuCount}\``,
+              `${emojiConfig.yestag} Usage: \`${cpuUsage}%\``
             ].join('\n'),
-            inline: true,
+            inline: true
+          },
+          {
+            name: `${emojiConfig.OfficeComputer} System`,
+            value: [
+              `${emojiConfig.yestag} OS: \`${os.platform()} ${os.release()}\``,
+              `${emojiConfig.yestag} Node: \`${process.version}\``,
+              `${emojiConfig.yestag} Arch: \`${os.arch()}\``
+            ].join('\n'),
+            inline: false
           }
         )
         .setFooter({ text: `Last Updated • Host: ${os.hostname()}` })
@@ -122,7 +126,7 @@ const pingCommand: LocalCommand = {
     } catch (error) {
       console.error('Error in ping command:', error);
       await interaction.editReply({
-        content: '❌ An error occurred while fetching system statistics.',
+        content: `${emojiConfig.notag} An error occurred while fetching system statistics.`,
       });
     }
   },
