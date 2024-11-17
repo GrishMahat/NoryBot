@@ -53,11 +53,10 @@ const messageCommand: LocalCommand = {
         .setName('anonymous')
         .setDescription('Send the message anonymously (hides sender)')
     )
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
     .toJSON(),
 
   category: 'Moderation',
-  cooldown: 5,
+  cooldown: 60,
   nsfwMode: false,
   testMode: false,
   devOnly: true,
