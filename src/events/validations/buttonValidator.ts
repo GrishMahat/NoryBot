@@ -13,7 +13,6 @@ import mConfig from '../../config/messageConfig.js';
 import getButtons from '../../utils/getButtons.js';
 import { Button } from '../../types/index.js';
 
-
 class LRUCache<K, V> {
   private capacity: number;
   private cache: Map<K, V>;
@@ -79,9 +78,7 @@ const checkPermissions = (
     )
   );
 
-const loadButtons = async (
-  retryCount: number = 0
-): Promise<void> => {
+const loadButtons = async (retryCount: number = 0): Promise<void> => {
   try {
     const buttonFiles: Button[] = await getButtons();
     for (const button of buttonFiles) {
@@ -111,7 +108,7 @@ const loadButtons = async (
     if (retryCount < 3) {
       console.log(`Retrying button load... (Attempt ${retryCount + 1})`.yellow);
       await new Promise((resolve) => setTimeout(resolve, 5000));
-      await loadButtons( retryCount + 1);
+      await loadButtons(retryCount + 1);
     } else {
       console.error('Failed to load buttons after 3 attempts'.red);
     }

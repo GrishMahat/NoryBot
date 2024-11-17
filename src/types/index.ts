@@ -42,6 +42,7 @@ export interface Command {
   integrationTypes?: number[];
   run: (client: Client, interaction: CommandInteraction) => Promise<void>;
 }
+
 export interface ApplicationCommandOption {
   type: ApplicationCommandOptionType;
   name: string;
@@ -103,7 +104,6 @@ export interface LocalContextMenu {
   ) => Promise<void>;
 }
 
-
 export interface SelectMenu {
   customId: string;
   run: (
@@ -120,6 +120,7 @@ export interface SelectMenu {
     botPermissions: (interaction: StringSelectMenuInteraction) => boolean;
   };
 }
+
 export interface Button {
   customId: string;
   devOnly?: boolean;

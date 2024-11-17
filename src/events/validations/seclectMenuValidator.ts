@@ -131,7 +131,6 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
   }
 };
 
-
 const handleSelectMenu = async (
   client: Client,
   interaction: StringSelectMenuInteraction

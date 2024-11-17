@@ -86,7 +86,7 @@ const clownCommand: LocalCommand = {
         .setTimestamp();
 
       await interaction.editReply({
-        embeds: [errorEmbed] ,
+        embeds: [errorEmbed],
       });
     }
   },

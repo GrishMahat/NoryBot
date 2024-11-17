@@ -83,8 +83,8 @@ async function getFact(category: string): Promise<string> {
     return category === 'animal'
       ? response.data.fact
       : category === 'year' || category === 'math'
-      ? response.data
-      : response.data.text;
+        ? response.data
+        : response.data.text;
   } catch (error) {
     console.error(`Error fetching fact from ${url}:`, error);
     return 'Unable to fetch a fact at this time. Please try again later.';

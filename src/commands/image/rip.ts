@@ -30,7 +30,7 @@ const ripCommand: LocalCommand = {
   run: async (client: Client, interaction: CommandInteraction) => {
     try {
       const targetUser =
-        interaction.options.get('user')?.user || interaction.user; 
+        interaction.options.get('user')?.user || interaction.user;
 
       // Start processing
       await interaction.deferReply();

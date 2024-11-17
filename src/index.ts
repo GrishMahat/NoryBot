@@ -1,5 +1,5 @@
-import "dotenv/config";
-import { Client, GatewayIntentBits } from "discord.js";
+import 'dotenv/config';
+import { Client, GatewayIntentBits } from 'discord.js';
 import loadEventHandlers from './handlers/eventHandler.js';
 import ErrorHandler from './handlers/errorHandler.js';
 
@@ -16,19 +16,19 @@ const errorHandler = new ErrorHandler({
     logToFile: true,
     alertThreshold: 10,
     metricsInterval: 5 * 60 * 1000,
-  }
+  },
 });
 
 /**
  * Initializes a Discord client with the specified intents and loads event handlers.
- * This function creates a new Discord.js client, configures it with the necessary 
+ * This function creates a new Discord.js client, configures it with the necessary
  * intents, and loads the event handlers before logging in using the provided token.
  *
  * @async
  * @function initializeClient
  * @returns {Promise<Client<boolean>>} A promise that resolves to the initialized Discord client instance.
  * @throws {Error} If the client fails to login, an error is thrown with the relevant message.
- * 
+ *
  * @example
  * // Basic usage example
  * initializeClient()
@@ -70,15 +70,15 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 
 /**
  * Main function to initialize the Discord client and set up additional services like the email server.
- * This function calls `initializeClient()` to start the bot, then calls `setupEmailServer()` 
- * to set up an email system associated with the bot. Handles errors with proper logging and exits the process 
+ * This function calls `initializeClient()` to start the bot, then calls `setupEmailServer()`
+ * to set up an email system associated with the bot. Handles errors with proper logging and exits the process
  * if initialization fails.
  *
  * @async
  * @function main
  * @returns {Promise<void>} A promise that resolves when both the Discord client and email server are set up successfully.
  * @throws {Error} If either the Discord client initialization or the email server setup fails, an error is thrown and logged.
- * 
+ *
  * @example
  * // Basic usage example
  * main()
@@ -86,7 +86,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
  *     console.error('An unhandled error occurred in the main function:', error);
  *   });
  *
- * @note It's crucial to handle unhandled rejections to avoid silent failures. 
+ * @note It's crucial to handle unhandled rejections to avoid silent failures.
  * Exiting the process with a non-zero status code ensures the application can be restarted.
  *
  * @since 0.0.1
@@ -96,7 +96,6 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 const main = async (): Promise<void> => {
   try {
     const client = await initializeClient();
-
   } catch (error) {
     // Use error handler for main process errors
     await errorHandler.handleError(error, 'MainProcessError');

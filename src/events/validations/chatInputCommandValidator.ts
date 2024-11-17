@@ -1,13 +1,18 @@
 import 'colors';
-import { EmbedBuilder, Collection, Client, CommandInteraction, Interaction, ColorResolvable, PermissionsBitField, TextChannel, NewsChannel } from 'discord.js';
+import {
+  EmbedBuilder,
+  Collection,
+  Client,
+  Interaction,
+  ColorResolvable,
+  PermissionsBitField,
+  TextChannel,
+  NewsChannel,
+} from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
 import getLocalCommands from '../../utils/getLocalCommands.js';
 import LRUCache from '../../utils/Cache/LRUCache.js';
-
-
-
-
 
 const cooldowns = new Collection<string, Collection<string, number>>();
 const permissionLevels = new Collection<string, number>();
@@ -19,8 +24,7 @@ const commandCache = new LRUCache<string, any>({
   cleanupIntervalMs: 30000, // Cleanup every 30 seconds
   evictionPolicy: 'LRU',
   resetTTLOnAccess: true,
-  onExpiry: (key, value) => {
-  },
+  onExpiry: (key, value) => {},
 });
 
 /**
@@ -32,7 +36,7 @@ const commandCache = new LRUCache<string, any>({
  * @async
  * @function sendEmbedReply
  * @param {Interaction} interaction - The Discord interaction to reply to. Must be repliable.
- * @param {string} color - The color of the embed. Must be a valid hexadecimal color code or 
+ * @param {string} color - The color of the embed. Must be a valid hexadecimal color code or
  *                         Discord.js color constants (e.g., 'RANDOM', 'BLUE').
  * @param {string} description - The description text to display inside the embed.
  * @param {boolean} [ephemeral=true] - Whether the reply should be ephemeral (visible only to the user).
@@ -44,11 +48,11 @@ const commandCache = new LRUCache<string, any>({
  * @example
  * // Sending an ephemeral success message
  * await sendEmbedReply(interaction, '#00FF00', 'Operation successful!', true);
- * 
+ *
  * @example
  * // Sending a non-ephemeral error message
  * await sendEmbedReply(interaction, 'RED', 'Something went wrong!', false);
- * 
+ *
  * @example
  * // Using Discord.js color constants for the embed color
  * await sendEmbedReply(interaction, 'BLUE', 'Here is some information.');
@@ -71,10 +75,10 @@ const commandCache = new LRUCache<string, any>({
  *
  * @version 0.0.1
  * @since 2023-10-11
- * 
+ *
  * @dependencies
  * - discord.js: Must be installed and configured to use `EmbedBuilder` and handle Discord interactions.
- * 
+ *
  * @performance
  * - Since the function relies on the Discord API to send replies, its performance may vary based on
  *   API response times and rate limits.
@@ -82,11 +86,11 @@ const commandCache = new LRUCache<string, any>({
  * @edge-cases
  * - If the `interaction` is not repliable, the function will exit silently, and no reply will be sent.
  * - If an invalid color string is provided (e.g., an incorrect hex code), Discord.js may throw an error.
- * 
+ *
  * @related
  * - {@link https://discord.js.org/#/docs/discord.js/main/class/Interaction Interaction}
  * - {@link https://discord.js.org/#/docs/discord.js/main/class/EmbedBuilder EmbedBuilder}
- * 
+ *
  * @deprecated
  * - No deprecations as of the current version. Future updates may change the default behavior of ephemeral responses.
  */
@@ -122,7 +126,10 @@ const sendEmbedReply = async (
  * @returns {Promise<T>} A promise that resolves to the data.
  * @template T - The type of the data being cached and retrieved.
  */
-const getCachedData = async <T>(key: string, fetchFunction: () => Promise<T>): Promise<T> => {
+const getCachedData = async <T>(
+  key: string,
+  fetchFunction: () => Promise<T>
+): Promise<T> => {
   try {
     const cachedItem = commandCache.get(key);
     if (cachedItem) return cachedItem as T;
@@ -165,12 +172,20 @@ const initializeCommandMap = async (): Promise<void> => {
  * @param {number} cooldownAmount - The amount of time in milliseconds for the cooldown.
  * @returns {{active: boolean, timeLeft: string}} An object indicating if the cooldown is active and the time left.
  */
-const applyCooldown = (interaction: Interaction, commandName: string, cooldownAmount: number): { active: boolean; timeLeft?: string } => {
+const applyCooldown = (
+  interaction: Interaction,
+  commandName: string,
+  cooldownAmount: number
+): {
+  active: boolean;
+  timeLeft?: string;
+} => {
   if (isNaN(cooldownAmount) || cooldownAmount <= 0) {
     throw new Error('Invalid cooldown amount');
   }
 
-  const userCooldowns = cooldowns.get(commandName) || new Collection<string, number>();
+  const userCooldowns =
+    cooldowns.get(commandName) || new Collection<string, number>();
   const now = Date.now();
   const userId = `${interaction.user.id}-${interaction.guild ? interaction.guild.id : 'DM'}`;
 
@@ -219,8 +234,10 @@ const checkPermissions = (
  * @param {Function} errorHandler - The error handler function.
  * @param {Interaction} interaction - The interaction to validate and execute.
  */
-export default async (client: Client, interaction: Interaction): Promise<void> => {
-
+export default async (
+  client: Client,
+  interaction: Interaction
+): Promise<void> => {
   if (!interaction) {
     return;
   }
@@ -300,7 +317,11 @@ export default async (client: Client, interaction: Interaction): Promise<void> =
         !(channel instanceof TextChannel || channel instanceof NewsChannel) ||
         !channel.nsfw
       ) {
-        return sendEmbedReply(interaction, mConfig.embedColors.error, mConfig.nsfw);
+        return sendEmbedReply(
+          interaction,
+          mConfig.embedColors.error,
+          mConfig.nsfw
+        );
       }
     }
 
@@ -343,7 +364,6 @@ export default async (client: Client, interaction: Interaction): Promise<void> =
         .green
     );
   } catch (err) {
-
     await sendEmbedReply(
       interaction,
       mConfig.embedColors.error,

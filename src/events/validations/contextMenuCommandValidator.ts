@@ -266,7 +266,6 @@ export default async (
   client: Client,
   interaction: Interaction
 ): Promise<void> => {
-
   if (!interaction) {
     return;
   }
@@ -274,7 +273,6 @@ export default async (
   if (!interaction.isContextMenuCommand()) {
     return;
   }
-
 
   if (contextMenuMap.size === 0) {
     await initializeContextMenuMap();

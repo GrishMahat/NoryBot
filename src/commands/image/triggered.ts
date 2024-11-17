@@ -33,7 +33,8 @@ const triggeredCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const userOption = interaction.options.get('user')?.user || interaction.user;
+      const userOption =
+        interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = userOption.displayAvatarURL({
         extension: 'png',

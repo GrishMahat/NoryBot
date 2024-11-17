@@ -45,20 +45,24 @@ declare module 'smtp-server' {
       session: SMTPServerSession,
       callback: (error: Error | null, response?: AuthenticationResponse) => void
     ): void;
+
     onConnect?(
       session: SMTPServerSession,
       callback: (error?: Error) => void
     ): void;
+
     onData?(
       stream: Readable,
       session: SMTPServerSession,
       callback: (error?: Error) => void
     ): void;
+
     onMailFrom?(
       address: Address,
       session: SMTPServerSession,
       callback: (error?: Error) => void
     ): void;
+
     onRcptTo?(
       address: Address,
       session: SMTPServerSession,

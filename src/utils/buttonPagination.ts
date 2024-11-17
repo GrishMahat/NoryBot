@@ -1,4 +1,5 @@
-{/*
+{
+  /*
   import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -613,4 +614,5 @@ interface CustomButtonBuilder extends ButtonBuilder {
       }
     }
   }
-*/}
+*/
+}

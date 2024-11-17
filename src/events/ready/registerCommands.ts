@@ -87,6 +87,7 @@ export default async (client: Client): Promise<void> => {
     );
   }
 };
+
 /**
  * Deletes application commands that are not present in the local command definitions.
  *
@@ -201,7 +202,6 @@ async function handleExistingCommand(
   return false;
 }
 
-
 async function createCommand(
   client: Client,
   data: LocalCommand['data']
@@ -240,7 +240,7 @@ function logCommandChanges(
     console.log('Edited Commands:'.yellow);
     updatedCommands.forEach((cmd) => console.log(`  - ${cmd}`.white));
   }
-  
+
   if (newCommands.length) {
     console.log('Newly Registered Commands:'.green);
     newCommands.forEach((cmd) => console.log(`  - ${cmd}`.white));
