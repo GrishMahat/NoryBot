@@ -20,29 +20,54 @@ const errorHandler = new ErrorHandler({
 });
 
 /**
- * Initializes a Discord client with the specified intents and loads event handlers.
- * This function creates a new Discord.js client, configures it with the necessary
- * intents, and loads the event handlers before logging in using the provided token.
+ * initializeClient - Creates and configures a Discord.js client instance
  *
- * @async
- * @function initializeClient
- * @returns {Promise<Client<boolean>>} A promise that resolves to the initialized Discord client instance.
- * @throws {Error} If the client fails to login, an error is thrown with the relevant message.
- *
- * @example
- * // Basic usage example
- * initializeClient()
- *   .then(client => {
- *     console.log('Discord client successfully initialized:', client);
- *   })
- *   .catch(error => {
- *     console.error('Failed to initialize Discord client:', error);
- *   });
- *
- * @note Ensure that the `TOKEN` environment variable is properly set in your `.env` file.
- * The Discord bot will not start without a valid bot token.
+ * Initializes a Discord client with specified intents, sets up error handling,
+ * and loads event handlers. Manages the bot's core functionality setup.
  *
  * @since 0.0.1
+ * @author [GrishMahat]
+ *
+ * @example
+ * // Basic initialization
+ * const client = await initializeClient();
+ *
+ * // Error handling
+ * try {
+ *   const client = await initializeClient();
+ *   console.log('Bot initialized successfully');
+ * } catch (error) {
+ *   console.error('Failed to initialize:', error);
+ *   process.exit(1);
+ * }
+ *
+ * @returns {Promise<Client<boolean>>} Initialized Discord.js client
+ *
+ * @throws {Error} When TOKEN environment variable is missing
+ * @throws {Error} When client fails to connect to Discord
+ * @throws {Error} When event handlers fail to load
+ *
+ * @see loadEventHandlers
+ * @see ErrorHandler
+ *
+ * Performance Considerations:
+ * -------------------------
+ * - Startup time varies with number of event handlers
+ * - Memory usage scales with enabled intents
+ * - Network dependent initialization steps
+ *
+ * Edge Cases:
+ * -----------
+ * 1. Invalid token: Throws detailed error
+ * 2. Network issues: Implements connection retry
+ * 3. Partial handler loading: Logs warnings
+ * 4. Rate limiting: Handles Discord API limits
+ *
+ * Version Compatibility:
+ * ---------------------
+ * - Requires Node.js version 16.9.0 or higher
+ * - Discord.js v14+ compatible
+ * - Environment: Supports both development and production
  */
 const initializeClient = async (): Promise<Client<boolean>> => {
   const client = new Client<boolean>({
@@ -68,31 +93,6 @@ const initializeClient = async (): Promise<Client<boolean>> => {
   return client;
 };
 
-/**
- * Main function to initialize the Discord client and set up additional services like the email server.
- * This function calls `initializeClient()` to start the bot, then calls `setupEmailServer()`
- * to set up an email system associated with the bot. Handles errors with proper logging and exits the process
- * if initialization fails.
- *
- * @async
- * @function main
- * @returns {Promise<void>} A promise that resolves when both the Discord client and email server are set up successfully.
- * @throws {Error} If either the Discord client initialization or the email server setup fails, an error is thrown and logged.
- *
- * @example
- * // Basic usage example
- * main()
- *   .catch(error => {
- *     console.error('An unhandled error occurred in the main function:', error);
- *   });
- *
- * @note It's crucial to handle unhandled rejections to avoid silent failures.
- * Exiting the process with a non-zero status code ensures the application can be restarted.
- *
- * @since 0.0.1
- * @see {@link initializeClient} for initializing the Discord client.
- * @see {@link setupEmailServer} for setting up the email server.
- */
 const main = async (): Promise<void> => {
   try {
     const client = await initializeClient();

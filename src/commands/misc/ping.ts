@@ -19,6 +19,7 @@ const pingCommand: LocalCommand = {
     .setIntegrationTypes([0, 1])
     .toJSON(),
   devOnly: true,
+  cooldown: 100,
 
   run: async (client: Client, interaction: CommandInteraction) => {
     try {
