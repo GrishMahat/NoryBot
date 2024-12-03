@@ -5,16 +5,17 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
-const trashCommand: LocalCommand = {
+const facepalmCommand: LocalCommand = {
   data: new SlashCommandBuilder()
-    .setName('trash')
-    .setDescription("Put someone's avatar in the trash")
+    .setName('facepalm')
+    .setDescription("Generate a facepalm image with someone's avatar")
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to throw in the trash')
+        .setDescription('The user doing the facepalm')
         .setRequired(false)
     )
     .setContexts([0, 1, 2])
@@ -32,7 +33,7 @@ const trashCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser =
+      const targetUser = 
         interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = targetUser.displayAvatarURL({
@@ -41,24 +42,24 @@ const trashCommand: LocalCommand = {
         size: 512,
       });
 
-      // Generate the Trash image
-      const img = await new DIG.Trash().getImage(avatarUrl);
+      // Generate the Facepalm image
+      const img = await new DIG.Facepalm().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'trash.png' });
+      const attachment = new AttachmentBuilder(img, { name: 'facepalm.png' });
 
       const embed = new EmbedBuilder()
-        .setColor('#8B4513')
+        .setColor('#FFA500')
         .setAuthor({
-          name: 'Taking Out the Trash!',
+          name: '*facepalm*',
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
           targetUser.id === interaction.user.id
-            ? `🗑️ **${interaction.user.username}** threw themselves in the trash!`
-            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`
+            ? `🤦 **${interaction.user.username}** facepalmed!`
+            : `🤦 **${interaction.user.username}** made **${targetUser.username}** facepalm!`
         )
-        .setImage('attachment://trash.png')
+        .setImage('attachment://facepalm.png')
         .setTimestamp()
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -70,12 +71,12 @@ const trashCommand: LocalCommand = {
         files: [attachment],
       });
     } catch (error) {
-      console.error('Error generating trash image:', error);
+      console.error('Error generating facepalm image:', error);
 
       const errorEmbed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('❌ Error')
-        .setDescription('Failed to generate the trash image. Please try again later.')
+        .setDescription('Failed to generate the facepalm image. Please try again later.')
         .setTimestamp();
 
       await interaction.editReply({
@@ -85,4 +86,4 @@ const trashCommand: LocalCommand = {
   },
 };
 
-export default trashCommand;
+export default facepalmCommand; 

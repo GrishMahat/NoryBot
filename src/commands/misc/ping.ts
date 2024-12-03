@@ -3,7 +3,7 @@ import {
   SlashCommandBuilder,
   CommandInteraction,
   Client,
-  version as discordVersion,
+  version as discordVersion
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import os from 'os';
@@ -19,7 +19,6 @@ const pingCommand: LocalCommand = {
     .setIntegrationTypes([0, 1])
     .toJSON(),
   devOnly: true,
-  cooldown: 100,
 
   run: async (client: Client, interaction: CommandInteraction) => {
     try {
@@ -69,55 +68,55 @@ const pingCommand: LocalCommand = {
               `${emojiConfig.goodconnection} Bot Latency: \`${botLatency}ms\``,
               `${emojiConfig.lowconnection} API Latency: \`${apiLatency}ms\``,
               `${emojiConfig.chart_increasing} Execution Time: \`${execTime}ms\``,
-              `${emojiConfig.live} Discord.js: \`v${discordVersion}\``,
+              `${emojiConfig.live} Discord.js: \`v${discordVersion}\``
             ].join('\n'),
-            inline: false,
+            inline: false
           },
           {
             name: `${emojiConfig.statistics} Bot Statistics`,
             value: [
               `${emojiConfig.admintag} Servers: \`${client.guilds.cache.size}\``,
               `${emojiConfig.user} Users: \`${client.users.cache.size}\``,
-              `${emojiConfig.mic} Channels: \`${client.channels.cache.size}\``,
+              `${emojiConfig.mic} Channels: \`${client.channels.cache.size}\``
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
             name: `${emojiConfig.chart_increasing} Uptime`,
             value: `\`${days}d ${hours}h ${minutes}m ${seconds}s\``,
-            inline: true,
+            inline: true
           },
           {
             name: '\u200b',
             value: '\u200b',
-            inline: true,
+            inline: true
           },
           {
             name: `${emojiConfig.statistics} Memory`,
             value: [
               `${emojiConfig.yestag} Used: \`${usedMemory} MB\``,
               `${emojiConfig.yestag} Total: \`${totalMemory} GB\``,
-              `${emojiConfig.yestag} Free: \`${freeMemory} GB\``,
+              `${emojiConfig.yestag} Free: \`${freeMemory} GB\``
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
             name: `${emojiConfig.cpu} CPU`,
             value: [
               `${emojiConfig.yestag} Model: \`${cpuModel.split(' ')[0]}\``,
               `${emojiConfig.yestag} Cores: \`${cpuCount}\``,
-              `${emojiConfig.yestag} Usage: \`${cpuUsage}%\``,
+              `${emojiConfig.yestag} Usage: \`${cpuUsage}%\``
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
             name: `${emojiConfig.OfficeComputer} System`,
             value: [
               `${emojiConfig.yestag} OS: \`${os.platform()} ${os.release()}\``,
               `${emojiConfig.yestag} Node: \`${process.version}\``,
-              `${emojiConfig.yestag} Arch: \`${os.arch()}\``,
+              `${emojiConfig.yestag} Arch: \`${os.arch()}\``
             ].join('\n'),
-            inline: false,
+            inline: false
           }
         )
         .setFooter({ text: `Last Updated • Host: ${os.hostname()}` })

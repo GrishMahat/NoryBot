@@ -5,16 +5,17 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
-const trashCommand: LocalCommand = {
+const hitlerCommand: LocalCommand = {
   data: new SlashCommandBuilder()
-    .setName('trash')
-    .setDescription("Put someone's avatar in the trash")
+    .setName('hitler')
+    .setDescription('Create a "Worse than Hitler" history channel meme')
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to throw in the trash')
+        .setDescription('The user to feature in the meme')
         .setRequired(false)
     )
     .setContexts([0, 1, 2])
@@ -32,7 +33,7 @@ const trashCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser =
+      const targetUser = 
         interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = targetUser.displayAvatarURL({
@@ -41,27 +42,27 @@ const trashCommand: LocalCommand = {
         size: 512,
       });
 
-      // Generate the Trash image
-      const img = await new DIG.Trash().getImage(avatarUrl);
+      // Generate the Hitler image
+      const img = await new DIG.Hitler().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'trash.png' });
+      const attachment = new AttachmentBuilder(img, { name: 'hitler.png' });
 
       const embed = new EmbedBuilder()
         .setColor('#8B4513')
         .setAuthor({
-          name: 'Taking Out the Trash!',
+          name: 'History Channel at Midnight',
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
           targetUser.id === interaction.user.id
-            ? `🗑️ **${interaction.user.username}** threw themselves in the trash!`
-            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`
+            ? `📺 **${interaction.user.username}** made a historical appearance!`
+            : `📺 **${interaction.user.username}** put **${targetUser.username}** in a history meme!`
         )
-        .setImage('attachment://trash.png')
+        .setImage('attachment://hitler.png')
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'As seen on History Channel™',
           iconURL: interaction.user.displayAvatarURL(),
         });
 
@@ -70,19 +71,18 @@ const trashCommand: LocalCommand = {
         files: [attachment],
       });
     } catch (error) {
-      console.error('Error generating trash image:', error);
-
-      const errorEmbed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('❌ Error')
-        .setDescription('Failed to generate the trash image. Please try again later.')
-        .setTimestamp();
-
+      console.error('Error generating history meme:', error);
       await interaction.editReply({
-        embeds: [errorEmbed],
+        embeds: [
+          new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle('❌ Error')
+            .setDescription('Failed to generate the history meme. Please try again later.')
+            .setTimestamp(),
+        ],
       });
     }
   },
 };
 
-export default trashCommand;
+export default hitlerCommand; 
