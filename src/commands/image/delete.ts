@@ -5,16 +5,17 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
-const trashCommand: LocalCommand = {
+const deleteCommand: LocalCommand = {
   data: new SlashCommandBuilder()
-    .setName('trash')
-    .setDescription("Put someone's avatar in the trash")
+    .setName('delete')
+    .setDescription('Generate a "Delete This" meme with someone\'s avatar')
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to throw in the trash')
+        .setDescription('The user to delete')
         .setRequired(false)
     )
     .setContexts([0, 1, 2])
@@ -32,7 +33,7 @@ const trashCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser =
+      const targetUser = 
         interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = targetUser.displayAvatarURL({
@@ -41,27 +42,32 @@ const trashCommand: LocalCommand = {
         size: 512,
       });
 
-      // Generate the Trash image
-      const img = await new DIG.Trash().getImage(avatarUrl);
+      // Generate the Delete image
+      const img = await new DIG.Delete().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'trash.png' });
+      const attachment = new AttachmentBuilder(img, { name: 'delete.png' });
 
       const embed = new EmbedBuilder()
-        .setColor('#8B4513')
+        .setColor('#FF4444')
         .setAuthor({
-          name: 'Taking Out the Trash!',
+          name: 'Delete This!',
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
           targetUser.id === interaction.user.id
-            ? `🗑️ **${interaction.user.username}** threw themselves in the trash!`
-            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`
+            ? `🗑️ **${interaction.user.username}** wants to delete themselves!`
+            : `🗑️ **${interaction.user.username}** wants to delete **${targetUser.username}**!`
         )
-        .setImage('attachment://trash.png')
+        .addFields({
+          name: '❌ Target',
+          value: `<@${targetUser.id}>`,
+          inline: true,
+        })
+        .setImage('attachment://delete.png')
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'Right click > Delete',
           iconURL: interaction.user.displayAvatarURL(),
         });
 
@@ -70,19 +76,18 @@ const trashCommand: LocalCommand = {
         files: [attachment],
       });
     } catch (error) {
-      console.error('Error generating trash image:', error);
-
-      const errorEmbed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('❌ Error')
-        .setDescription('Failed to generate the trash image. Please try again later.')
-        .setTimestamp();
-
+      console.error('Error generating delete image:', error);
       await interaction.editReply({
-        embeds: [errorEmbed],
+        embeds: [
+          new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle('❌ Error')
+            .setDescription('Failed to generate the delete image. Please try again later.')
+            .setTimestamp(),
+        ],
       });
     }
   },
 };
 
-export default trashCommand;
+export default deleteCommand; 

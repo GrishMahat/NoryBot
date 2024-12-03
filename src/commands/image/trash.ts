@@ -5,6 +5,7 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const trashCommand: LocalCommand = {
@@ -75,7 +76,9 @@ const trashCommand: LocalCommand = {
       const errorEmbed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('❌ Error')
-        .setDescription('Failed to generate the trash image. Please try again later.')
+        .setDescription(
+          'Failed to generate the trash image. Please try again later.'
+        )
         .setTimestamp();
 
       await interaction.editReply({

@@ -5,17 +5,26 @@ import {
   Client,
   AttachmentBuilder,
 } from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
-const trashCommand: LocalCommand = {
+const wantedCommand: LocalCommand = {
   data: new SlashCommandBuilder()
-    .setName('trash')
-    .setDescription("Put someone's avatar in the trash")
+    .setName('wanted')
+    .setDescription("Create a wanted poster with someone's avatar")
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to throw in the trash')
+        .setDescription('The user to put on the wanted poster')
         .setRequired(false)
+    )
+    .addNumberOption((option) =>
+      option
+        .setName('currency')
+        .setDescription('The reward amount (default: 1000)')
+        .setRequired(false)
+        .setMinValue(1)
+        .setMaxValue(1000000)
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -32,8 +41,9 @@ const trashCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser =
+      const targetUser = 
         interaction.options.get('user')?.user || interaction.user;
+      const currency = interaction.options.get('currency')?.value || 1000;
 
       const avatarUrl = targetUser.displayAvatarURL({
         extension: 'png',
@@ -41,27 +51,25 @@ const trashCommand: LocalCommand = {
         size: 512,
       });
 
-      // Generate the Trash image
-      const img = await new DIG.Trash().getImage(avatarUrl);
+      // Generate the Wanted image
+      const img = await new DIG.Wanted().getImage(avatarUrl, currency.toString());
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'trash.png' });
+      const attachment = new AttachmentBuilder(img, { name: 'wanted.png' });
 
       const embed = new EmbedBuilder()
-        .setColor('#8B4513')
+        .setColor('#8B0000')
         .setAuthor({
-          name: 'Taking Out the Trash!',
+          name: 'WANTED: DEAD OR ALIVE',
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
-          targetUser.id === interaction.user.id
-            ? `🗑️ **${interaction.user.username}** threw themselves in the trash!`
-            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`
+          `🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** $${currency.toLocaleString()}`
         )
-        .setImage('attachment://trash.png')
+        .setImage('attachment://wanted.png')
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Posted by Sheriff ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL(),
         });
 
@@ -70,12 +78,12 @@ const trashCommand: LocalCommand = {
         files: [attachment],
       });
     } catch (error) {
-      console.error('Error generating trash image:', error);
+      console.error('Error generating wanted poster:', error);
 
       const errorEmbed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('❌ Error')
-        .setDescription('Failed to generate the trash image. Please try again later.')
+        .setDescription('Failed to generate the wanted poster. Please try again later.')
         .setTimestamp();
 
       await interaction.editReply({
@@ -85,4 +93,4 @@ const trashCommand: LocalCommand = {
   },
 };
 
-export default trashCommand;
+export default wantedCommand; 
