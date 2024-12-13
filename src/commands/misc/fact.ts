@@ -12,10 +12,9 @@ import {
   Message,
   Collection,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import axios from 'axios';
-import mConfig from '../../config/messageConfig';
-import emojiConfig from '../../config/emoji';
+import mConfig from '../../config/messageConfig.js';
+import emojiConfig from '../../config/emoji.js ';
 
 const factCommand: LocalCommand = {
   data: new SlashCommandBuilder()
