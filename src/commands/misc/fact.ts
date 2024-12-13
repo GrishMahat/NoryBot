@@ -15,6 +15,7 @@ import {
 import { LocalCommand } from '../../types/index';
 import axios from 'axios';
 import mConfig from '../../config/messageConfig';
+import emojiConfig from '../../config/emoji';
 
 const factCommand: LocalCommand = {
   data: new SlashCommandBuilder()
@@ -56,12 +57,72 @@ const factCommand: LocalCommand = {
       const row = createButtonRow();
 
       const reply = await interaction.editReply({ embeds: [embed], components: [row] });
-      await handleButtonInteractions(interaction, category, row, fact, reply.id);
+      
+      // Create collector from the interaction directly
+      const collector = (interaction as any).channel?.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        filter: (i: ButtonInteraction) => {
+          return (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
+            i.user.id === interaction.user.id &&
+            i.message.id === reply.id;
+        },
+        time: 120000,
+      });
+
+      if (!collector) {
+        console.error('Failed to create collector');
+        return;
+      }
+
+      collector.on('collect', async (i: ButtonInteraction) => {
+        try {
+          if (i.customId === 'regenerate_fact') {
+            const newFact = await getFact(category);
+            const newEmbed = createFactEmbed(newFact, category, interaction.client);
+            await i.update({ embeds: [newEmbed], components: [row] });
+          } else if (i.customId === 'share_fact') {
+            await i.reply({
+              content: `${emojiConfig.GIF_Animation} **${interaction.user.tag}** shared a fact:\n\n${fact}`,
+              allowedMentions: { parse: [] },
+            });
+          }
+        } catch (error) {
+          console.error('Error handling button interaction:', error);
+          await i.reply({
+            content: `${emojiConfig.notag} An error occurred. Please try again.`,
+            ephemeral: true
+          });
+        }
+      });
+
+      collector.on('end', async () => {
+        const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId('regenerate_fact')
+            .setLabel('Get New Fact')
+            .setEmoji('🔄')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(true),
+          new ButtonBuilder()
+            .setCustomId('share_fact')
+            .setLabel('Share Fact')
+            .setEmoji('📤')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true)
+        );
+        
+        try {
+          await interaction.editReply({ components: [newRow] });
+        } catch (error) {
+          console.error('Error disabling buttons:', error);
+        }
+      });
+
     } catch (error) {
       console.error('Error in fact command:', error);
       await interaction.editReply({
         content:
-          '❌ An error occurred while fetching the fact. Please try again later.',
+          `${emojiConfig.notag} An error occurred while fetching the fact. Please try again later.`,
       });
     }
   },
@@ -99,13 +160,13 @@ async function getFact(category: string): Promise<string> {
 
 function createFactEmbed(fact: string, category: string, client: Client): EmbedBuilder {
   const categoryIcons: Record<string, string> = {
-    random: '🎲',
-    today: '📅',
-    year: '🗓️',
-    science: '🔬',
-    history: '📜',
-    math: '🔢',
-    animal: '🐾',
+    random: emojiConfig.statistics,
+    today: emojiConfig.chart_increasing,
+    year: emojiConfig.live,
+    science: emojiConfig.cpu,
+    history: emojiConfig.OfficeComputer,
+    math: emojiConfig.avatar_gold,
+    animal: emojiConfig.avatar_platinum,
   };
 
   return new EmbedBuilder()
@@ -115,7 +176,7 @@ function createFactEmbed(fact: string, category: string, client: Client): EmbedB
       iconURL: client.user?.displayAvatarURL()
     })
     .setTitle(
-      `${categoryIcons[category] || '❓'} ${
+      `${categoryIcons[category] || emojiConfig.notag} ${
         category.charAt(0).toUpperCase() + category.slice(1)
       } Fact`
     )
@@ -140,68 +201,6 @@ function createButtonRow(): ActionRowBuilder<ButtonBuilder> {
       .setEmoji('📤')
       .setStyle(ButtonStyle.Secondary)
   );
-}
-
-async function handleButtonInteractions(
-  interaction: CommandInteraction,
-  category: string,
-  row: ActionRowBuilder<ButtonBuilder>,
-  fact: string,
-  messageId: string
-): Promise<void> {
-  const collector = interaction.channel?.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    filter: (i) => {
-      return (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
-        i.user.id === interaction.user.id &&
-        i.message.id === messageId;
-    },
-    time: 120000,
-  });
-
-  collector?.on('collect', async (i: ButtonInteraction) => {
-    try {
-      if (i.customId === 'regenerate_fact') {
-        const newFact = await getFact(category);
-        const newEmbed = createFactEmbed(newFact, category, interaction.client);
-        await i.update({ embeds: [newEmbed], components: [row] });
-      } else if (i.customId === 'share_fact') {
-        await i.reply({
-          content: `📢 **${interaction.user.tag}** shared a fact:\n\n${fact}`,
-          allowedMentions: { parse: [] },
-        });
-      }
-    } catch (error) {
-      console.error('Error handling button interaction:', error);
-      await i.reply({
-        content: '❌ An error occurred. Please try again.',
-        ephemeral: true
-      });
-    }
-  });
-
-  collector?.on('end', async () => {
-    const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId('regenerate_fact')
-        .setLabel('Get New Fact')
-        .setEmoji('🔄')
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId('share_fact')
-        .setLabel('Share Fact')
-        .setEmoji('📤')
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true)
-    );
-    
-    try {
-      await interaction.editReply({ components: [newRow] });
-    } catch (error) {
-      console.error('Error disabling buttons:', error);
-    }
-  });
 }
 
 export default factCommand;

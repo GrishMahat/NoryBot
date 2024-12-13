@@ -49,32 +49,16 @@ const main = async (): Promise<void> => {
   try {
     await initializeClient();
   } catch (error) {
+    console.log(error);
     await errorHandler.handleError(error, 'MainProcessError');
     process.exit(1);
   }
 };
 
-process.on('uncaughtException', async (error) => {
-  await errorHandler.handleError(error, 'UncaughtException');
-  process.exit(1);
-});
-
-process.on('unhandledRejection', async (error) => {
-  await errorHandler.handleError(error, 'UnhandledRejection');
-  process.exit(1);
-});
-
-process.on('SIGINT', () => {
-  errorHandler.destroy();
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  errorHandler.destroy();
-  process.exit(0);
-});
 
 main().catch(async (error) => {
+  console.log('6');
+
   await errorHandler.handleError(error, 'UncaughtError');
   process.exit(1);
 });
