@@ -49,7 +49,9 @@ const invertCommand: LocalCommand = {
 
       const embed = new EmbedBuilder()
         .setColor('#FF00FF')
-        .setDescription(`${targetUser.toString()}'s avatar with inverted colors`)
+        .setDescription(
+          `${targetUser.toString()}'s avatar with inverted colors`
+        )
         .setImage('attachment://invert.png')
         .setTimestamp();
 

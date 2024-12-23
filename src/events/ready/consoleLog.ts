@@ -41,13 +41,6 @@ interface LogConfig {
  * @function formatLogOutput
  * @param {LogConfig} config - Configuration object containing bot statistics
  * @throws {Error} May throw if console output fails
- * @example
- * formatLogOutput({
- *   botName: 'MyBot',
- *   serverCount: 10,
- *   userCount: 100,
- *   dbStatus: 'connected'
- * });
  */
 const formatLogOutput = (config: LogConfig): void => {
   console.log(SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH).cyan);
@@ -67,20 +60,6 @@ const formatLogOutput = (config: LogConfig): void => {
  * @function consoleLog
  * @param {Client} client - Discord.js client instance
  * @returns {Promise<void>} Resolves when logging is complete
- * @throws {Error} Database connection errors or general execution errors
- *
- * @description
- * This function performs the following operations:
- * 1. Retrieves bot statistics from the Discord client
- * 2. Attempts to establish a database connection
- * 3. Formats and displays the information in the console
- * 4. Ensures proper database disconnection
- *
- * @example
- * await consoleLog(discordClient);
- *
- * @see {@link LogConfig} for the structure of logging configuration
- * @see {@link formatLogOutput} for console output formatting
  */
 const consoleLog = async (client: Client): Promise<void> => {
   let dbStatus: 'connected' | 'disconnected' = 'disconnected';
@@ -101,28 +80,22 @@ const consoleLog = async (client: Client): Promise<void> => {
       });
       logConfig.dbStatus = 'connected';
     } catch (error) {
-      console.error(
-        'Database connection error:',
-        error instanceof Error ? error.message : 'Unknown error'
-      );
+      await global.errorHandler.handleError(error, 'DatabaseConnectionError');
       logConfig.dbStatus = 'disconnected';
     }
 
     formatLogOutput(logConfig);
   } catch (error) {
-    console.error(
-      'Error in consoleLog:'.red,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    await global.errorHandler.handleError(error, 'ConsoleLogError');
   } finally {
-    await mongoose
-      .disconnect()
-      .catch((error) =>
-        console.error(
-          'Error disconnecting from database:',
-          error instanceof Error ? error.message : 'Unknown error'
-        )
+    try {
+      await mongoose.disconnect();
+    } catch (error) {
+      await global.errorHandler.handleError(
+        error,
+        'DatabaseDisconnectionError'
       );
+    }
   }
 };
 

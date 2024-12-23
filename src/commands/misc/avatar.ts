@@ -1,13 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   Client,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   GuildMember,
-  version as discordVersion,
+  User,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import emojiConfig from '../../config/emoji.js';
@@ -26,33 +23,40 @@ const avatarCommand: LocalCommand = {
     .setIntegrationTypes([0, 1])
     .toJSON(),
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client, interaction): Promise<void> => {
     try {
       await interaction.deferReply();
 
       const targetUser =
-        interaction.options.get('user')?.user || interaction.user;
+        interaction.options.getUser('user') || interaction.user;
 
-      const targetMember = await interaction.guild.members.fetch(targetUser.id);
+      // Handle DM case where there is no guild
+      if (!interaction.guild) {
+        await handleDMAvatar(interaction, targetUser);
+        return;
+      }
 
-      const formats = ['png', 'jpg', 'webp', 'gif'];
+      const targetMember = await interaction.guild.members
+        .fetch(targetUser.id)
+        .catch(() => null);
+      if (!targetMember) {
+        await interaction.editReply({
+          content: `${emojiConfig.notag} Could not fetch member information.`,
+        });
+        return;
+      }
+
       const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
       const avatarData = await getAvatarData(targetUser, targetMember);
-      const { globalAvatars, serverAvatars, allAvatars, defaultAvatar } =
-        avatarData;
+      const { globalAvatars, serverAvatars, allAvatars } = avatarData;
 
-      // Create download buttons for different formats
-      const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        ...allAvatars
-          .slice(0, 5)
-          .map((avatar) =>
-            new ButtonBuilder()
-              .setLabel(`${avatar.type} ${avatar.format.toUpperCase()}`)
-              .setStyle(ButtonStyle.Link)
-              .setURL(avatar.url)
-          )
-      );
+      if (allAvatars.length === 0) {
+        await interaction.editReply({
+          content: `${emojiConfig.notag} No avatar found for this user.`,
+        });
+        return;
+      }
 
       const embedDescription = [
         `${emojiConfig.user} **User:** ${targetUser.toString()} (${targetUser.id})`,
@@ -62,40 +66,29 @@ const avatarCommand: LocalCommand = {
         `${emojiConfig.avatar_platinum} **Available Sizes:** ${sizes.join(', ')}px`,
       ];
 
-      // Check for banner and handle GIF banners
-      if (targetUser.banner) {
-        const bannerURL = targetUser.bannerURL({
-          size: 4096,
-          extension: targetUser.banner.startsWith('a_') ? 'gif' : 'png',
-        });
-        if (bannerURL) {
-          embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
-        }
+      // Check for banner
+      const bannerURL = targetUser.bannerURL({ size: 4096 });
+      if (bannerURL) {
+        embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
       }
 
       const embed = new EmbedBuilder()
         .setAuthor({
-          name: targetUser.tag,
-          iconURL: targetUser.displayAvatarURL({ extension: 'png', size: 16 }),
+          name: targetUser.tag || targetUser.username,
+          iconURL: targetUser.displayAvatarURL({ size: 16 }),
         })
         .setTitle(`${emojiConfig.avatar_diamond} Avatar Information`)
         .setDescription(embedDescription.join('\n'))
-        .setImage(
-          targetUser.displayAvatarURL({
-            size: 4096,
-            extension: targetUser.avatar?.startsWith('a_') ? 'gif' : 'png',
-          })
-        )
+        .setImage(targetUser.displayAvatarURL({ size: 4096 }))
         .setColor(targetMember.displayColor || '#2F3136')
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Requested by ${interaction.user.tag || interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL(),
         })
         .setTimestamp();
 
       await interaction.editReply({
         embeds: [embed],
-        components: [buttons],
       });
     } catch (error) {
       console.error('Error in avatar command:', error);
@@ -106,11 +99,34 @@ const avatarCommand: LocalCommand = {
   },
 };
 
-async function getAvatarData(
-  targetUser: CommandInteraction['user'],
-  targetMember: GuildMember
-) {
-  const formats = ['png', 'jpg', 'webp', 'gif'];
+async function handleDMAvatar(
+  interaction: ChatInputCommandInteraction,
+  targetUser: User
+): Promise<void> {
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: targetUser.tag || targetUser.username,
+      iconURL: targetUser.displayAvatarURL({ size: 16 }),
+    })
+    .setTitle(`${emojiConfig.avatar_diamond} Avatar Information`)
+    .setDescription(
+      `${emojiConfig.user} **User:** ${targetUser.toString()} (${targetUser.id})`
+    )
+    .setImage(targetUser.displayAvatarURL({ size: 4096 }))
+    .setColor('#2F3136')
+    .setTimestamp();
+
+  await interaction.editReply({ embeds: [embed] });
+}
+
+async function getAvatarData(targetUser: User, targetMember: GuildMember) {
+  const formats = ['png', 'jpg', 'webp'];
+  if (
+    targetUser.avatar?.startsWith('a_') ||
+    targetMember.avatar?.startsWith('a_')
+  ) {
+    formats.push('gif');
+  }
 
   const globalAvatars = formats
     .map((format) => ({
@@ -139,9 +155,8 @@ async function getAvatarData(
     : [];
 
   const allAvatars = [...globalAvatars, ...serverAvatars];
-  const defaultAvatar = allAvatars[0].url;
 
-  return { globalAvatars, serverAvatars, allAvatars, defaultAvatar };
+  return { globalAvatars, serverAvatars, allAvatars };
 }
 
 export default avatarCommand;

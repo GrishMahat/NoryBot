@@ -41,7 +41,7 @@ const wantedCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser = 
+      const targetUser =
         interaction.options.get('user')?.user || interaction.user;
       const currency = interaction.options.get('currency')?.value || 1000;
 
@@ -52,7 +52,10 @@ const wantedCommand: LocalCommand = {
       });
 
       // Generate the Wanted image
-      const img = await new DIG.Wanted().getImage(avatarUrl, currency.toString());
+      const img = await new DIG.Wanted().getImage(
+        avatarUrl,
+        currency.toString()
+      );
 
       // Create an attachment
       const attachment = new AttachmentBuilder(img, { name: 'wanted.png' });
@@ -83,7 +86,9 @@ const wantedCommand: LocalCommand = {
       const errorEmbed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('❌ Error')
-        .setDescription('Failed to generate the wanted poster. Please try again later.')
+        .setDescription(
+          'Failed to generate the wanted poster. Please try again later.'
+        )
         .setTimestamp();
 
       await interaction.editReply({
@@ -93,4 +98,4 @@ const wantedCommand: LocalCommand = {
   },
 };
 
-export default wantedCommand; 
+export default wantedCommand;

@@ -33,7 +33,7 @@ const deleteCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser = 
+      const targetUser =
         interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = targetUser.displayAvatarURL({
@@ -82,7 +82,9 @@ const deleteCommand: LocalCommand = {
           new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle('❌ Error')
-            .setDescription('Failed to generate the delete image. Please try again later.')
+            .setDescription(
+              'Failed to generate the delete image. Please try again later.'
+            )
             .setTimestamp(),
         ],
       });
@@ -90,4 +92,4 @@ const deleteCommand: LocalCommand = {
   },
 };
 
-export default deleteCommand; 
+export default deleteCommand;

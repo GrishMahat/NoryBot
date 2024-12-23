@@ -24,13 +24,13 @@ import { PerformanceMonitor } from '../utils/error/performanceMonitor.js';
 import { MetricsFormatter } from '../utils/error/metricsFormatter.js';
 
 class ErrorHandler {
-  private webhook: WebhookClient;
-  private client: Client;
+  private webhook: WebhookClient | null = null;
+  private client: Client | null = null;
   private errorCache: Map<string, ErrorInfo>;
   private errorGroups: Map<string, ErrorGroup>;
   private config: ErrorHandlerConfig;
   private metrics: Map<string, ErrorMetrics>;
-  private performanceMonitor: PerformanceMonitor;
+  private performanceMonitor: PerformanceMonitor | null = null;
 
   constructor(config: Partial<ErrorHandlerConfig> = {}) {
     this.config = {
@@ -65,13 +65,29 @@ class ErrorHandler {
 
     this.errorCache = new Map();
     this.errorGroups = new Map();
-    this.setupWebhook();
     this.metrics = new Map();
+    if (this.config.webhook) {
+      this.setupWebhook();
+    }
   }
 
   private setupWebhook(): void {
-    if (this.config.webhook) {
+    try {
+      if (!this.config.webhook || this.config.webhook.trim() === '') {
+        console.error('No webhook URL provided');
+        return;
+      }
+
       this.webhook = new WebhookClient({ url: this.config.webhook });
+
+      // Test webhook connection
+      // this.webhook.send({ content: 'Error handler initialized' }).catch(error => {
+      //   console.error('Failed to send test message to webhook:', error);
+      //   this.webhook = null;
+      // });
+    } catch (error) {
+      console.error('Failed to setup webhook:', error);
+      this.webhook = null;
     }
   }
 
@@ -100,14 +116,18 @@ class ErrorHandler {
     error: Error | unknown,
     type: string
   ): Promise<void> {
-    const errorDetails = await this.formatError(error, type);
+    try {
+      const errorDetails = await this.formatError(error, type);
 
-    if (this.config.environment === 'development') {
-      console.error(errorDetails);
-      return;
+      if (this.config.environment === 'development') {
+        console.error('Development Error:', errorDetails);
+        return;
+      }
+
+      await this.processError(errorDetails);
+    } catch (err) {
+      console.error('Error in handleError:', err);
     }
-
-    await this.processError(errorDetails);
   }
 
   private async formatError(
@@ -115,12 +135,25 @@ class ErrorHandler {
     type: string,
     context?: ErrorContext
   ): Promise<ErrorDetails> {
+    // First ensure we have an Error object
     const err = error instanceof Error ? error : new Error(String(error));
-    // Proper type checking
-    const isDiscordError = err instanceof DiscordAPIError;
-    const category = determineErrorCategory(isDiscordError ? err : undefined);
+
+    // Safely check for DiscordAPIError
+    const isDiscordError = error instanceof DiscordAPIError;
+
+    const category = determineErrorCategory(
+      isDiscordError ? (error as DiscordAPIError) : undefined
+    );
     const recoverySuggestions = await getRecoverySuggestions(err);
-    const performance = await this.performanceMonitor.captureMetrics();
+    const performance = this.performanceMonitor
+      ? await this.performanceMonitor.captureMetrics()
+      : {
+          memoryUsage: { heapUsed: 0, heapTotal: 0, external: 0 },
+          cpu: { usage: 0, load: [0, 0, 0] },
+          uptime: 0,
+          responseTime: 0,
+        };
+
     const groupHash = this.generateErrorHash(err, context || {});
     const errorId = createHash('md5')
       .update(`${Date.now()}:${err.message}`)
@@ -149,14 +182,18 @@ class ErrorHandler {
   }
 
   private isErrorRecoverable(error: Error): boolean {
-    if (error instanceof DiscordAPIError) {
-      // Check if error.code is a number before performing the includes check
+    // Safely check for DiscordAPIError
+    const isDiscordError = error instanceof DiscordAPIError;
+
+    if (isDiscordError) {
+      const discordError = error as DiscordAPIError;
       const recoverableCodes = [
         50001, 50013, 50014, 40001, 40002, 10003, 10008, 10011, 10015, 50035,
         50036,
       ];
       return (
-        typeof error.code === 'number' && !recoverableCodes.includes(error.code)
+        typeof discordError.code === 'number' &&
+        !recoverableCodes.includes(discordError.code)
       );
     }
     return true;
@@ -170,7 +207,34 @@ class ErrorHandler {
     }
 
     this.updateErrorCache(errorKey, errorDetails);
-    await this.sendErrorToWebhook(errorDetails);
+
+    // Log before sending to webhook
+    console.log('Attempting to send error to webhook...');
+
+    if (!this.webhook) {
+      console.log('No webhook client available');
+      // Try to reinitialize webhook
+      this.setupWebhook();
+      if (!this.webhook) {
+        return;
+      }
+    }
+
+    try {
+      await this.sendErrorToWebhook(errorDetails);
+      console.log('Successfully sent error to webhook');
+    } catch (error) {
+      console.error('Failed to send to webhook:', error);
+      // Retry once with a delay
+      setTimeout(async () => {
+        try {
+          await this.sendErrorToWebhook(errorDetails);
+          console.log('Successfully sent error to webhook on retry');
+        } catch (retryError) {
+          console.error('Failed to send to webhook on retry:', retryError);
+        }
+      }, 5000);
+    }
   }
 
   private shouldRateLimit(errorKey: string): boolean {
@@ -223,45 +287,112 @@ class ErrorHandler {
   }
 
   private async sendErrorToWebhook(errorDetails: ErrorDetails): Promise<void> {
-    if (!this.webhook) return;
-
-    const embed = new EmbedBuilder()
-      .setColor(0xff0000)
-      .setTitle(`Error: ${errorDetails.type}`)
-      .setDescription(`\`\`\`${errorDetails.message}\`\`\``)
-      .addFields(
-        { name: 'Category', value: errorDetails.category, inline: true },
-        {
-          name: 'Stack Trace',
-          value: `\`\`\`${errorDetails.stack.slice(0, 1000)}\`\`\``,
-        },
-        { name: 'Environment', value: errorDetails.environment },
-        { name: 'Timestamp', value: errorDetails.timestamp },
-        {
-          name: 'Recovery Suggestions',
-          value: errorDetails.recoverySuggestions,
-        },
-        {
-          name: 'Context',
-          value: this.formatContext(errorDetails.context),
-          inline: false,
-        },
-        {
-          name: 'Performance',
-          value: this.formatPerformanceMetrics(errorDetails.performance),
-          inline: false,
-        },
-        {
-          name: 'Severity',
-          value: errorDetails.severity.toUpperCase(), // Ensure it's a string
-          inline: true,
-        }
-      );
+    if (!this.webhook) {
+      console.error('No webhook client available');
+      return;
+    }
 
     try {
-      await this.webhook.send({ embeds: [embed] });
-    } catch (error) {
-      console.error('Failed to send error to webhook:', error);
+      const embed = new EmbedBuilder()
+        .setColor(0xff0000)
+        .setTitle(`Error: ${errorDetails.type}`)
+        .setDescription(`\`\`\`diff\n- ${errorDetails.message}\`\`\``);
+
+      if (errorDetails.category) {
+        embed.addFields({
+          name: 'Category',
+          value: `\`${errorDetails.category}\``,
+          inline: true,
+        });
+      }
+
+      if (errorDetails.stack) {
+        const formattedStack = errorDetails.stack
+          .split('\n')
+          .map((line) => {
+            if (line.includes('at ')) {
+              return line.replace('at ', '→ at '); // Add arrow for stack frames
+            }
+            return line;
+          })
+          .join('\n');
+
+        embed.addFields({
+          name: 'Stack Trace',
+          value: `\`\`\`js\n${formattedStack.slice(0, 1000)}\`\`\``,
+        });
+      }
+
+      if (errorDetails.environment) {
+        embed.addFields({
+          name: 'Environment',
+          value: `\`${errorDetails.environment}\``,
+        });
+      }
+
+      if (errorDetails.timestamp) {
+        embed.addFields({
+          name: 'Timestamp',
+          value: `<t:${Math.floor(new Date(errorDetails.timestamp).getTime() / 1000)}:F>`,
+        });
+      }
+
+      if (errorDetails.recoverySuggestions) {
+        embed.addFields({
+          name: 'Recovery Suggestions',
+          value: `\`\`\`yaml\n${errorDetails.recoverySuggestions}\`\`\``,
+        });
+      }
+
+      const contextStr = this.formatContext(errorDetails.context);
+      if (contextStr && contextStr !== 'No context available') {
+        embed.addFields({
+          name: 'Context',
+          value: `\`\`\`json\n${contextStr}\`\`\``,
+          inline: false,
+        });
+      }
+
+      const performanceStr = this.formatPerformanceMetrics(
+        errorDetails.performance
+      );
+      if (performanceStr) {
+        embed.addFields({
+          name: 'Performance',
+          value: `\`\`\`ml\n${performanceStr}\`\`\``,
+          inline: false,
+        });
+      }
+
+      if (errorDetails.severity) {
+        const severityEmojis = {
+          LOW: '🟢',
+          MEDIUM: '🟡',
+          HIGH: '🔴',
+          CRITICAL: '⛔',
+        };
+        embed.addFields({
+          name: 'Severity',
+          value: `${severityEmojis[errorDetails.severity]} **${errorDetails.severity}**`,
+          inline: true,
+        });
+      }
+
+      const response = await this.webhook.send({
+        embeds: [embed],
+        username: 'Error Handler',
+        avatarURL: this.client?.user?.displayAvatarURL(),
+      });
+    } catch (error: unknown) {
+      console.error('Detailed webhook error:', error);
+      if (
+        error instanceof Error &&
+        error.message.includes('Invalid Webhook Token')
+      ) {
+        console.log('Attempting to re-initialize webhook...');
+        this.setupWebhook();
+      }
+      throw error;
     }
   }
 
@@ -413,7 +544,10 @@ class ErrorHandler {
   }
 
   public destroy(): void {
-    this.webhook?.destroy();
+    if (this.webhook) {
+      this.webhook.send = null;
+      this.webhook = null;
+    }
   }
 
   // Add method to get error statistics

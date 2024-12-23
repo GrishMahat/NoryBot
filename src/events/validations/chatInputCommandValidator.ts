@@ -48,7 +48,7 @@ const sendEmbedReply = async (
 
     await interaction.reply({ embeds: [embed], ephemeral });
   } catch (err) {
-    console.error('Error sending embed reply:', err);
+    await global.errorHandler.handleError(err, 'EmbedReplyError');
   }
 };
 
@@ -64,7 +64,7 @@ const getCachedData = async <T>(
     commandCache.set(key, data as LocalCommand);
     return data;
   } catch (error) {
-    console.error('Cache operation failed:', error);
+    await global.errorHandler.handleError(error, 'CacheOperationError');
     return fetchFunction(); // Fallback to direct fetch
   }
 };
@@ -213,7 +213,7 @@ export default async (
         await commandObject.run(client, interaction);
       }
     } catch (err) {
-      console.error('Error executing command:', err);
+      await global.errorHandler.handleError(err, 'CommandExecutionError');
 
       await sendEmbedReply(
         interaction,
@@ -227,6 +227,8 @@ export default async (
         .green
     );
   } catch (err) {
+    await global.errorHandler.handleError(err, 'CommandProcessingError');
+
     await sendEmbedReply(
       interaction,
       mConfig.embedColors.error,

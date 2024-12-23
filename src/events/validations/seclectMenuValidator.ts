@@ -62,7 +62,7 @@ const sendEmbedReply = async (
 
     await interaction.reply({ embeds: [embed], ephemeral });
   } catch (err) {
-    console.error('Error sending embed reply:', err);
+    await global.errorHandler.handleError(err, 'SelectMenuEmbedReplyError');
   }
 };
 
@@ -116,17 +116,19 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
     console.log(`Loaded ${selectMenus.size} select menus`.green);
     selectMenusLoaded = true;
   } catch (error) {
-    console.error('Error loading select menus:'.red, error);
+    await global.errorHandler.handleError(error, 'SelectMenuLoadError');
 
-    // Retry logic if it fails
     if (retryCount < 3) {
       console.log(
         `Retrying select menu load... (Attempt ${retryCount + 1})`.yellow
       );
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
-      await loadSelectMenus(retryCount + 1); // Recursive retry
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await loadSelectMenus(retryCount + 1);
     } else {
-      console.error('Failed to load select menus after 3 attempts'.red);
+      await global.errorHandler.handleError(
+        new Error('Failed to load select menus after 3 attempts'),
+        'SelectMenuLoadMaxRetriesError'
+      );
     }
   }
 };
@@ -165,7 +167,7 @@ const handleSelectMenu = async (
     interaction.message.interaction &&
     interaction.message.interaction.user.id !== interaction.user.id
   ) {
-    return sendEmbedReply(interaction, 'Red', mConfig.cannotUseSelect, true); // Changed to 'cannotUseSelect'
+    return sendEmbedReply(interaction, 'Red', mConfig.cannotUseSelect, true);
   }
 
   if (selectMenu.cooldown) {
@@ -189,9 +191,9 @@ const handleSelectMenu = async (
     );
     await selectMenu.run(client, interaction);
   } catch (error) {
-    console.error(`Error executing select menu ${customId}:`.red, error);
+    await global.errorHandler.handleError(error, 'SelectMenuExecutionError');
 
-    sendEmbedReply(
+    await sendEmbedReply(
       interaction,
       'Red',
       'There was an error while executing this select menu!',

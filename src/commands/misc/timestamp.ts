@@ -10,7 +10,9 @@ const timestampCommand: LocalCommand = {
     .addStringOption((option) =>
       option
         .setName('date')
-        .setDescription('Date to convert (e.g., 2024-03-25, now, tomorrow, next week)')
+        .setDescription(
+          'Date to convert (e.g., 2024-03-25, now, tomorrow, next week)'
+        )
         .setRequired(true)
     )
     .addStringOption((option) =>
@@ -37,13 +39,15 @@ const timestampCommand: LocalCommand = {
   devOnly: false,
 
   run: async (client, interaction) => {
+    await interaction.deferReply();
+
     try {
       const input = interaction.options.getString('date', true);
       const timeInput = interaction.options.getString('time') || '';
       const showPreview = interaction.options.getBoolean('preview') || false;
 
       let date: Date;
-      
+
       // Handle special keywords
       switch (input.toLowerCase()) {
         case 'now':
@@ -61,54 +65,65 @@ const timestampCommand: LocalCommand = {
           date = new Date();
           date.setMonth(date.getMonth() + 1);
           break;
+        case 'next year':
+          date = new Date();
+          date.setFullYear(date.getFullYear() + 1);
+          break;
         default:
           // Try parsing the date
           date = new Date(input);
-          
+
           // If time is provided, try to set it
           if (timeInput) {
-            const timeParts = timeInput.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
+            const timeParts = timeInput.match(
+              /(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i
+            );
             if (timeParts) {
               let hours = parseInt(timeParts[1]);
               const minutes = parseInt(timeParts[2]);
               const meridiem = timeParts[3]?.toUpperCase();
 
+              // Handle 12-hour format properly
               if (meridiem) {
                 if (meridiem === 'PM' && hours < 12) hours += 12;
                 if (meridiem === 'AM' && hours === 12) hours = 0;
               }
 
-              date.setHours(hours, minutes);
+              // Validate hours and minutes
+              if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                date.setHours(hours, minutes, 0, 0); // Reset seconds and milliseconds
+              }
             }
           }
       }
 
       if (isNaN(date.getTime())) {
-        await interaction.reply({
-          content: `${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n` +
+        await interaction.editReply({
+          content:
+            `${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n` +
             '• YYYY-MM-DD\n' +
             '• now\n' +
             '• tomorrow\n' +
             '• next week\n' +
             '• next month\n' +
+            '• next year\n' +
             'You can also add a time using the time option (e.g., 15:30 or 3:30 PM)',
-          ephemeral: true,
         });
         return;
       }
 
       const timestamp = Math.floor(date.getTime() / 1000);
       const embed = new EmbedBuilder()
-        .setColor('Green')
+        .setColor('#2b2d31')
         .setTitle(`${emojiConfig.statistics} Discord Timestamp Formats`)
         .setDescription(
           'Here are the different timestamp formats. The display format (12/24hr) depends on your Discord language setting.\n' +
-          'US English (🇺🇸) shows 12-hour format\n' +
-          'UK English (🇬🇧) shows 24-hour format\n\n' +
-          `${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n' : ''}` +
-          '**Note:** Click on the codes to copy them!'
+            'US English (🇺🇸) shows 12-hour format\n' +
+            'UK English (🇬🇧) shows 24-hour format\n\n' +
+            `${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n\n' : ''}` +
+            '**Note:** Click on the codes to copy them!'
         )
-        .addFields(
+        .addFields([
           {
             name: 'Default',
             value: `\`<t:${timestamp}>\`\n<t:${timestamp}>`,
@@ -148,18 +163,19 @@ const timestampCommand: LocalCommand = {
             name: 'Relative Time (R)',
             value: `\`<t:${timestamp}:R>\`\n<t:${timestamp}:R>`,
             inline: true,
-          }
-        )
+          },
+        ])
         .setFooter({
-          text: 'Copy the code format you want to use | Timestamps automatically adjust to viewer\'s timezone',
-        });
+          text: "Copy the code format you want to use | Timestamps automatically adjust to viewer's timezone",
+          iconURL: client.user?.displayAvatarURL(),
+        })
+        .setTimestamp();
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       global.errorHandler.handleError(error, 'TimestampCommand');
-      await interaction.reply({
-        content: `${emojiConfig.notag} An error occurred while processing the timestamp.`,
-        ephemeral: true,
+      await interaction.editReply({
+        content: ` An error occurred while processing the timestamp.`,
       });
     }
   },
