@@ -5,3 +5,6 @@ dist
 migrations
 all.env
 .idea
+all.dev
+temp_quote.png
+temp_quote.*

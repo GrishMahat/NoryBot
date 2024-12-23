@@ -49,16 +49,12 @@ const main = async (): Promise<void> => {
   try {
     await initializeClient();
   } catch (error) {
-    console.log(error);
     await errorHandler.handleError(error, 'MainProcessError');
     process.exit(1);
   }
 };
 
-
 main().catch(async (error) => {
-  console.log('6');
-
   await errorHandler.handleError(error, 'UncaughtError');
   process.exit(1);
 });

@@ -80,10 +80,7 @@ const loadEventFile = async (
     eventModuleCache.set(eventFile, eventInfo);
     registerEvent(eventRegistry, eventName, eventInfo);
   } catch (error) {
-    console.error(`Failed to load event file: ${eventFile}`, error);
-    throw new EventError(`Failed to load event file: ${eventFile}`, {
-      cause: error,
-    });
+    await global.errorHandler.handleError(error, 'EventFileLoadError');
   }
 };
 
@@ -117,16 +114,13 @@ const processEventFolder = async (
           path.join(eventFolder, file),
           eventName,
           eventRegistry
-        ).catch((error) => {
-          console.error(`Error loading event file ${file}:`, error);
+        ).catch(async (error) => {
+          await global.errorHandler.handleError(error, 'EventFileProcessError');
         })
       )
     );
   } catch (error) {
-    console.error(`Failed to process event folder: ${eventFolder}`, error);
-    throw new EventError(`Failed to process event folder: ${eventFolder}`, {
-      cause: error,
-    });
+    await global.errorHandler.handleError(error, 'EventFolderProcessError');
   }
 };
 
@@ -166,15 +160,14 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
           try {
             await Promise.resolve(handler(client, ...args));
           } catch (error) {
-            console.error(
-              `Error in event handler ${fileName} for event ${eventName}:`,
-              error
-            );
-            console.error(
-              new EventError(`Handler execution failed: ${fileName}`, {
+            await global.errorHandler.handleError(
+              error,
+              'EventHandlerExecutionError',
+              {
                 eventName,
-                error,
-              })
+                fileName,
+                handler: handler.name,
+              }
             );
           }
         }
@@ -183,8 +176,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
       loadedEvents.add(eventName);
     }
   } catch (error) {
-    console.error('Failed to setup event handlers:', error);
-    throw new EventError('Failed to setup event handlers', { cause: error });
+    await global.errorHandler.handleError(error, 'EventHandlerSetupError');
   }
 };
 

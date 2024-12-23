@@ -96,8 +96,8 @@ const compareCommands = (
     },
     {
       key: 'defaultMemberPermissions',
-      existing: existing.defaultMemberPermissions,
-      local: local.data.default_member_permissions,
+      existing: existing.defaultMemberPermissions?.toString() || null,
+      local: local.data.default_member_permissions?.toString() || null,
       defaultValue: defaultValues.default_member_permissions,
     },
   ];

@@ -54,15 +54,22 @@ const factCommand: LocalCommand = {
       const embed = createFactEmbed(fact, category, client);
       const row = createButtonRow();
 
-      const reply = await interaction.editReply({ embeds: [embed], components: [row] });
-      
+      const reply = await interaction.editReply({
+        embeds: [embed],
+        components: [row],
+      });
+
       // Create collector from the interaction directly
-      const collector = (interaction as any).channel?.createMessageComponentCollector({
+      const collector = (
+        interaction as any
+      ).channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
         filter: (i: ButtonInteraction) => {
-          return (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
+          return (
+            (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
             i.user.id === interaction.user.id &&
-            i.message.id === reply.id;
+            i.message.id === reply.id
+          );
         },
         time: 120000,
       });
@@ -76,7 +83,11 @@ const factCommand: LocalCommand = {
         try {
           if (i.customId === 'regenerate_fact') {
             const newFact = await getFact(category);
-            const newEmbed = createFactEmbed(newFact, category, interaction.client);
+            const newEmbed = createFactEmbed(
+              newFact,
+              category,
+              interaction.client
+            );
             await i.update({ embeds: [newEmbed], components: [row] });
           } else if (i.customId === 'share_fact') {
             await i.reply({
@@ -88,7 +99,7 @@ const factCommand: LocalCommand = {
           console.error('Error handling button interaction:', error);
           await i.reply({
             content: `${emojiConfig.notag} An error occurred. Please try again.`,
-            ephemeral: true
+            ephemeral: true,
           });
         }
       });
@@ -108,19 +119,17 @@ const factCommand: LocalCommand = {
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true)
         );
-        
+
         try {
           await interaction.editReply({ components: [newRow] });
         } catch (error) {
           console.error('Error disabling buttons:', error);
         }
       });
-
     } catch (error) {
       console.error('Error in fact command:', error);
       await interaction.editReply({
-        content:
-          `${emojiConfig.notag} An error occurred while fetching the fact. Please try again later.`,
+        content: `${emojiConfig.notag} An error occurred while fetching the fact. Please try again later.`,
       });
     }
   },
@@ -152,11 +161,17 @@ async function getFact(category: string): Promise<string> {
     }
   } catch (error) {
     console.error(`Error fetching fact from ${url}:`, error);
-    throw new Error('Unable to fetch a fact at this time. Please try again later.');
+    throw new Error(
+      'Unable to fetch a fact at this time. Please try again later.'
+    );
   }
 }
 
-function createFactEmbed(fact: string, category: string, client: Client): EmbedBuilder {
+function createFactEmbed(
+  fact: string,
+  category: string,
+  client: Client
+): EmbedBuilder {
   const categoryIcons: Record<string, string> = {
     random: emojiConfig.statistics,
     today: emojiConfig.chart_increasing,
@@ -171,7 +186,7 @@ function createFactEmbed(fact: string, category: string, client: Client): EmbedB
     .setColor('#2ECC71')
     .setAuthor({
       name: client.user?.username || 'Fact Bot',
-      iconURL: client.user?.displayAvatarURL()
+      iconURL: client.user?.displayAvatarURL(),
     })
     .setTitle(
       `${categoryIcons[category] || emojiConfig.notag} ${
@@ -182,7 +197,7 @@ function createFactEmbed(fact: string, category: string, client: Client): EmbedB
     .setTimestamp()
     .setFooter({
       text: 'Click the buttons below to get a new fact or share this one',
-      iconURL: client.user?.displayAvatarURL()
+      iconURL: client.user?.displayAvatarURL(),
     });
 }
 

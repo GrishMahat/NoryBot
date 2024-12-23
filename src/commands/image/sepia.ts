@@ -49,7 +49,9 @@ const sepiaCommand: LocalCommand = {
 
       const embed = new EmbedBuilder()
         .setColor('#8B4513')
-        .setDescription(`${targetUser.toString()}'s avatar with a vintage effect`)
+        .setDescription(
+          `${targetUser.toString()}'s avatar with a vintage effect`
+        )
         .setImage('attachment://sepia.png')
         .setTimestamp();
 

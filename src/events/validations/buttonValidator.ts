@@ -1,4 +1,3 @@
-import 'colors';
 import {
   EmbedBuilder,
   PermissionsBitField,
@@ -62,7 +61,7 @@ const sendEmbedReply = async (
 
     await interaction.reply({ embeds: [embed], ephemeral });
   } catch (err) {
-    console.error('Error sending embed reply:', err);
+    await global.errorHandler.handleError(err, 'ButtonValidatorEmbedError');
   }
 };
 
@@ -100,17 +99,13 @@ const loadButtons = async (retryCount: number = 0): Promise<void> => {
       };
       buttons.set(button.customId, button);
     }
-    console.log(`Loaded ${buttons.size} buttons`.green);
     buttonsLoaded = true;
   } catch (error) {
-    console.error('Error loading buttons:'.red, error);
-
     if (retryCount < 3) {
-      console.log(`Retrying button load... (Attempt ${retryCount + 1})`.yellow);
       await new Promise((resolve) => setTimeout(resolve, 5000));
       await loadButtons(retryCount + 1);
     } else {
-      console.error('Failed to load buttons after 3 attempts'.red);
+      await global.errorHandler.handleError(error, 'ButtonLoadError');
     }
   }
 };
@@ -168,13 +163,9 @@ const handleButton = async (
   }
 
   try {
-    console.log(
-      `Executing button ${customId} for user ${interaction.user.tag}`.cyan
-    );
     await button.run(client, interaction);
   } catch (error) {
-    console.error(`Error executing button ${customId}:`.red, error);
-
+    await global.errorHandler.handleError(error, 'ButtonExecutionError');
     sendEmbedReply(
       interaction,
       'Red',

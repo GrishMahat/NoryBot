@@ -75,7 +75,7 @@ const sendEmbedReply = async (
 
     await interaction.reply({ embeds: [embed], ephemeral });
   } catch (err) {
-    console.error('Error sending embed reply:', err);
+    await global.errorHandler.handleError(err, 'ModalEmbedReplyError');
   }
 };
 
@@ -110,14 +110,17 @@ const loadModals = async (retryCount: number = 0): Promise<void> => {
     console.log(`Loaded ${modals.size} modals`.green);
     modalsLoaded = true;
   } catch (error) {
-    console.error('Error loading modals:'.red, error);
+    await global.errorHandler.handleError(error, 'ModalLoadError');
 
     if (retryCount < 3) {
       console.log(`Retrying modal load... (Attempt ${retryCount + 1})`.yellow);
       await new Promise((resolve) => setTimeout(resolve, 5000));
       await loadModals(retryCount + 1);
     } else {
-      console.error('Failed to load modals after 3 attempts'.red);
+      await global.errorHandler.handleError(
+        new Error('Failed to load modals after 3 attempts'),
+        'ModalLoadMaxRetriesError'
+      );
     }
   }
 };
@@ -173,7 +176,7 @@ const handleModal = async (
     );
     await modal.run(client, interaction);
   } catch (error) {
-    console.error(`Error executing modal ${customId}:`.red, error);
+    await global.errorHandler.handleError(error, 'ModalExecutionError');
 
     sendEmbedReply(
       interaction,

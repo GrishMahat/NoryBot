@@ -33,7 +33,7 @@ const hitlerCommand: LocalCommand = {
     try {
       await interaction.deferReply();
 
-      const targetUser = 
+      const targetUser =
         interaction.options.get('user')?.user || interaction.user;
 
       const avatarUrl = targetUser.displayAvatarURL({
@@ -77,7 +77,9 @@ const hitlerCommand: LocalCommand = {
           new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle('❌ Error')
-            .setDescription('Failed to generate the history meme. Please try again later.')
+            .setDescription(
+              'Failed to generate the history meme. Please try again later.'
+            )
             .setTimestamp(),
         ],
       });
@@ -85,4 +87,4 @@ const hitlerCommand: LocalCommand = {
   },
 };
 
-export default hitlerCommand; 
+export default hitlerCommand;
