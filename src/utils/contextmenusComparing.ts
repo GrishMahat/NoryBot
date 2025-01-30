@@ -93,6 +93,7 @@ const compareContextMenuCommands = (
       local: local.data.default_member_permissions?.toString() ?? null,
       defaultValue: defaultValues.default_member_permissions,
     },
+
   ];
 
   // Check for name localizations
