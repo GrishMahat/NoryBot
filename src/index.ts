@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
 import loadEventHandlers from './handlers/eventHandler.js';
 import ErrorHandler from './handlers/errorHandler.js';
+import server from './utils/server.js';
 
 // Create error handler instance
 const errorHandler = new ErrorHandler({
