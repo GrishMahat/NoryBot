@@ -19,7 +19,7 @@
     "discord-image-generation": "^1.4.25",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
-    "mongoose": "^8.10.0",
+    "mongoose": "^8.9.5",
     "tsx": "^4.19.2"
   },
   "devDependencies": {
