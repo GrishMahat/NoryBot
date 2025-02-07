@@ -1,0 +1,51 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' 
+  workflow_dispatch: 
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+
+    - name: Update dependencies
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        pnpm update --latest
+        
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: deps/update-dependencies
+        title: '⬆️ Update dependencies'
+        commit-message: 'chore(deps): update dependencies'
+        body: |
+          🤖 This PR was automatically created by the dependency update workflow.
+          
+          Updates include:
+          - pnpm lock file
+          - package.json dependencies
+          
+          Please review the changes and merge if everything looks good.
+        labels: |
+          dependencies
+          automated pr 

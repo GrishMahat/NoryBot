@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build
+      run: pnpm build
+
+    # Determine version bump and create changelog
+    - name: Release Please
+      uses: google-github-actions/release-please-action@v4
+      with:
+        release-type: node
+        package-name: nory-bot
+        changelog-types: |
+          [
+            {"type":"feat","section":"✨ Features","hidden":false},
+            {"type":"fix","section":"🐛 Bug Fixes","hidden":false},
+            {"type":"docs","section":"📚 Documentation","hidden":false},
+            {"type":"chore","section":"🔧 Maintenance","hidden":false},
+            {"type":"style","section":"💄 Styling","hidden":false},
+            {"type":"refactor","section":"♻️ Code Refactoring","hidden":false},
+            {"type":"perf","section":"⚡️ Performance","hidden":false},
+            {"type":"test","section":"✅ Testing","hidden":false}
+          ] 
