@@ -272,7 +272,7 @@ export default function determineErrorCategory(error: DiscordAPIError): string {
         return 'Unknown Discord API Error';
     }
   }
-  /* !fix this later 
+  /* !fix this later
   const message = error.message.toLowerCase()|| '';
   if (message.includes('api')) return 'Discord API Error';
   if (message.includes('permission')) return 'Permission Error';
