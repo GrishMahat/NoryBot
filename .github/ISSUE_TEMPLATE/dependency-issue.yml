@@ -1,0 +1,64 @@
+name: "📦 Dependency Issue"
+description: Report a problem with dependencies
+title: "📦 Dependency: "
+labels: ["dependencies", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a dependency issue!
+        
+  - type: dropdown
+    id: dependency-type
+    attributes:
+      label: Type of Dependency
+      options:
+        - Production Dependency
+        - Development Dependency
+        - pnpm/npm related
+        - Other
+    validations:
+      required: true
+      
+  - type: input
+    id: package-name
+    attributes:
+      label: Package Name
+      description: Which package is causing issues?
+      placeholder: "e.g., discord.js, typescript, etc."
+    validations:
+      required: true
+      
+  - type: input
+    id: current-version
+    attributes:
+      label: Current Version
+      description: What version are you currently using?
+      placeholder: "e.g., 14.7.1"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problem Description
+      description: Describe the issue you're experiencing
+      placeholder: "Detailed description of the problem..."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Logs
+      description: Please copy and paste any relevant error messages
+      render: shell
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true 

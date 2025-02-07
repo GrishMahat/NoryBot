@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # Enable version updates for npm/pnpm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "⬆️"
+      include: "scope"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "prettier"
+          - "nodemon"
+      production-dependencies:
+        patterns:
+          - "discord.js"
+          - "mongoose"
+          - "axios"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github_actions"
+    commit-message:
+      prefix: "⬆️"
+      include: "scope" 
