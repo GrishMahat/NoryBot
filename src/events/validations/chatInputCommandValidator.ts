@@ -56,27 +56,27 @@ const getCachedData = async <T>(
   key: string,
   fetchFunction: () => Promise<T>
 ): Promise<T> => {
-    try {
-      const cachedItem = commandCache.get(key);
-      if (cachedItem) return cachedItem as T;
+  try {
+    const cachedItem = commandCache.get(key);
+    if (cachedItem) return cachedItem as T;
 
-      const data = await fetchFunction();
-      commandCache.set(key, data as LocalCommand);
-      return data;
-    } catch (error) {
-      await global.errorHandler.handleError(error, 'CacheOperationError');
-      return fetchFunction(); // Fallback to direct fetch
-    }
+    const data = await fetchFunction();
+    commandCache.set(key, data as LocalCommand);
+    return data;
+  } catch (error) {
+    await global.errorHandler.handleError(error, 'CacheOperationError');
+    return fetchFunction(); // Fallback to direct fetch
+  }
 };
 
 const getCachedLocalCommands = (): Promise<LocalCommand[]> =>
   getCachedData('localCommands', getLocalCommands);
 
 const initializeCommandMap = async (): Promise<void> => {
-    const localCommands = await getCachedLocalCommands();
-    localCommands.forEach((cmd) => {
-      commandMap.set(cmd.data.name, cmd);
-    });
+  const localCommands = await getCachedLocalCommands();
+  localCommands.forEach((cmd) => {
+    commandMap.set(cmd.data.name, cmd);
+  });
 };
 
 const checkPermissions = (
