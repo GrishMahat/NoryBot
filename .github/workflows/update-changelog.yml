@@ -14,14 +14,14 @@ jobs:
   update-changelog:
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # needed for pushing changes
-      pull-requests: write   # in case any PR metadata is updated
+      contents: write      # Allows pushing changes
+      pull-requests: write   # Allows updates if needed
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history to generate the changelog properly
+          fetch-depth: 0  # Full history is needed for generating the changelog
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,30 +39,24 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      # Update the changelog without creating or modifying pull requests.
+      # Run Release Please to update the changelog.
+      # We are using a configuration file and skipping PR/release creation.
       - name: Update Changelog with Release Please
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
-          package-name: nory-bot
-          changelog-only: true
-          changelog-types: |
-            [
-              {"type": "feat", "section": "✨ Features", "hidden": false},
-              {"type": "fix", "section": "🐛 Bug Fixes", "hidden": false},
-              {"type": "docs", "section": "📚 Documentation", "hidden": false},
-              {"type": "chore", "section": "🔧 Maintenance", "hidden": false},
-              {"type": "style", "section": "💄 Styling", "hidden": false},
-              {"type": "refactor", "section": "♻️ Code Refactoring", "hidden": false},
-              {"type": "perf", "section": "⚡️ Performance", "hidden": false},
-              {"type": "test", "section": "✅ Testing", "hidden": false}
-            ]
+          config-file: release-please-config.json
+          path: .
+          target-branch: ${{ github.ref_name }}
+          skip-github-release: true
+          skip-github-pull-request: true
 
-      # Optional: Format the changelog for better readability.
+      # Optional: Format the changelog for readability using Prettier.
       - name: Format CHANGELOG.md
         run: pnpm exec prettier --write CHANGELOG.md
 
-      # Commit and push the updated changelog if there are any changes.
+      # Commit and push any changes to CHANGELOG.md back to the current branch.
       - name: Commit changelog changes
         run: |
           if ! git diff --quiet CHANGELOG.md; then
