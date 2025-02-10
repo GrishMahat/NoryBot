@@ -1,0 +1,72 @@
+name: Update Changelog
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write   
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Update Changelog with Release Please
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: node
+          package-name: nory-bot
+          changelog-types: |
+            [
+              {"type": "feat", "section": "✨ Features", "hidden": false},
+              {"type": "fix", "section": "🐛 Bug Fixes", "hidden": false},
+              {"type": "docs", "section": "📚 Documentation", "hidden": false},
+              {"type": "chore", "section": "🔧 Maintenance", "hidden": false},
+              {"type": "style", "section": "💄 Styling", "hidden": false},
+              {"type": "refactor", "section": "♻️ Code Refactoring", "hidden": false},
+              {"type": "perf", "section": "⚡️ Performance", "hidden": false},
+              {"type": "test", "section": "✅ Testing", "hidden": false}
+            ]
+
+      - name: Format CHANGELOG.md
+        run: pnpm exec prettier --write CHANGELOG.md
+
+      - name: Commit changelog changes
+        run: |
+          # Check if CHANGELOG.md was modified
+          if ! git diff --quiet CHANGELOG.md; then
+            echo "CHANGELOG.md updated – committing changes."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG.md
+            git commit -m "chore: update CHANGELOG.md for improved clarity"
+            git push origin HEAD
+          else
+            echo "No changes to CHANGELOG.md, nothing to commit."
+          fi
