@@ -1,0 +1,71 @@
+name: Update Changelog
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Allows pushing changes
+      pull-requests: write   # Allows updates if needed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history is needed for generating the changelog
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm build
+
+      # Run Release Please to update the changelog.
+      # We are using a configuration file and skipping PR/release creation.
+      - name: Update Changelog with Release Please
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node
+          config-file: release-please-config.json
+          path: .
+          target-branch: ${{ github.ref_name }}
+          skip-github-release: true
+          skip-github-pull-request: true
+
+      # Optional: Format the changelog for readability using Prettier.
+      - name: Format CHANGELOG.md
+        run: pnpm exec prettier --write CHANGELOG.md
+
+      # Commit and push any changes to CHANGELOG.md back to the current branch.
+      - name: Commit changelog changes
+        run: |
+          if ! git diff --quiet CHANGELOG.md; then
+            echo "CHANGELOG.md updated – committing changes."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG.md
+            git commit -m "chore: update CHANGELOG.md for improved clarity"
+            git push origin HEAD
+          else
+            echo "No changes to CHANGELOG.md, nothing to commit."
+          fi
