@@ -1,0 +1,85 @@
+import { ClientEvents } from 'discord.js';
+
+/**
+ * Type guard to check if a string is a valid Discord.js event name
+ * @param {string} eventName - The event name to validate
+ * @returns {boolean} True if the event name is a valid Discord.js event
+ */
+export function isValidEventName(
+  eventName: string
+): eventName is keyof ClientEvents {
+  // Define known Discord.js events as a Set for faster lookups
+  const validEvents = new Set([
+    'ready',
+    'interactionCreate',
+    'messageCreate',
+    'guildCreate',
+    'guildDelete',
+    'guildMemberAdd',
+    'guildMemberRemove',
+    'channelCreate',
+    'channelDelete',
+    'error',
+    'warn',
+    'debug',
+    'invalidated',
+    'raw',
+    'rateLimit',
+    'apiResponse',
+    'apiRequest',
+    'shardDisconnect',
+    'shardError',
+    'shardReady',
+    'shardReconnecting',
+    'shardResume',
+    'invalidRequestWarning',
+    'webhooksUpdate',
+    'voiceStateUpdate',
+    'typingStart',
+    'threadUpdate',
+    'threadMembersUpdate',
+    'threadMemberUpdate',
+    'threadListSync',
+    'threadDelete',
+    'threadCreate',
+    'stickerUpdate',
+    'stickerDelete',
+    'stickerCreate',
+    'stageInstanceUpdate',
+    'stageInstanceDelete',
+    'stageInstanceCreate',
+    'roleUpdate',
+    'roleDelete',
+    'roleCreate',
+    'presenceUpdate',
+    'messageUpdate',
+    'messageDeleteBulk',
+    'messageDelete',
+    'messageReactionRemoveEmoji',
+    'messageReactionRemoveAll',
+    'messageReactionRemove',
+    'messageReactionAdd',
+    'inviteDelete',
+    'inviteCreate',
+    'guildUpdate',
+    'guildUnavailable',
+    'guildScheduledEventUpdate',
+    'guildScheduledEventUserRemove',
+    'guildScheduledEventUserAdd',
+    'guildScheduledEventDelete',
+    'guildScheduledEventCreate',
+    'guildMemberUpdate',
+    'guildMemberAvailable',
+    'guildIntegrationsUpdate',
+    'guildBanRemove',
+    'guildBanAdd',
+    'guildAuditLogEntryCreate',
+    'emojiUpdate',
+    'emojiDelete',
+    'emojiCreate',
+    'channelUpdate',
+    'channelPinsUpdate',
+  ]);
+
+  return validEvents.has(eventName);
+}
