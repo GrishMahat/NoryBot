@@ -1,6 +1,12 @@
-export type Currency = string;
+/**
+ * Represents a valid ISO 4217 currency code
+ */
+export type Currency = (typeof allCurrencies)[number];
 
-export const commonCurrencies: Currency[] = [
+/**
+ * List of commonly used currencies for quick access
+ */
+export const commonCurrencies = [
   'USD',
   'EUR',
   'GBP',
@@ -21,9 +27,12 @@ export const commonCurrencies: Currency[] = [
   'ZAR',
   'TRY',
   'BRL',
-];
+] as const;
 
-export const allCurrencies: Currency[] = [
+/**
+ * Complete list of supported ISO 4217 currency codes
+ */
+export const allCurrencies = [
   'AED',
   'AFN',
   'ALL',
@@ -183,4 +192,31 @@ export const allCurrencies: Currency[] = [
   'ZAR',
   'ZMW',
   'ZWL',
-];
+] as const;
+
+/**
+ * Type representing common currencies for better type safety
+ */
+export type CommonCurrency = (typeof commonCurrencies)[number];
+
+/**
+ * Interface for currency exchange rate data
+ */
+export interface ExchangeRate {
+  base: Currency;
+  target: Currency;
+  rate: number;
+  timestamp: number;
+}
+
+/**
+ * Interface for currency conversion result
+ */
+export interface CurrencyConversion {
+  from: Currency;
+  to: Currency;
+  amount: number;
+  convertedAmount: number;
+  rate: number;
+  timestamp: number;
+}

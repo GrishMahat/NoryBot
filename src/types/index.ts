@@ -14,6 +14,7 @@ import {
   ChatInputCommandInteraction,
   TimestampStylesString,
   AutocompleteInteraction,
+  // ApplicationCommandOption, we are  use the custom one below
 } from 'discord.js';
 
 // Define the structure of individual command options
@@ -32,6 +33,14 @@ export interface ApplicationCommandOptionChoice {
   value: string | number;
 }
 
+export interface ApplicationCommandOption {
+  type: ApplicationCommandOptionType;
+  name: string;
+  description: string;
+  required?: boolean;
+  choices?: ApplicationCommandOptionChoice[];
+  options?: ApplicationCommandOption[];
+}
 // Define the structure of a command
 export interface Command {
   name: string;
@@ -43,22 +52,35 @@ export interface Command {
   run: (client: Client, interaction: CommandInteraction) => Promise<void>;
 }
 
-export interface ApplicationCommandOption {
-  type: ApplicationCommandOptionType;
-  name: string;
-  description: string;
-  required?: boolean;
-  choices?: ApplicationCommandOptionChoice[];
-  options?: ApplicationCommandOption[];
-}
-
-// Define types for context and integration types
+// Define literal types for better type safety
 export type ApplicationCommandType = 1 | 2 | 3 | 4;
 export type ApplicationCommandContextType = 0 | 1 | 2;
 export type ApplicationCommandIntegrationType = 0 | 1;
 
-// Define the structure for a local command implementation
-export interface LocalCommand {
+/**
+ * Base interface for all command-related configurations
+ */
+export interface BaseCommandConfig {
+  userPermissions?: PermissionResolvable[];
+  botPermissions?: PermissionResolvable[];
+  cooldown?: number;
+  devOnly?: boolean;
+  testMode?: boolean;
+  deleted?: boolean;
+}
+
+/**
+ * Represents a compiled permission check result
+ */
+export interface CompiledChecks<T> {
+  userPermissions: (interaction: T) => boolean;
+  botPermissions: (interaction: T) => boolean;
+}
+
+/**
+ * Represents a local command implementation with full type safety
+ */
+export interface LocalCommand extends BaseCommandConfig {
   data: {
     name: string;
     description?: string;
@@ -69,15 +91,9 @@ export interface LocalCommand {
     nsfw?: boolean;
     dm_permission?: boolean;
     default_member_permissions?: PermissionsBitField | string | null;
-    name_localizations?: { [key: string]: string } | null;
-    description_localizations?: { [key: string]: string } | null;
+    name_localizations?: Record<string, string> | null;
+    description_localizations?: Record<string, string> | null;
   };
-  userPermissions?: PermissionResolvable[];
-  botPermissions?: PermissionResolvable[];
-  cooldown?: number;
-  devOnly?: boolean;
-  testMode?: boolean;
-  deleted?: boolean;
   nsfwMode?: boolean;
   category?: string;
   run: (
@@ -90,61 +106,43 @@ export interface LocalCommand {
   ) => Promise<void>;
 }
 
-export interface LocalContextMenu {
+/**
+ * Represents a context menu command implementation
+ */
+export interface LocalContextMenu extends BaseCommandConfig {
   data: ContextMenuCommandBuilder;
-  userPermissions?: PermissionResolvable[];
-  botPermissions?: PermissionResolvable[];
-  cooldown?: number;
-  devOnly?: boolean;
-  testMode?: boolean;
-  deleted?: boolean;
   run: (
     client: Client,
     interaction: ContextMenuCommandInteraction
   ) => Promise<void>;
 }
 
-export interface SelectMenu {
+/**
+ * Represents a select menu component implementation
+ */
+export interface SelectMenu extends BaseCommandConfig {
   customId: string;
   run: (
     client: Client,
     interaction: StringSelectMenuInteraction
   ) => Promise<void>;
-  cooldown?: number;
-  devOnly?: boolean;
-  testMode?: boolean;
-  userPermissions?: PermissionResolvable[];
-  botPermissions?: PermissionResolvable[];
-  compiledChecks?: {
-    userPermissions: (interaction: StringSelectMenuInteraction) => boolean;
-    botPermissions: (interaction: StringSelectMenuInteraction) => boolean;
-  };
+  compiledChecks?: CompiledChecks<StringSelectMenuInteraction>;
 }
 
-export interface Button {
+/**
+ * Represents a button component implementation
+ */
+export interface Button extends BaseCommandConfig {
   customId: string;
-  devOnly?: boolean;
-  testMode?: boolean;
-  cooldown?: number;
-  userPermissions?: PermissionResolvable[];
-  botPermissions?: PermissionResolvable[];
   run: (client: Client, interaction: ButtonInteraction) => Promise<void>;
-  compiledChecks?: {
-    userPermissions: (interaction: ButtonInteraction) => boolean;
-    botPermissions: (interaction: ButtonInteraction) => boolean;
-  };
+  compiledChecks?: CompiledChecks<ButtonInteraction>;
 }
 
-export interface Modal {
+/**
+ * Represents a modal component implementation
+ */
+export interface Modal extends BaseCommandConfig {
   customId: string;
-  cooldown?: number;
-  devOnly?: boolean;
-  testMode?: boolean;
-  userPermissions?: PermissionResolvable[];
-  botPermissions?: PermissionResolvable[];
-  compiledChecks?: {
-    userPermissions: (interaction: ModalSubmitInteraction) => boolean;
-    botPermissions: (interaction: ModalSubmitInteraction) => boolean;
-  };
   run: (client: Client, interaction: ModalSubmitInteraction) => Promise<void>;
+  compiledChecks?: CompiledChecks<ModalSubmitInteraction>;
 }
