@@ -14,13 +14,15 @@ jobs:
   update-changelog:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write   
+      contents: write      # needed for pushing changes
+      pull-requests: write   # in case any PR metadata is updated
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0  # Fetch full history to generate the changelog properly
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,11 +39,13 @@ jobs:
       - name: Build project
         run: pnpm build
 
+      # Update the changelog without creating or modifying pull requests.
       - name: Update Changelog with Release Please
         uses: google-github-actions/release-please-action@v4
         with:
           release-type: node
           package-name: nory-bot
+          changelog-only: true
           changelog-types: |
             [
               {"type": "feat", "section": "✨ Features", "hidden": false},
@@ -54,12 +58,13 @@ jobs:
               {"type": "test", "section": "✅ Testing", "hidden": false}
             ]
 
+      # Optional: Format the changelog for better readability.
       - name: Format CHANGELOG.md
         run: pnpm exec prettier --write CHANGELOG.md
 
+      # Commit and push the updated changelog if there are any changes.
       - name: Commit changelog changes
         run: |
-          # Check if CHANGELOG.md was modified
           if ! git diff --quiet CHANGELOG.md; then
             echo "CHANGELOG.md updated – committing changes."
             git config user.name "github-actions[bot]"
