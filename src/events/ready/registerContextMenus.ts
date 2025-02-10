@@ -177,23 +177,44 @@ function logContextMenuChanges(
   newContextMenus: string[],
   deletedContextMenus: string[]
 ): void {
-  console.log(`Total Context Menus: ${localContextMenus.length}`.yellow);
-  console.log('--------------------------------------------------'.cyan);
+  const SEPARATOR = {
+    DOUBLE: '═',
+    SINGLE: '─',
+    LENGTH: 60,
+  };
+
+  const header = `╔${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╗`.cyan;
+  const footer = `╚${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╝`.cyan;
+  const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
+
+  console.log(header);
+  console.log(`║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan);
+  console.log(divider);
+  console.log(`║ Total Menus: ${localContextMenus.length.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 15 - localContextMenus.length.toString().length)} ║`.cyan);
 
   if (updatedContextMenus.length) {
-    console.log('Edited Context Menus:'.yellow);
-    updatedContextMenus.forEach((menu) => console.log(`  - ${menu}`.white));
+    console.log(divider);
+    console.log(`║ Updated Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
+    updatedContextMenus.forEach(menu => 
+      console.log(`║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    );
   }
 
   if (newContextMenus.length) {
-    console.log('Newly Registered Context Menus:'.green);
-    newContextMenus.forEach((menu) => console.log(`  - ${menu}`.white));
+    console.log(divider);
+    console.log(`║ New Menus:${' '.repeat(SEPARATOR.LENGTH - 11)} ║`.cyan);
+    newContextMenus.forEach(menu => 
+      console.log(`║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    );
   }
 
   if (deletedContextMenus.length) {
-    console.log('Deleted Context Menus:'.red);
-    deletedContextMenus.forEach((menu) => console.log(`  - ${menu}`.white));
+    console.log(divider);
+    console.log(`║ Deleted Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
+    deletedContextMenus.forEach(menu => 
+      console.log(`║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    );
   }
 
-  console.log('=================================================='.cyan);
+  console.log(footer);
 }
