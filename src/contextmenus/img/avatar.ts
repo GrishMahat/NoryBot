@@ -8,6 +8,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags,
 } from 'discord.js';
 import { LocalContextMenu } from '@/src/types';
 
@@ -22,7 +23,7 @@ const UserAvatarContextMenu: LocalContextMenu = {
     if (!(interaction instanceof UserContextMenuCommandInteraction)) {
       await interaction.reply({
         content: '❌ This command can only be used on users.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -115,7 +116,7 @@ const UserAvatarContextMenu: LocalContextMenu = {
       console.error('Error in User Avatar context menu:', error);
       await interaction.reply({
         content: '❌ An error occurred while fetching avatar information.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

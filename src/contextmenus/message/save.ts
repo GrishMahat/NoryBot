@@ -4,6 +4,7 @@ import {
   EmbedBuilder,
   ContextMenuCommandInteraction,
   Client,
+  MessageFlags,
 } from 'discord.js';
 
 export default {
@@ -62,14 +63,14 @@ export default {
       // Confirm to the user
       await interaction.reply({
         content: '✅ Message has been saved to your DMs!',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       // Handle if user has DMs closed
       await interaction.reply({
         content:
           '❌ Unable to send you the message. Please make sure your DMs are open.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

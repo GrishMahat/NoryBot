@@ -452,14 +452,14 @@ interface CustomButtonBuilder extends ButtonBuilder {
         if (i.user.id !== interaction.user.id) {
           await i.reply({
             content: 'This pagination is not for you!',
-            ephemeral: true,
+            flags:  MessageFlags.Ephemeral,
           });
           return;
         }
 
         try {
           if (i.message.interaction?.id !== interaction.id) {
-            await i.reply({ content: 'This pagination session has expired.', ephemeral: true });
+            await i.reply({ content: 'This pagination session has expired.', flags: MessageFlags.Ephemeral });
             return;
           }
 
@@ -557,7 +557,7 @@ interface CustomButtonBuilder extends ButtonBuilder {
             ? err.message
             : 'An unexpected error occurred';
           
-          await i.reply({ content: errorMessage, ephemeral: true })
+          await i.reply({ content: errorMessage, flags: MessageFlags.Ephemeral })
             .catch(() => { });
         }
       });
@@ -605,7 +605,7 @@ interface CustomButtonBuilder extends ButtonBuilder {
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: errorMessage,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         await interaction.editReply({

@@ -5,6 +5,7 @@ import {
   ActionRowBuilder,
   TextInputStyle,
   ModalBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { Modal } from '../types/index.js';
 
@@ -27,7 +28,7 @@ const modal: Modal = {
     // Respond to the interaction
     await interaction.reply({
       content: `Your favorite color is ${favoriteColor} and your hobbies are: ${hobbies}`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

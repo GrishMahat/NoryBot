@@ -6,6 +6,7 @@ import {
   Client,
   GuildMember,
   User,
+  MessageFlags,
 } from 'discord.js';
 
 /**
@@ -103,6 +104,9 @@ export default {
       });
     }
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.reply({
+      embeds: [embed],
+      flags: MessageFlags.Ephemeral,
+    });
   },
 };

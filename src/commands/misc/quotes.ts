@@ -9,6 +9,7 @@ import {
   ComponentType,
   ButtonInteraction,
   AttachmentBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import {
@@ -83,7 +84,7 @@ const quotesCommand: LocalCommand = {
             const remainingTime = Math.ceil((cooldownEnd - now) / 1000);
             await i.reply({
               content: `${emojiConfig.notag} Please wait ${remainingTime} seconds before requesting a new quote.`,
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
             return;
           }

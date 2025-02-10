@@ -7,6 +7,7 @@ import {
   GuildMember,
   ColorResolvable,
   PermissionResolvable,
+  MessageFlags,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
@@ -73,8 +74,10 @@ const sendEmbedReply = async (
       })
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed], ephemeral });
-  } catch (err) {
+    await interaction.reply({
+      embeds: [embed],
+      flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+    });  } catch (err) {
     await global.errorHandler.handleError(err, 'ModalEmbedReplyError');
   }
 };
