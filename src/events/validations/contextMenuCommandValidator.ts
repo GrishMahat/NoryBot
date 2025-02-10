@@ -8,6 +8,7 @@ import {
   PermissionsBitField,
   TextChannel,
   NewsChannel,
+  MessageFlags,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
@@ -87,7 +88,10 @@ const sendEmbedReply = async (
       })
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed], ephemeral });
+    await interaction.reply({
+      embeds: [embed],
+      flags: MessageFlags.Ephemeral,
+    });
   } catch (err) {
     await global.errorHandler.handleError(err, 'EmbedReplyError');
   }

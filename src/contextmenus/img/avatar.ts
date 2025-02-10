@@ -81,7 +81,7 @@ const UserAvatarContextMenu: LocalContextMenu = {
         `👤 **User:** ${user.toString()} (${user.id})`,
         `🔷 **Global Avatar:** ${user.avatar ? '✅' : '❌'}`,
         `🔶 **Server Avatar:** ${member?.avatar ? '✅' : '❌'}`,
-        `��� **Avatar Decoration:** ${user.avatarDecoration ? '✅' : '❌'}`,
+        `🎭 **Avatar Decoration:** ${user.avatarDecoration ? '✅' : '❌'}`,
         `🎬 **Animated:** ${user.avatar?.startsWith('a_') ? '✅' : '❌'}`,
         `📏 **Available Sizes:** ${sizes.join(', ')}px`,
       ];
