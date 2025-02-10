@@ -28,7 +28,6 @@ import { LocalCommand } from '../../types/index.js';
  *
  * @example
  * // Usage in your main bot file
-
  *
  * @note
  * Ensure that you have the necessary permissions to manage application commands.
@@ -233,23 +232,39 @@ function logCommandChanges(
   newCommands: string[],
   deletedCommands: string[]
 ): void {
-  console.log(`Total Commands: ${localCommands.length}`.yellow);
-  console.log('--------------------------------------------------'.cyan);
+  const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
+  const footer = '╚══════════════════════════════════════════════════════╝'.cyan;
+  const divider = '╟──────────────────────────────────────────────────────╢'.cyan;
+
+  console.log(header);
+  console.log(`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`.cyan);
+  
+  if (updatedCommands.length || newCommands.length || deletedCommands.length) {
+    console.log(divider);
+  }
 
   if (updatedCommands.length) {
-    console.log('Edited Commands:'.yellow);
-    updatedCommands.forEach((cmd) => console.log(`  - ${cmd}`.white));
+    console.log(`║ Updated Commands:${' '.repeat(34)} ║`.cyan);
+    updatedCommands.forEach(cmd => 
+      console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan)
+    );
   }
 
   if (newCommands.length) {
-    console.log('Newly Registered Commands:'.green);
-    newCommands.forEach((cmd) => console.log(`  - ${cmd}`.white));
+    if (updatedCommands.length) console.log(divider);
+    console.log(`║ New Commands:${' '.repeat(37)} ║`.cyan);
+    newCommands.forEach(cmd => 
+      console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan)
+    );
   }
 
   if (deletedCommands.length) {
-    console.log('Deleted Commands:'.red);
-    deletedCommands.forEach((cmd) => console.log(`  - ${cmd}`.white));
+    if (updatedCommands.length || newCommands.length) console.log(divider);
+    console.log(`║ Deleted Commands:${' '.repeat(34)} ║`.cyan);
+    deletedCommands.forEach(cmd => 
+      console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan)
+    );
   }
 
-  console.log('=================================================='.cyan);
+  console.log(footer);
 }

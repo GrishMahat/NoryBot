@@ -8,9 +8,10 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from '../utils/getAllFiles.js';
 import fs from 'fs/promises';
-import { Client } from 'discord.js';
+import { Client, ClientEvents } from 'discord.js';
 import { EventInfo, EventRegistry, EventError } from '../types/events.js';
 import LRUCache from '../utils/Cache/LRUCache.js';
+import { isValidEventName } from '../utils/isValidEventName.js';
 
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = path.dirname(__filename);
@@ -32,12 +33,12 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
 /**
  * Registers an event handler in the event registry
  * @param {EventRegistry} eventRegistry - The registry storing all event handlers
- * @param {string} eventName - The name of the Discord.js event
+ * @param {keyof ClientEvents} eventName - The name of the Discord.js event
  * @param {EventInfo} eventInfo - Information about the event handler
  */
 const registerEvent = (
   eventRegistry: EventRegistry,
-  eventName: string,
+  eventName: keyof ClientEvents,
   eventInfo: EventInfo
 ): void => {
   const events = eventRegistry.get(eventName) ?? [];
@@ -48,13 +49,13 @@ const registerEvent = (
 /**
  * Loads and registers a single event file
  * @param {string} eventFile - Path to the event handler file
- * @param {string} eventName - Name of the Discord.js event
+ * @param {keyof ClientEvents} eventName - Name of the Discord.js event
  * @param {EventRegistry} eventRegistry - Registry to store the event handler
  * @throws {EventError} When the event file cannot be loaded or is invalid
  */
 const loadEventFile = async (
   eventFile: string,
-  eventName: string,
+  eventName: keyof ClientEvents,
   eventRegistry: EventRegistry
 ): Promise<void> => {
   try {
@@ -96,10 +97,14 @@ const processEventFolder = async (
 ): Promise<void> => {
   try {
     const files = await fs.readdir(eventFolder);
+    const folderName = path.basename(eventFolder);
     const eventName =
-      path.basename(eventFolder) === 'validations'
-        ? 'interactionCreate'
-        : path.basename(eventFolder);
+      folderName === 'validations' ? 'interactionCreate' : folderName;
+
+    // Validate event name is a valid Discord.js event
+    if (!isValidEventName(eventName)) {
+      throw new EventError(`Invalid event name: ${eventName}`, { eventFolder });
+    }
 
     const eventFiles = files.filter(
       (file) =>
@@ -112,7 +117,7 @@ const processEventFolder = async (
       eventFiles.map((file) =>
         loadEventFile(
           path.join(eventFolder, file),
-          eventName,
+          eventName as keyof ClientEvents,
           eventRegistry
         ).catch(async (error) => {
           await global.errorHandler.handleError(error, 'EventFileProcessError');
@@ -138,7 +143,7 @@ const processEventFolder = async (
  */
 const loadEventHandlers = async (client: Client): Promise<void> => {
   const eventRegistry: EventRegistry = new Map();
-  const loadedEvents = new Set<string>();
+  const loadedEvents = new Set<keyof ClientEvents>();
 
   try {
     const eventFolders = getAllFiles(
@@ -150,12 +155,13 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
       eventFolders.map((folder) => processEventFolder(folder, eventRegistry))
     );
 
-    for (const [eventName, handlers] of eventRegistry) {
-      if (loadedEvents.has(eventName)) continue;
+    for (const [eventName, handlers] of eventRegistry.entries()) {
+      const typedEventName = eventName as keyof ClientEvents;
+      if (loadedEvents.has(typedEventName)) continue;
 
       handlers.sort((a, b) => b.priority - a.priority);
 
-      client.on(eventName, async (...args) => {
+      client.on(typedEventName, async (...args) => {
         for (const { function: handler, fileName } of handlers) {
           try {
             await Promise.resolve(handler(client, ...args));
@@ -164,7 +170,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
               error,
               'EventHandlerExecutionError',
               {
-                eventName,
+                eventName: typedEventName,
                 fileName,
                 handler: handler.name,
               }
@@ -173,7 +179,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
         }
       });
 
-      loadedEvents.add(eventName);
+      loadedEvents.add(typedEventName);
     }
   } catch (error) {
     await global.errorHandler.handleError(error, 'EventHandlerSetupError');

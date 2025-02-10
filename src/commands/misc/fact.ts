@@ -11,6 +11,7 @@ import {
   InteractionCollector,
   Message,
   Collection,
+  MessageFlags,
 } from 'discord.js';
 import axios from 'axios';
 import emojiConfig from '../../config/emoji.js';
@@ -99,7 +100,7 @@ const factCommand: LocalCommand = {
           console.error('Error handling button interaction:', error);
           await i.reply({
             content: `${emojiConfig.notag} An error occurred. Please try again.`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
         }
       });

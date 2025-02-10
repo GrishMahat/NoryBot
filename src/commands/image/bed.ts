@@ -4,6 +4,7 @@ import {
   CommandInteraction,
   Client,
   AttachmentBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -45,7 +46,7 @@ const bedCommand: LocalCommand = {
         // For required parameter errors, respond immediately without deferring
         await interaction.reply({
           content: '❌ You need to specify a user to put under the bed!',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -119,7 +120,7 @@ const bedCommand: LocalCommand = {
               )
               .setTimestamp(),
           ],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -136,7 +137,7 @@ const bedCommand: LocalCommand = {
             )
             .setTimestamp(),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

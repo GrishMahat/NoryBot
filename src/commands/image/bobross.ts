@@ -4,6 +4,7 @@ import {
   CommandInteraction,
   Client,
   AttachmentBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -118,7 +119,7 @@ const bobrossCommand: LocalCommand = {
               )
               .setTimestamp(),
           ],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -135,7 +136,7 @@ const bobrossCommand: LocalCommand = {
             )
             .setTimestamp(),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },
