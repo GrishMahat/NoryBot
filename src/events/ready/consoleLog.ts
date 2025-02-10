@@ -16,9 +16,9 @@ const mongoURI = process.env.MONGODB_TOKEN;
  * @property {number} LENGTH - Length of separator lines
  */
 const SEPARATOR = {
-  DOUBLE: '=',
-  SINGLE: '-',
-  LENGTH: 50,
+  DOUBLE: '═',
+  SINGLE: '─',
+  LENGTH: 60,
 };
 
 /**
@@ -43,15 +43,17 @@ interface LogConfig {
  * @throws {Error} May throw if console output fails
  */
 const formatLogOutput = (config: LogConfig): void => {
-  console.log(SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH).cyan);
-  console.log(`${config.botName} is now ${'ONLINE'.green.bold}`);
-  console.log(SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH).cyan);
-  console.log(`Servers  : ${config.serverCount.toString().yellow}`);
-  console.log(`Users    : ${config.userCount.toString().yellow}`);
-  console.log(
-    `Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}`
-  );
-  console.log(SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH).cyan);
+  const header = `╔${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╗`.cyan;
+  const footer = `╚${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╝`.cyan;
+  const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
+
+  console.log(header);
+  console.log(`║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`.cyan);
+  console.log(divider);
+  console.log(`║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`.cyan);
+  console.log(`║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`.cyan);
+  console.log(`║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`.cyan);
+  console.log(footer);
 };
 
 /**
