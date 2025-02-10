@@ -1,0 +1,18 @@
+{
+  "packages": {
+    ".": {
+      "releaseType": "node",
+      "packageName": "nory-bot",
+      "changelogSections": {
+        "feat": "✨ Features",
+        "fix": "🐛 Bug Fixes",
+        "docs": "📚 Documentation",
+        "chore": "🔧 Maintenance",
+        "style": "💄 Styling",
+        "refactor": "♻️ Code Refactoring",
+        "perf": "⚡️ Performance",
+        "test": "✅ Testing"
+      }
+    }
+  }
+}
