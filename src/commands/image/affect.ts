@@ -4,6 +4,7 @@ import {
   CommandInteraction,
   Client,
   AttachmentBuilder,
+  MessageFlags,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -100,7 +101,7 @@ const affectCommand: LocalCommand = {
       } else {
         await interaction.reply({
           embeds: [errorEmbed],
-          ephemeral: true,
+          flags:  MessageFlags.Ephemeral,
         });
       }
     }

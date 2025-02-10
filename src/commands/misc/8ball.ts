@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   Client,
   EmbedBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import emojiConfig from '../../config/emoji.js';
@@ -64,7 +65,7 @@ const eightBallCommand: LocalCommand = {
       console.error('Error in 8ball command:', error);
       await interaction.reply({
         content: 'There was an error while executing this command!',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

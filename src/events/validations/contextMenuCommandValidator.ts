@@ -90,7 +90,7 @@ const sendEmbedReply = async (
 
     await interaction.reply({
       embeds: [embed],
-      flags: MessageFlags.Ephemeral,
+      flags: ephemeral ? MessageFlags.Ephemeral : undefined,
     });
   } catch (err) {
     await global.errorHandler.handleError(err, 'EmbedReplyError');
