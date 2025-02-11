@@ -1,7 +1,5 @@
-import 'colors';
 import {
   EmbedBuilder,
-  Collection,
   Client,
   Interaction,
   ColorResolvable,
@@ -9,78 +7,59 @@ import {
   TextChannel,
   NewsChannel,
   MessageFlags,
+  PermissionResolvable,
+  InteractionReplyOptions,
+  GuildMember,
+  ContextMenuCommandInteraction,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
 import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
+import LRUCache from '../../utils/Cache/LRUCache.js';
+import cooldownManager from '../../utils/CooldownManager.js';
 
-/**
- * A simple LRU Cache implementation.
- *
- * @class LRUCache<K, V>
- * @template K - The type of the keys in the cache.
- * @template V - The type of the values in the cache.
- */
-class LRUCache<K, V> {
-  private capacity: number;
-  private cache: Map<K, V>;
-
-  constructor(capacity: number) {
-    this.capacity = capacity;
-    this.cache = new Map<K, V>();
-  }
-
-  /**
-   * Retrieves a value from the cache by its key.
-   *
-   * @param {K} key - The key of the value to retrieve.
-   * @returns {V | undefined} The value associated with the key or undefined if not found.
-   */
-  get(key: K): V | undefined {
-    if (!this.cache.has(key)) return undefined;
-    const value = this.cache.get(key)!;
-    this.cache.delete(key);
-    this.cache.set(key, value);
-    return value;
-  }
-
-  /**
-   * Sets a value in the cache by its key.
-   *
-   * @param {K} key - The key of the value to set.
-   * @param {V} value - The value to set.
-   */
-  set(key: K, value: V): void {
-    if (this.cache.has(key)) this.cache.delete(key);
-    else if (this.cache.size >= this.capacity) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-    this.cache.set(key, value);
-  }
+interface ContextMenuMetrics {
+  uses: number;
+  lastUsed: Date;
+  averageResponseTime: number;
+  failures: number;
 }
 
-const cache = new LRUCache<string, any>(100); // Adjust capacity as needed
-const cooldowns = new Collection<string, Collection<string, number>>();
-const permissionLevels = new Collection<string, number>();
-const contextMenuMap = new Map<string, any>();
+class ContextMenuManager {
+  private contextMenus: Map<string, any>;
+  private menuCache: LRUCache<string, any>;
+  private metrics: Map<string, ContextMenuMetrics>;
+  private isLoaded: boolean;
 
-/**
- * Sends an embed reply to a Discord interaction. The embed includes a color, a description,
- * the author's username, their avatar, and a timestamp. It supports ephemeral (hidden) responses.
- * This function handles errors gracefully by catching and logging any issues that occur during
- * the reply process.
- */
-const sendEmbedReply = async (
-  interaction: Interaction,
-  color: string,
-  description: string,
-  ephemeral: boolean = true
-): Promise<void> => {
-  try {
-    if (!interaction.isRepliable()) return;
+  constructor() {
+    this.contextMenus = new Map();
+    this.metrics = new Map();
+    this.isLoaded = false;
+    this.menuCache = new LRUCache<string, any>({
+      capacity: 1000,
+      defaultTTL: 2 * 60 * 60 * 1000, // 2 hour TTL
+      cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 minutes
+      evictionPolicy: 'LRU',
+      resetTTLOnAccess: true,
+      onExpiry: (key) => this.handleCacheExpiry(key),
+    });
+  }
+
+  private async handleCacheExpiry(key: string): Promise<void> {
+    const metrics = this.metrics.get(key);
+    if (metrics) {
+      console.log(`Context menu ${key} expired from cache. Usage stats:`, metrics);
+    }
+  }
+
+  private async createEmbed(
+    interaction: Interaction,
+    color: ColorResolvable,
+    description: string,
+    options: Partial<InteractionReplyOptions> = {}
+  ): Promise<InteractionReplyOptions> {
     const embed = new EmbedBuilder()
-      .setColor(color as ColorResolvable)
+      .setColor(color)
       .setDescription(description)
       .setAuthor({
         name: interaction.user.username,
@@ -88,241 +67,191 @@ const sendEmbedReply = async (
       })
       .setTimestamp();
 
-    await interaction.reply({
+    return {
       embeds: [embed],
-      flags: ephemeral ? MessageFlags.Ephemeral : undefined,
-    });
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'EmbedReplyError');
+      flags: options.ephemeral ? MessageFlags.Ephemeral : undefined,
+      ...options,
+    };
   }
-};
 
-/**
- * Retrieves data from the cache or fetches it if not cached.
- */
-const getCachedData = async <T>(
-  key: string,
-  fetchFunction: () => Promise<T>
-): Promise<T> => {
-  try {
-    const cachedItem = cache.get(key);
-    if (cachedItem) return cachedItem as T;
+  private updateMetrics(
+    commandName: string,
+    responseTime: number,
+    failed: boolean = false
+  ): void {
+    let metrics = this.metrics.get(commandName) || {
+      uses: 0,
+      lastUsed: new Date(),
+      averageResponseTime: 0,
+      failures: 0,
+    };
 
-    const data = await fetchFunction();
-    cache.set(key, data);
-    return data;
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'CacheError');
-    throw err;
+    metrics.uses++;
+    metrics.lastUsed = new Date();
+    metrics.averageResponseTime =
+      (metrics.averageResponseTime * (metrics.uses - 1) + responseTime) /
+      metrics.uses;
+    if (failed) metrics.failures++;
+
+    this.metrics.set(commandName, metrics);
   }
-};
 
-/**
- * Retrieves cached local context menus.
- */
-const getCachedLocalContextMenus = (): Promise<any[]> =>
-  getCachedData('localContextMenus', getLocalContextMenus);
-
-/**
- * Initializes the context menu map with local context menus.
- */
-const initializeContextMenuMap = async (): Promise<void> => {
-  try {
-    const localContextMenus = await getCachedLocalContextMenus();
-    localContextMenus.forEach((menu) => {
-      contextMenuMap.set(menu.data.name, menu);
-    });
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'ContextMenuInitError');
+  private async loadContextMenus(retryCount: number = 0): Promise<void> {
+    try {
+      const menus = await getLocalContextMenus();
+      for (const menu of menus) {
+        this.contextMenus.set(menu.data.name, menu);
+      }
+      this.isLoaded = true;
+      console.log(`Successfully loaded ${menus.length} context menus`);
+    } catch (error) {
+      if (retryCount < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return this.loadContextMenus(retryCount + 1);
+      }
+      throw error;
+    }
   }
-};
 
-/**
- * Applies a cooldown to a context menu for a user.
- */
-const applyCooldown = (
-  interaction: Interaction,
-  contextMenuName: string,
-  cooldownAmount: number
-): { active: boolean; timeLeft?: string } => {
-  try {
-    if (isNaN(cooldownAmount) || cooldownAmount <= 0) {
-      throw new Error('Invalid cooldown amount');
+  private checkPermissions(
+    interaction: Interaction,
+    permissions: PermissionResolvable[],
+    type: 'user' | 'bot'
+  ): boolean {
+    if (!interaction.guild) return false;
+    const member = type === 'user' ? interaction.member : interaction.guild.members.me;
+    if (!member || !(member instanceof GuildMember)) return false;
+    return permissions.every((permission) =>
+      member.permissions.has(permission)
+    );
+  }
+
+  private async validateContextMenu(
+    menu: any,
+    interaction: Interaction
+  ): Promise<InteractionReplyOptions | null> {
+    const { developersId, testServerId } = config;
+
+    if (menu.devOnly && !developersId.includes(interaction.user.id)) {
+      return this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
+        ephemeral: true,
+      });
     }
 
-    const userCooldowns =
-      cooldowns.get(contextMenuName) || new Collection<string, number>();
-    const now = Date.now();
-    const userId = `${interaction.user.id}-${
-      interaction.guild ? interaction.guild.id : 'DM'
-    }`;
+    if (menu.testMode && interaction.guild!.id !== testServerId) {
+      return this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
+        ephemeral: true,
+      });
+    }
 
-    if (userCooldowns.has(userId)) {
-      const expirationTime = userCooldowns.get(userId)! + cooldownAmount;
-      if (now < expirationTime) {
-        return {
-          active: true,
-          timeLeft: ((expirationTime - now) / 1000).toFixed(1),
-        };
+    if (menu.nsfwMode) {
+      const channel = interaction.channel;
+      if (!(channel instanceof TextChannel || channel instanceof NewsChannel) || !channel.nsfw) {
+        return this.createEmbed(interaction, 'Red', mConfig.nsfw, {
+          ephemeral: true,
+        });
       }
     }
 
-    userCooldowns.set(userId, now);
-    setTimeout(() => userCooldowns.delete(userId), cooldownAmount);
-    cooldowns.set(contextMenuName, userCooldowns);
-    return { active: false };
-  } catch (err) {
-    global.errorHandler.handleError(err, 'CooldownError');
-    return { active: false };
-  }
-};
+    if (menu.userPermissions?.length && !this.checkPermissions(interaction, menu.userPermissions, 'user')) {
+      return this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
+        ephemeral: true,
+      });
+    }
 
-/**
- * Checks if a member has the required permissions.
- */
-const checkPermissions = (
-  interaction: Interaction,
-  permissions: bigint[],
-  type: 'user' | 'bot'
-): boolean => {
-  try {
-    if (!interaction.guild) return false;
-    const member =
-      type === 'user' ? interaction.member : interaction.guild.members.me;
-    if (!member) return false;
-    if (typeof member.permissions === 'string') return false;
-    return permissions.every((permission) =>
-      (member.permissions as Readonly<PermissionsBitField>).has(permission)
-    );
-  } catch (err) {
-    global.errorHandler.handleError(err, 'PermissionCheckError');
-    return false;
-  }
-};
+    if (menu.botPermissions?.length && !this.checkPermissions(interaction, menu.botPermissions, 'bot')) {
+      return this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
+        ephemeral: true,
+      });
+    }
 
-/**
- * The main function to validate and execute context menu commands.
- */
+    if (menu.cooldown) {
+      if (cooldownManager.isOnCooldown(interaction.user.id, menu.data.name)) {
+        const remainingTime = cooldownManager.getRemainingTime(
+          interaction.user.id,
+          menu.data.name
+        );
+        return this.createEmbed(
+          interaction,
+          'Red',
+          `Please wait ${remainingTime} seconds before using this menu again.`,
+          { ephemeral: true }
+        );
+      }
+      cooldownManager.setCooldown(
+        interaction.user.id,
+        menu.data.name,
+        menu.cooldown
+      );
+    }
+
+    return null;
+  }
+
+  public async handleInteraction(
+    client: Client,
+    interaction: Interaction
+  ): Promise<void> {
+    if (!interaction.isContextMenuCommand()) return;
+    if (!this.isLoaded) {
+      await this.loadContextMenus();
+    }
+
+    const startTime = Date.now();
+    const { commandName } = interaction;
+
+    try {
+      const menu = this.menuCache.get(commandName) || this.contextMenus.get(commandName);
+      if (!menu) {
+        await interaction.reply(
+          await this.createEmbed(interaction, 'Red', 'Context menu not found.', {
+            ephemeral: true,
+          })
+        );
+        return;
+      }
+
+      const validationError = await this.validateContextMenu(menu, interaction);
+      if (validationError) {
+        await interaction.reply(validationError);
+        return;
+      }
+
+      await menu.run(client, interaction);
+      this.updateMetrics(commandName, Date.now() - startTime);
+      console.log(`Context menu executed: ${commandName} by ${interaction.user.tag}`.green);
+
+    } catch (error) {
+      this.updateMetrics(commandName, Date.now() - startTime, true);
+      await global.errorHandler.handleError(error, 'ContextMenuExecutionError');
+
+      if (!interaction.replied) {
+        await interaction.reply(
+          await this.createEmbed(
+            interaction,
+            'Red',
+            'An error occurred while processing your request.',
+            { ephemeral: true }
+          )
+        );
+      }
+    }
+  }
+
+  public getMetrics(): Map<string, ContextMenuMetrics> {
+    return this.metrics;
+  }
+
+  public clearMetrics(): void {
+    this.metrics.clear();
+  }
+}
+
+const contextMenuManager = new ContextMenuManager();
+
 export default async (
   client: Client,
   interaction: Interaction
 ): Promise<void> => {
-  try {
-    if (!interaction || !interaction.isContextMenuCommand()) {
-      return;
-    }
-
-    if (contextMenuMap.size === 0) {
-      await initializeContextMenuMap();
-    }
-
-    const { developersId, testServerId, maintenance } = config;
-
-    const contextMenuObject = contextMenuMap.get(interaction.commandName);
-    if (!contextMenuObject) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        'Context menu not found.'
-      );
-    }
-
-    if (maintenance && !developersId.includes(interaction.user.id)) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        'Bot is currently in maintenance mode. Please try again later.'
-      );
-    }
-
-    const cooldown = applyCooldown(
-      interaction,
-      contextMenuObject.data.name,
-      (contextMenuObject.cooldown || 3) * 1000
-    );
-    if (cooldown.active) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        mConfig.commandCooldown.replace('{time}', cooldown.timeLeft!)
-      );
-    }
-
-    if (
-      contextMenuObject.devOnly &&
-      !developersId.includes(interaction.user.id)
-    ) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        mConfig.commandDevOnly
-      );
-    }
-
-    if (contextMenuObject.testMode && interaction.guild?.id !== testServerId) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        mConfig.commandTestMode
-      );
-    }
-
-    if (contextMenuObject.nsfwMode) {
-      const channel = interaction.channel;
-      if (
-        !(channel instanceof TextChannel || channel instanceof NewsChannel) ||
-        !channel.nsfw
-      ) {
-        return sendEmbedReply(
-          interaction,
-          mConfig.embedColors.error,
-          mConfig.nsfw
-        );
-      }
-    }
-
-    if (
-      contextMenuObject.userPermissions?.length &&
-      !checkPermissions(interaction, contextMenuObject.userPermissions, 'user')
-    ) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        mConfig.userNoPermissions
-      );
-    }
-
-    if (
-      contextMenuObject.botPermissions?.length &&
-      !checkPermissions(interaction, contextMenuObject.botPermissions, 'bot')
-    ) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        mConfig.botNoPermissions
-      );
-    }
-
-    try {
-      await contextMenuObject.run(client, interaction);
-      console.log(
-        `Context menu executed: ${interaction.commandName} by ${interaction.user.tag}`
-          .green
-      );
-    } catch (err) {
-      await global.errorHandler.handleError(err, 'ContextMenuExecutionError');
-      await sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        'An error occurred while executing the context menu.'
-      );
-    }
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'ContextMenuValidationError');
-    await sendEmbedReply(
-      interaction,
-      mConfig.embedColors.error,
-      'An error occurred while processing the context menu.'
-    );
-  }
+  await contextMenuManager.handleInteraction(client, interaction);
 };
