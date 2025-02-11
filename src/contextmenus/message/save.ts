@@ -7,7 +7,7 @@ import {
   MessageFlags,
 } from 'discord.js';
 
-export default {
+const MessageSaveContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()
     .setName('Save Message')
     .setType(ApplicationCommandType.Message),
@@ -75,3 +75,5 @@ export default {
     }
   },
 };
+
+export default MessageSaveContextMenu;

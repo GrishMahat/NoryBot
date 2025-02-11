@@ -77,7 +77,8 @@ const sendEmbedReply = async (
     await interaction.reply({
       embeds: [embed],
       flags: ephemeral ? MessageFlags.Ephemeral : undefined,
-    });  } catch (err) {
+    });
+  } catch (err) {
     await global.errorHandler.handleError(err, 'ModalEmbedReplyError');
   }
 };

@@ -10,7 +10,6 @@ import {
   ButtonStyle,
   MessageFlags,
 } from 'discord.js';
-import { LocalContextMenu } from '@/src/types';
 
 const UserAvatarContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()

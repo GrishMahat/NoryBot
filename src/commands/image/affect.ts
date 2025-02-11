@@ -101,7 +101,7 @@ const affectCommand: LocalCommand = {
       } else {
         await interaction.reply({
           embeds: [errorEmbed],
-          flags:  MessageFlags.Ephemeral,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
