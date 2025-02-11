@@ -17,7 +17,7 @@ export interface EventInfo {
  */
 export type EventHandler = (
   client: Client,
-  ...args: any[]
+  ...args: unknown[]
 ) => Promise<void> | void;
 
 /**

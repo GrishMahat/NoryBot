@@ -1,7 +1,5 @@
 import {
   ApplicationCommandOptionType,
-  EmbedBuilder,
-  SlashCommandBuilder,
   CommandInteraction,
   Client,
   PermissionsBitField,
@@ -12,7 +10,6 @@ import {
   StringSelectMenuInteraction,
   ModalSubmitInteraction,
   ChatInputCommandInteraction,
-  TimestampStylesString,
   AutocompleteInteraction,
   // ApplicationCommandOption, we are  use the custom one below
 } from 'discord.js';

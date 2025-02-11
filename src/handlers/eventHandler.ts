@@ -25,8 +25,8 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
   defaultTTL: 3600000, // 1 hour
   cleanupIntervalMs: 300000, // 5 minutes
   evictionPolicy: 'LRU',
-  onExpiry: (key, value) => {
-    console.log(`Event module cache expired: ${key}`.yellow);
+  onExpiry: (key) => {
+    console.log(`Event module cache expired: ${key} `.yellow);
   },
 });
 
