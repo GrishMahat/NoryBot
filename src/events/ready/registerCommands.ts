@@ -233,19 +233,24 @@ function logCommandChanges(
   deletedCommands: string[]
 ): void {
   const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
-  const footer = '╚══════════════════════════════════════════════════════╝'.cyan;
-  const divider = '╟──────────────────────────────────────────────────────╢'.cyan;
+  const footer = '╚══════════════════════════════════════════════════════╝'
+    .cyan;
+  const divider = '╟──────────────────────────────────────────────────────╢'
+    .cyan;
 
   console.log(header);
-  console.log(`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`.cyan);
-  
+  console.log(
+    `║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`
+      .cyan
+  );
+
   if (updatedCommands.length || newCommands.length || deletedCommands.length) {
     console.log(divider);
   }
 
   if (updatedCommands.length) {
     console.log(`║ Updated Commands:${' '.repeat(34)} ║`.cyan);
-    updatedCommands.forEach(cmd => 
+    updatedCommands.forEach((cmd) =>
       console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan)
     );
   }
@@ -253,7 +258,7 @@ function logCommandChanges(
   if (newCommands.length) {
     if (updatedCommands.length) console.log(divider);
     console.log(`║ New Commands:${' '.repeat(37)} ║`.cyan);
-    newCommands.forEach(cmd => 
+    newCommands.forEach((cmd) =>
       console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan)
     );
   }
@@ -261,7 +266,7 @@ function logCommandChanges(
   if (deletedCommands.length) {
     if (updatedCommands.length || newCommands.length) console.log(divider);
     console.log(`║ Deleted Commands:${' '.repeat(34)} ║`.cyan);
-    deletedCommands.forEach(cmd => 
+    deletedCommands.forEach((cmd) =>
       console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan)
     );
   }

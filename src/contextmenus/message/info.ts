@@ -21,7 +21,7 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-export default {
+const MessageInfoContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()
     .setName('Message Info')
     .setType(ApplicationCommandType.Message),
@@ -83,3 +83,4 @@ export default {
     await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 };
+export default MessageInfoContextMenu;

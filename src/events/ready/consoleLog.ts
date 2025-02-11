@@ -33,7 +33,7 @@ interface LogConfig {
   botName: string;
   serverCount: number;
   userCount: number;
-  dbStatus: 'connected' | 'disconnected';
+  dbStatus: 'connected' | 'disconnected' | 'connecting';
 }
 
 /**
@@ -48,11 +48,23 @@ const formatLogOutput = (config: LogConfig): void => {
   const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
 
   console.log(header);
-  console.log(`║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`.cyan);
+  console.log(
+    `║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`
+      .cyan
+  );
   console.log(divider);
-  console.log(`║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`.cyan);
-  console.log(`║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`.cyan);
-  console.log(`║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`.cyan);
+  console.log(
+    `║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`
+      .cyan
+  );
+  console.log(
+    `║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`
+      .cyan
+  );
+  console.log(
+    `║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`
+      .cyan
+  );
   console.log(footer);
 };
 
