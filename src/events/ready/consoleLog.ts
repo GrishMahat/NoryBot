@@ -33,7 +33,7 @@ interface LogConfig {
   botName: string;
   serverCount: number;
   userCount: number;
-  dbStatus: 'connected' | 'disconnected';
+  dbStatus: 'connected' | 'disconnected' | 'connecting';
 }
 
 /**
