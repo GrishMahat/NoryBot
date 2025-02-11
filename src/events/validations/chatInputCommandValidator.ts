@@ -10,6 +10,8 @@ import {
   ChatInputCommandInteraction,
   AutocompleteInteraction,
   PermissionResolvable,
+  InteractionReplyOptions,
+  Colors,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
@@ -18,221 +20,288 @@ import LRUCache from '../../utils/Cache/LRUCache.js';
 import { LocalCommand } from '../../types/index.js';
 import cooldownManager from '../../utils/CooldownManager.js';
 
-const commandMap = new Map<string, LocalCommand>();
+interface CommandMetrics {
+  uses: number;
+  lastUsed: Date;
+  averageResponseTime: number;
+  failures: number;
+}
 
-const commandCache = new LRUCache<string, LocalCommand>({
-  capacity: 100,
-  defaultTTL: 60000, // 1 minute TTL
-  cleanupIntervalMs: 30000, // Cleanup every 30 seconds
-  evictionPolicy: 'LRU',
-  resetTTLOnAccess: true,
-  onExpiry: (key, value) => {},
-});
+class CommandValidator {
+  private commandMap: Map<string, LocalCommand>;
+  private commandCache: LRUCache<string, LocalCommand[]>;
+  private metrics: Map<string, CommandMetrics>;
+  private isInitialized: boolean;
 
-const sendEmbedReply = async (
-  interaction: Interaction,
-  color: string,
-  description: string,
-  ephemeral: boolean = true
-): Promise<void> => {
-  try {
-    if (!interaction.isRepliable()) return;
-    const embed = new EmbedBuilder()
-      .setColor(color as ColorResolvable)
-      .setDescription(description)
-      .setAuthor({
-        name: interaction.user.username,
-        iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-      })
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed], ephemeral });
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'EmbedReplyError');
-  }
-};
-
-const getCachedData = async <T>(
-  key: string,
-  fetchFunction: () => Promise<T>
-): Promise<T> => {
-  try {
-    const cachedItem = commandCache.get(key);
-    if (cachedItem) return cachedItem as T;
-
-    const data = await fetchFunction();
-    commandCache.set(key, data as LocalCommand);
-    return data;
-  } catch (error) {
-    await global.errorHandler.handleError(error, 'CacheOperationError');
-    return fetchFunction(); // Fallback to direct fetch
-  }
-};
-
-const getCachedLocalCommands = (): Promise<LocalCommand[]> =>
-  getCachedData('localCommands', getLocalCommands);
-
-const initializeCommandMap = async (): Promise<void> => {
-  const localCommands = await getCachedLocalCommands();
-  localCommands.forEach((cmd) => {
-    commandMap.set(cmd.data.name, cmd);
-  });
-};
-
-const checkPermissions = (
-  interaction: Interaction,
-  permissions: PermissionResolvable[],
-  type: 'user' | 'bot'
-): boolean => {
-  if (!interaction.guild) return false;
-  const member =
-    type === 'user' ? interaction.member : interaction.guild.members.me;
-  if (!member) return false;
-  if (typeof member.permissions === 'string') return false;
-  return permissions.every((permission) =>
-    (member.permissions as Readonly<PermissionsBitField>).has(permission)
-  );
-};
-
-export default async (
-  client: Client,
-  interaction: Interaction
-): Promise<void> => {
-  if (!interaction) {
-    return;
+  constructor() {
+    this.commandMap = new Map();
+    this.metrics = new Map();
+    this.isInitialized = false;
+    this.commandCache = new LRUCache<string, LocalCommand[]>({
+      capacity: 1000,
+      defaultTTL: 2 * 60 * 60 * 1000, // 2 hour TTL
+      cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 minutes
+      evictionPolicy: 'LRU',
+      resetTTLOnAccess: true,
+      onExpiry: (key) => this.handleCacheExpiry(key),
+    });
   }
 
-  if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) {
-    return;
-  }
-
-  if (commandMap.size === 0) {
-    await initializeCommandMap();
-  }
-
-  const { developersId, testServerId, maintenance } = config;
-
-  try {
-    const commandObject = commandMap.get(interaction.commandName);
-
-    if (!commandObject) {
-      return sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        'Command not found.'
-      );
+  private async handleCacheExpiry(key: string): Promise<void> {
+    const metrics = this.metrics.get(key);
+    if (metrics) {
+      console.log(`Command ${key} expired from cache. Usage stats:`, metrics);
     }
+  }
 
-    if (interaction.isAutocomplete() && commandObject.autocomplete) {
-      return await commandObject.autocomplete(client, interaction);
+  private async createEmbed(
+    interaction: Interaction,
+    color: ColorResolvable,
+    description: string,
+    options: Partial<InteractionReplyOptions> = {}
+  ): Promise<InteractionReplyOptions> {
+    return {
+      embeds: [
+        new EmbedBuilder()
+          .setColor(color)
+          .setDescription(description)
+          .setAuthor({
+            name: interaction.user.username,
+            iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
+          })
+          .setTimestamp(),
+      ],
+      ephemeral: options.ephemeral ?? true,
+      ...options,
+    };
+  }
+
+  private updateMetrics(
+    commandName: string,
+    responseTime: number,
+    failed: boolean = false
+  ): void {
+    let metrics = this.metrics.get(commandName) || {
+      uses: 0,
+      lastUsed: new Date(),
+      averageResponseTime: 0,
+      failures: 0,
+    };
+
+    metrics.uses++;
+    metrics.lastUsed = new Date();
+    metrics.averageResponseTime =
+      (metrics.averageResponseTime * (metrics.uses - 1) + responseTime) /
+      metrics.uses;
+    if (failed) metrics.failures++;
+
+    this.metrics.set(commandName, metrics);
+  }
+
+  private async initializeCommands(): Promise<void> {
+    try {
+      const localCommands = await this.getCachedLocalCommands();
+      localCommands.forEach((cmd) => {
+        this.commandMap.set(cmd.data.name, cmd);
+      });
+      this.isInitialized = true;
+    } catch (error) {
+      await global.errorHandler.handleError(error, 'CommandInitializationError');
+      throw error;
     }
+  }
+
+  private async getCachedLocalCommands(): Promise<LocalCommand[]> {
+    const cachedCommands = this.commandCache.get('localCommands');
+    if (cachedCommands) return cachedCommands;
+
+    const commands = await getLocalCommands();
+    this.commandCache.set('localCommands', commands);
+    return commands;
+  }
+
+  private checkPermissions(
+    interaction: Interaction,
+    permissions: PermissionResolvable[],
+    type: 'user' | 'bot'
+  ): boolean {
+    if (!interaction.guild) return false;
+    const member =
+      type === 'user' ? interaction.member : interaction.guild.members.me;
+    if (!member) return false;
+    if (typeof member.permissions === 'string') return false;
+    return permissions.every((permission) =>
+      (member.permissions as Readonly<PermissionsBitField>).has(permission)
+    );
+  }
+
+  private async validateCommand(
+    interaction: ChatInputCommandInteraction,
+    command: LocalCommand
+  ): Promise<InteractionReplyOptions | null> {
+    const { developersId, testServerId, maintenance } = config;
 
     if (maintenance && !developersId.includes(interaction.user.id)) {
-      return sendEmbedReply(
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         'Bot is currently in maintenance mode. Please try again later.'
       );
     }
 
-    // Check cooldown using CooldownManager
     const remainingCooldown = cooldownManager.checkCooldown(
       interaction.user.id,
-      commandObject.data.name
+      command.data.name
     );
-
     if (remainingCooldown > 0) {
-      return sendEmbedReply(
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         mConfig.commandCooldown.replace('{time}', remainingCooldown.toString())
       );
     }
 
-    // Set cooldown if passed check
-    cooldownManager.setCooldown(
-      interaction.user.id,
-      commandObject.data.name,
-      commandObject.cooldown || 3
-    );
-
-    if (commandObject.devOnly && !developersId.includes(interaction.user.id)) {
-      return sendEmbedReply(
+    if (command.devOnly && !developersId.includes(interaction.user.id)) {
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         mConfig.commandDevOnly
       );
     }
 
-    if (commandObject.testMode && interaction.guild?.id !== testServerId) {
-      return sendEmbedReply(
+    if (command.testMode && interaction.guild?.id !== testServerId) {
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         mConfig.commandTestMode
       );
     }
 
-    if (commandObject.nsfwMode) {
-      const channel = interaction.channel;
-      if (
-        !(channel instanceof TextChannel || channel instanceof NewsChannel) ||
-        !channel.nsfw
-      ) {
-        return sendEmbedReply(
-          interaction,
-          mConfig.embedColors.error,
-          mConfig.nsfw
-        );
-      }
+    if (
+      command.nsfwMode &&
+      !(
+        interaction.channel instanceof TextChannel ||
+        interaction.channel instanceof NewsChannel
+      )
+    ) {
+      return this.createEmbed(
+        interaction,
+        Colors.Red,
+        mConfig.nsfw
+      );
     }
 
     if (
-      commandObject.userPermissions?.length &&
-      !checkPermissions(interaction, commandObject.userPermissions, 'user')
+      command.userPermissions?.length &&
+      !this.checkPermissions(interaction, command.userPermissions, 'user')
     ) {
-      return sendEmbedReply(
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         mConfig.userNoPermissions
       );
     }
 
     if (
-      commandObject.botPermissions?.length &&
-      !checkPermissions(interaction, commandObject.botPermissions, 'bot')
+      command.botPermissions?.length &&
+      !this.checkPermissions(interaction, command.botPermissions, 'bot')
     ) {
-      return sendEmbedReply(
+      return this.createEmbed(
         interaction,
-        mConfig.embedColors.error,
+        Colors.Red,
         mConfig.botNoPermissions
       );
     }
 
-    try {
-      if (interaction.isChatInputCommand()) {
-        await commandObject.run(client, interaction);
-      }
-    } catch (err) {
-      await global.errorHandler.handleError(err, 'CommandExecutionError');
+    return null;
+  }
 
-      await sendEmbedReply(
-        interaction,
-        mConfig.embedColors.error,
-        'An error occurred while executing the command.'
-      );
+  public async handleInteraction(
+    client: Client,
+    interaction: Interaction
+  ): Promise<void> {
+    if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) {
+      return;
     }
 
-    console.log(
-      `Command executed: ${interaction.commandName} by ${interaction.user.tag}`
-        .green
-    );
-  } catch (err) {
-    await global.errorHandler.handleError(err, 'CommandProcessingError');
+    if (!this.isInitialized) {
+      await this.initializeCommands();
+    }
 
-    await sendEmbedReply(
-      interaction,
-      mConfig.embedColors.error,
-      'An error occurred while processing the command.'
-    );
+    const startTime = Date.now();
+    const commandName = interaction.commandName;
+
+    try {
+      const command = this.commandMap.get(commandName);
+      if (!command) {
+
+        if (interaction.isAutocomplete() && command.autocomplete) {
+          await command.autocomplete(client, interaction);
+          return;
+        }
+        if (interaction.isChatInputCommand()) {
+          await interaction.reply(
+            await this.createEmbed(
+              interaction,
+              Colors.Red,
+              'Command not found.'
+            )
+          );
+        }
+        return;
+      }
+
+
+      if (interaction.isChatInputCommand()) {
+        const validationError = await this.validateCommand(interaction, command);
+        if (validationError) {
+          await interaction.reply(validationError);
+          return;
+        }
+
+        cooldownManager.setCooldown(
+          interaction.user.id,
+          command.data.name,
+          command.cooldown || 3
+        );
+
+        await command.run(client, interaction);
+        this.updateMetrics(commandName, Date.now() - startTime);
+
+        console.log(
+          `Command executed: ${commandName} by ${interaction.user.tag}`.green
+        );
+      }
+    } catch (error) {
+      this.updateMetrics(commandName, Date.now() - startTime, true);
+      await global.errorHandler.handleError(error, 'CommandExecutionError');
+
+      if (interaction.isChatInputCommand() && !interaction.replied) {
+        await interaction.reply(
+          await this.createEmbed(
+            interaction,
+            Colors.Red,
+            'An error occurred while executing the command.'
+          )
+        );
+      }
+    }
   }
+
+  public getMetrics(): Map<string, CommandMetrics> {
+    return this.metrics;
+  }
+
+  public clearMetrics(): void {
+    this.metrics.clear();
+  }
+}
+
+const commandValidator = new CommandValidator();
+
+export default async (
+  client: Client,
+  interaction: Interaction
+): Promise<void> => {
+  await commandValidator.handleInteraction(client, interaction);
 };
