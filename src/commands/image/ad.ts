@@ -105,7 +105,7 @@ const admixCommand: LocalCommand = {
         await interaction.reply({
           embeds: [errorEmbed],
           flags: MessageFlags.Ephemeral,
-          });
+        });
       }
     }
   },

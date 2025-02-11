@@ -188,31 +188,45 @@ function logContextMenuChanges(
   const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
 
   console.log(header);
-  console.log(`║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan);
+  console.log(
+    `║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan
+  );
   console.log(divider);
-  console.log(`║ Total Menus: ${localContextMenus.length.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 15 - localContextMenus.length.toString().length)} ║`.cyan);
+  console.log(
+    `║ Total Menus: ${localContextMenus.length.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 15 - localContextMenus.length.toString().length)} ║`
+      .cyan
+  );
 
   if (updatedContextMenus.length) {
     console.log(divider);
     console.log(`║ Updated Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
-    updatedContextMenus.forEach(menu => 
-      console.log(`║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    updatedContextMenus.forEach((menu) =>
+      console.log(
+        `║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
+          .cyan
+      )
     );
   }
 
   if (newContextMenus.length) {
     console.log(divider);
     console.log(`║ New Menus:${' '.repeat(SEPARATOR.LENGTH - 11)} ║`.cyan);
-    newContextMenus.forEach(menu => 
-      console.log(`║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    newContextMenus.forEach((menu) =>
+      console.log(
+        `║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
+          .cyan
+      )
     );
   }
 
   if (deletedContextMenus.length) {
     console.log(divider);
     console.log(`║ Deleted Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
-    deletedContextMenus.forEach(menu => 
-      console.log(`║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan)
+    deletedContextMenus.forEach((menu) =>
+      console.log(
+        `║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
+          .cyan
+      )
     );
   }
 
