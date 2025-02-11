@@ -378,7 +378,7 @@ class ErrorHandler {
         });
       }
 
-      const response = await this.webhook.send({
+      await this.webhook.send({
         embeds: [embed],
         username: 'Error Handler',
         avatarURL: this.client?.user?.displayAvatarURL(),
@@ -567,7 +567,7 @@ class ErrorHandler {
       },
     };
 
-    for (const [_, error] of this.errorCache) {
+    for (const error of this.errorCache.values()) {
       stats.total++;
       const category = error.details.category;
       const severity = error.details.severity;

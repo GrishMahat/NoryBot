@@ -1,10 +1,6 @@
 import {
   Client,
   ModalSubmitInteraction,
-  TextInputBuilder,
-  ActionRowBuilder,
-  TextInputStyle,
-  ModalBuilder,
   MessageFlags,
 } from 'discord.js';
 import { Modal } from '../types/index.js';
