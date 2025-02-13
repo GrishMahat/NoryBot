@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
 import loadEventHandlers from './handlers/eventHandler.js';
 import ErrorHandler from './handlers/errorHandler.js';
-import server from './utils/server.js';
+import { config } from './config/config.js';
 
 // Create error handler instance
 const errorHandler = new ErrorHandler({
@@ -24,6 +24,7 @@ const errorHandler = new ErrorHandler({
 global.errorHandler = errorHandler;
 
 const initializeClient = async (): Promise<Client<boolean>> => {
+  // Create Discord client with required intents
   const client = new Client<boolean>({
     intents: [
       GatewayIntentBits.Guilds,
@@ -34,26 +35,45 @@ const initializeClient = async (): Promise<Client<boolean>> => {
     ],
   });
 
-  // Initialize error handler with client
-  errorHandler.initialize(client);
+  // Initialize error handling if enabled
+  if (config.errorHandler) {
+    errorHandler.initialize(client);
+  }
 
-  // Load event handlers
-  await loadEventHandlers(client);
+  try {
+    // Load event handlers
+    await loadEventHandlers(client);
 
-  // Log in to Discord
-  await client.login(process.env.TOKEN);
+    // Log in to Discord
+    await client.login(process.env.TOKEN);
 
-  return client;
+    return client;
+  } catch (error) {
+    await errorHandler.handleError(error, 'ClientInitializationError');
+    throw error; // Re-throw to be caught by main
+  }
 };
 
 const main = async (): Promise<void> => {
   try {
-    await initializeClient();
+    const client = await initializeClient();
+    console.log(`Logged in as ${client.user?.tag}`);
   } catch (error) {
     await errorHandler.handleError(error, 'MainProcessError');
     process.exit(1);
   }
 };
+
+// Handle uncaught errors in the main process
+process.on('unhandledRejection', async (error) => {
+  await errorHandler.handleError(error, 'UnhandledRejection');
+  process.exit(1);
+});
+
+process.on('uncaughtException', async (error) => {
+  await errorHandler.handleError(error, 'UncaughtException');
+  process.exit(1);
+});
 
 main().catch(async (error) => {
   await errorHandler.handleError(error, 'UncaughtError');

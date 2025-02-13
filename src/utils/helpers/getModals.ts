@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
-import { Modal } from '../types/index.js';
+import { Modal } from '../../types/index.js';
 
 // Helper to get the current directory path in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,7 +22,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
   const modals: Modal[] = [];
-  const modalDir = path.resolve(__dirname, '..', 'modals');
+  const modalDir = path.resolve(__dirname, '..', '..', 'modals');
 
   // Retrieve all files in the 'modals' directory
   const modalFiles = getAllFiles(modalDir, false).filter(

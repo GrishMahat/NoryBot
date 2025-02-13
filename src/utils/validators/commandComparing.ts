@@ -1,13 +1,13 @@
 import {
   ApplicationCommand,
-  ApplicationCommandOptionType,
-  PermissionsBitField,
+  // ApplicationCommandOptionType, commante becouse of eslint
+  // PermissionsBitField,
 } from 'discord.js';
 import {
   LocalCommand,
   ApplicationCommandOption,
   ApplicationCommandOptionChoice,
-} from '../types/index.js';
+} from '../../types/index.js';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
@@ -134,10 +134,10 @@ const compareCommands = (
  *
  * @param {any} obj - The object to clean.
  */
-function cleanObject(obj: any): void {
+function cleanObject(obj: Record<string, unknown>): void {
   for (const key in obj) {
-    if (typeof obj[key] === 'object') {
-      cleanObject(obj[key]);
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      cleanObject(obj[key] as Record<string, unknown>);
       if (!obj[key] || (Array.isArray(obj[key]) && !obj[key].length)) {
         delete obj[key];
       }
@@ -176,9 +176,9 @@ function normalizeObject(
  * Converts command options into an array format for comparison.
  *
  * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
- * @returns {any[]} - The processed array of command options.
+ * @returns {unknown[]} - The processed array of command options.
  */
-function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): any[] {
+function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): unknown[] {
   return (cmd.options || []).map((option) => {
     const cleanedOption = normalizeObject(
       option

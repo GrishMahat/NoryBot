@@ -6,12 +6,12 @@
 
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from '../utils/getAllFiles.js';
+import getAllFiles from '../utils/helpers/getAllFiles.js';
 import fs from 'fs/promises';
 import { Client, ClientEvents } from 'discord.js';
 import { EventInfo, EventRegistry, EventError } from '../types/events.js';
-import LRUCache from '../utils/Cache/LRUCache.js';
-import { isValidEventName } from '../utils/isValidEventName.js';
+import LRUCache from '../services/manager/LRUCache.js';
+import { isValidEventName } from '../utils/validators/isValidEventName.js';
 
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = path.dirname(__filename);
@@ -25,8 +25,8 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
   defaultTTL: 3600000, // 1 hour
   cleanupIntervalMs: 300000, // 5 minutes
   evictionPolicy: 'LRU',
-  onExpiry: (key, value) => {
-    console.log(`Event module cache expired: ${key}`.yellow);
+  onExpiry: (key): void => {
+    console.log(`Event module cache expired: ${key} `.yellow);
   },
 });
 
@@ -186,7 +186,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
   }
 };
 
-export const cleanup = () => {
+export const cleanup = (): void => {
   eventModuleCache.close();
 };
 

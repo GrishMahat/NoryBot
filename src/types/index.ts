@@ -1,7 +1,5 @@
 import {
   ApplicationCommandOptionType,
-  EmbedBuilder,
-  SlashCommandBuilder,
   CommandInteraction,
   Client,
   PermissionsBitField,
@@ -12,7 +10,6 @@ import {
   StringSelectMenuInteraction,
   ModalSubmitInteraction,
   ChatInputCommandInteraction,
-  TimestampStylesString,
   AutocompleteInteraction,
   // ApplicationCommandOption, we are  use the custom one below
 } from 'discord.js';
@@ -63,6 +60,7 @@ export type ApplicationCommandIntegrationType = 0 | 1;
 export interface BaseCommandConfig {
   userPermissions?: PermissionResolvable[];
   botPermissions?: PermissionResolvable[];
+  nsfwMode?: boolean;
   cooldown?: number;
   devOnly?: boolean;
   testMode?: boolean;

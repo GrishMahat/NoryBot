@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
-import { LocalContextMenu } from '../types/index.js';
+import { LocalContextMenu } from '../../types/index.js';
 
 // Helper to get the current directory path in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -71,7 +71,7 @@ async function importCommandFile(
 export default async function loadCommands(
   exceptions: string[] = []
 ): Promise<LocalContextMenu[]> {
-  const commandsDir = path.resolve(__dirname, '..', 'contextmenus');
+  const commandsDir = path.resolve(__dirname, '..', '..', 'contextmenus');
   const allCommandFiles = getAllFiles(commandsDir, false).filter(
     (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter out files that do not end with '.js' or '.ts'
   );
