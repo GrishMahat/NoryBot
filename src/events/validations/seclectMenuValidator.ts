@@ -160,11 +160,17 @@ const handleSelectMenu = async (
     return sendEmbedReply(interaction, 'Red', mConfig.commandTestMode, true);
   }
 
-  if (selectMenu.compiledChecks?.userPermissions && !selectMenu.compiledChecks.userPermissions(interaction)) {
+  if (
+    selectMenu.compiledChecks?.userPermissions &&
+    !selectMenu.compiledChecks.userPermissions(interaction)
+  ) {
     return sendEmbedReply(interaction, 'Red', mConfig.userNoPermissions, true);
   }
 
-  if (selectMenu.compiledChecks?.botPermissions && !selectMenu.compiledChecks.botPermissions(interaction)) {
+  if (
+    selectMenu.compiledChecks?.botPermissions &&
+    !selectMenu.compiledChecks.botPermissions(interaction)
+  ) {
     return sendEmbedReply(interaction, 'Red', mConfig.botNoPermissions, true);
   }
 

@@ -126,7 +126,10 @@ class ButtonManager {
         ? (interaction: ButtonInteraction): boolean => {
             const guild = interaction.guild;
             if (!guild?.members.me) return false;
-            return this.checkPermissions(guild.members.me, button.botPermissions || []);
+            return this.checkPermissions(
+              guild.members.me,
+              button.botPermissions || []
+            );
           }
         : (): boolean => true,
     };
@@ -207,29 +210,43 @@ class ButtonManager {
 
     // Dev-only check
     if (button.devOnly && !developersId.includes(interaction.user.id)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
+          ephemeral: true,
+        })
+      );
     }
 
     // Test mode check
     if (button.testMode && interaction.guild?.id !== testServerId) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
+          ephemeral: true,
+        })
+      );
     }
 
     // Permission checks
-    if (button.compiledChecks?.userPermissions && !button.compiledChecks.userPermissions(interaction)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
-        ephemeral: true,
-      }));
+    if (
+      button.compiledChecks?.userPermissions &&
+      !button.compiledChecks.userPermissions(interaction)
+    ) {
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
+          ephemeral: true,
+        })
+      );
     }
 
-    if (button.compiledChecks?.botPermissions && !button.compiledChecks.botPermissions(interaction)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
-        ephemeral: true,
-      }));
+    if (
+      button.compiledChecks?.botPermissions &&
+      !button.compiledChecks.botPermissions(interaction)
+    ) {
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
+          ephemeral: true,
+        })
+      );
     }
 
     // Original user check
@@ -237,9 +254,11 @@ class ButtonManager {
       interaction.message.interaction &&
       interaction.message.interaction.user.id !== interaction.user.id
     ) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.cannotUseButton, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.cannotUseButton, {
+          ephemeral: true,
+        })
+      );
     }
 
     // Cooldown check
@@ -249,12 +268,14 @@ class ButtonManager {
           interaction.user.id,
           button.customId
         );
-        return Promise.resolve(this.createEmbed(
-          interaction,
-          'Red',
-          `Please wait ${remainingTime} seconds before using this button again.`,
-          { ephemeral: true }
-        ));
+        return Promise.resolve(
+          this.createEmbed(
+            interaction,
+            'Red',
+            `Please wait ${remainingTime} seconds before using this button again.`,
+            { ephemeral: true }
+          )
+        );
       }
       cooldownManager.setCooldown(
         interaction.user.id,

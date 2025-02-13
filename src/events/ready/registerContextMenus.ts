@@ -161,7 +161,7 @@ async function createContextMenu(
 
   try {
     await client.application?.commands.create(data);
-    } catch (err: unknown) {
+  } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Failed to create context menu ${
         data.name

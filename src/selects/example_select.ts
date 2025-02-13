@@ -9,7 +9,7 @@ const exampleSelectMenu: SelectMenu = {
     const selectedValue = interaction.values[0];
     await interaction.reply({
       content: `You selected: ${selectedValue}`,
-      flags: MessageFlags.Ephemeral
+      flags: MessageFlags.Ephemeral,
     });
   },
 };
