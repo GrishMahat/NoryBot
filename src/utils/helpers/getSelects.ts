@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
-import { SelectMenu } from '../types/index.js';
+import { SelectMenu } from '../../types/index.js';
 
 // Helper to get the current directory path in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,7 +24,7 @@ const importSelectMenus = async (
   exceptions: string[] = []
 ): Promise<SelectMenu[]> => {
   const selectMenus: SelectMenu[] = [];
-  const selectMenuDir = path.resolve(__dirname, '..', 'selects');
+  const selectMenuDir = path.resolve(__dirname, '..', '..', 'selects');
 
   // Retrieve all files in the 'selects' directory
   const selectMenuFiles = getAllFiles(selectMenuDir, false).filter(

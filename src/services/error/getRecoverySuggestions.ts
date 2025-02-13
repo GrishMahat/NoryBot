@@ -1,6 +1,6 @@
 import { DiscordAPIError } from 'discord.js';
 
-export default function getRecoverySuggestions(error) {
+export default function getRecoverySuggestions(error): string {
   if (error instanceof DiscordAPIError) {
     switch (error.code) {
       case 50001:

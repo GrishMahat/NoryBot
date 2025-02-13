@@ -3,20 +3,19 @@ import {
   Client,
   Interaction,
   ColorResolvable,
-  PermissionsBitField,
   TextChannel,
   NewsChannel,
   MessageFlags,
   PermissionResolvable,
   InteractionReplyOptions,
   GuildMember,
-  ContextMenuCommandInteraction,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
-import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
-import LRUCache from '../../utils/Cache/LRUCache.js';
-import cooldownManager from '../../utils/CooldownManager.js';
+import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus.js';
+import LRUCache from '../../services/manager/LRUCache.js';
+import cooldownManager from '../../services/manager/CooldownManager.js';
+import { LocalContextMenu } from '../../types/index.js';
 
 interface ContextMenuMetrics {
   uses: number;
@@ -26,8 +25,8 @@ interface ContextMenuMetrics {
 }
 
 class ContextMenuManager {
-  private contextMenus: Map<string, any>;
-  private menuCache: LRUCache<string, any>;
+  private contextMenus: Map<string, LocalContextMenu>;
+  private menuCache: LRUCache<string, LocalContextMenu>;
   private metrics: Map<string, ContextMenuMetrics>;
   private isLoaded: boolean;
 
@@ -35,29 +34,36 @@ class ContextMenuManager {
     this.contextMenus = new Map();
     this.metrics = new Map();
     this.isLoaded = false;
-    this.menuCache = new LRUCache<string, any>({
+    this.menuCache = new LRUCache<string, LocalContextMenu>({
       capacity: 1000,
       defaultTTL: 2 * 60 * 60 * 1000, // 2 hour TTL
       cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 minutes
       evictionPolicy: 'LRU',
       resetTTLOnAccess: true,
-      onExpiry: (key) => this.handleCacheExpiry(key),
+      onExpiry: async (key): Promise<void> => {
+        await this.handleCacheExpiry(key);
+      },
     });
   }
 
   private async handleCacheExpiry(key: string): Promise<void> {
-    const metrics = this.metrics.get(key);
+    const metrics = await this.metrics.get(key);
     if (metrics) {
-      console.log(`Context menu ${key} expired from cache. Usage stats:`, metrics);
+      await Promise.resolve(
+        console.log(
+          `Context menu ${key} expired from cache. Usage stats:`,
+          metrics
+        )
+      );
     }
   }
 
-  private async createEmbed(
+  private createEmbed(
     interaction: Interaction,
     color: ColorResolvable,
     description: string,
     options: Partial<InteractionReplyOptions> = {}
-  ): Promise<InteractionReplyOptions> {
+  ): InteractionReplyOptions {
     const embed = new EmbedBuilder()
       .setColor(color)
       .setDescription(description)
@@ -79,7 +85,7 @@ class ContextMenuManager {
     responseTime: number,
     failed: boolean = false
   ): void {
-    let metrics = this.metrics.get(commandName) || {
+    const metrics = this.metrics.get(commandName) || {
       uses: 0,
       lastUsed: new Date(),
       averageResponseTime: 0,
@@ -119,17 +125,18 @@ class ContextMenuManager {
     type: 'user' | 'bot'
   ): boolean {
     if (!interaction.guild) return false;
-    const member = type === 'user' ? interaction.member : interaction.guild.members.me;
+    const member =
+      type === 'user' ? interaction.member : interaction.guild.members.me;
     if (!member || !(member instanceof GuildMember)) return false;
     return permissions.every((permission) =>
       member.permissions.has(permission)
     );
   }
 
-  private async validateContextMenu(
-    menu: any,
+  private validateContextMenu(
+    menu: LocalContextMenu,
     interaction: Interaction
-  ): Promise<InteractionReplyOptions | null> {
+  ): InteractionReplyOptions | null {
     const { developersId, testServerId } = config;
 
     if (menu.devOnly && !developersId.includes(interaction.user.id)) {
@@ -138,7 +145,7 @@ class ContextMenuManager {
       });
     }
 
-    if (menu.testMode && interaction.guild!.id !== testServerId) {
+    if (menu.testMode && interaction.guild?.id !== testServerId) {
       return this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
         ephemeral: true,
       });
@@ -146,20 +153,29 @@ class ContextMenuManager {
 
     if (menu.nsfwMode) {
       const channel = interaction.channel;
-      if (!(channel instanceof TextChannel || channel instanceof NewsChannel) || !channel.nsfw) {
+      if (
+        !(channel instanceof TextChannel || channel instanceof NewsChannel) ||
+        !channel.nsfw
+      ) {
         return this.createEmbed(interaction, 'Red', mConfig.nsfw, {
           ephemeral: true,
         });
       }
     }
 
-    if (menu.userPermissions?.length && !this.checkPermissions(interaction, menu.userPermissions, 'user')) {
+    if (
+      menu.userPermissions?.length &&
+      !this.checkPermissions(interaction, menu.userPermissions, 'user')
+    ) {
       return this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
         ephemeral: true,
       });
     }
 
-    if (menu.botPermissions?.length && !this.checkPermissions(interaction, menu.botPermissions, 'bot')) {
+    if (
+      menu.botPermissions?.length &&
+      !this.checkPermissions(interaction, menu.botPermissions, 'bot')
+    ) {
       return this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
         ephemeral: true,
       });
@@ -201,17 +217,18 @@ class ContextMenuManager {
     const { commandName } = interaction;
 
     try {
-      const menu = this.menuCache.get(commandName) || this.contextMenus.get(commandName);
+      const menu =
+        this.menuCache.get(commandName) || this.contextMenus.get(commandName);
       if (!menu) {
         await interaction.reply(
-          await this.createEmbed(interaction, 'Red', 'Context menu not found.', {
+          this.createEmbed(interaction, 'Red', 'Context menu not found.', {
             ephemeral: true,
           })
         );
         return;
       }
 
-      const validationError = await this.validateContextMenu(menu, interaction);
+      const validationError = this.validateContextMenu(menu, interaction);
       if (validationError) {
         await interaction.reply(validationError);
         return;
@@ -219,15 +236,16 @@ class ContextMenuManager {
 
       await menu.run(client, interaction);
       this.updateMetrics(commandName, Date.now() - startTime);
-      console.log(`Context menu executed: ${commandName} by ${interaction.user.tag}`.green);
-
+      console.log(
+        `Context menu executed: ${commandName} by ${interaction.user.tag}`.green
+      );
     } catch (error) {
       this.updateMetrics(commandName, Date.now() - startTime, true);
       await global.errorHandler.handleError(error, 'ContextMenuExecutionError');
 
       if (!interaction.replied) {
         await interaction.reply(
-          await this.createEmbed(
+          this.createEmbed(
             interaction,
             'Red',
             'An error occurred while processing your request.',

@@ -3,6 +3,7 @@
  * @type {Object}
  */
 export const config = {
+  errorHandler: true,
   /**
    * The ID of the test server.
    * @type {string}

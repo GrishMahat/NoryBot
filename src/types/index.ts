@@ -60,6 +60,7 @@ export type ApplicationCommandIntegrationType = 0 | 1;
 export interface BaseCommandConfig {
   userPermissions?: PermissionResolvable[];
   botPermissions?: PermissionResolvable[];
+  nsfwMode?: boolean;
   cooldown?: number;
   devOnly?: boolean;
   testMode?: boolean;

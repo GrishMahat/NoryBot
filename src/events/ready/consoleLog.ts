@@ -76,7 +76,7 @@ const formatLogOutput = (config: LogConfig): void => {
  * @returns {Promise<void>} Resolves when logging is complete
  */
 const consoleLog = async (client: Client): Promise<void> => {
-  let dbStatus: 'connected' | 'disconnected' = 'disconnected';
+  const dbStatus: 'connected' | 'disconnected' = 'disconnected';
 
   try {
     const logConfig: LogConfig = {

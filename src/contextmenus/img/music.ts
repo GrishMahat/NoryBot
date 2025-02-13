@@ -4,9 +4,9 @@ import {
   ContextMenuCommandInteraction,
   Client,
   AttachmentBuilder,
-  MessageFlags,
+  // MessageFlags,
 } from 'discord.js';
-import { generateMusicImage } from '../../utils/img/musicImge.js';
+import { generateMusicImage } from '../../services/img/musicImge.js';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()
@@ -22,7 +22,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
       const message = interaction.targetMessage;
 
       // Get the first image attachment or avatar as fallback
-      let imageUrl =
+      const imageUrl =
         message.attachments.find((a) => a.contentType?.startsWith('image/'))
           ?.url ||
         message.author.displayAvatarURL({ size: 512, extension: 'png' });

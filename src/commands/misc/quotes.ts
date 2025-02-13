@@ -15,7 +15,7 @@ import { LocalCommand } from '../../types/index.js';
 import {
   QuoteResponse,
   generateQuoteImage,
-} from '../../utils/img/generateQuoteImage.js';
+} from '../../services/img/generateQuoteImage.js';
 import emojiConfig from '../../config/emoji.js';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';

@@ -6,24 +6,18 @@ import {
 import { Modal } from '../types/index.js';
 
 const modal: Modal = {
-  customId: 'test',
+  customId: 'test-modal',
   cooldown: 5, // 5 seconds cooldown
   devOnly: false,
   testMode: false,
 
-  // Example permissions (adjust as needed)
-  userPermissions: ['SendMessages'],
-  botPermissions: ['SendMessages'],
-
   async run(client: Client, interaction: ModalSubmitInteraction) {
-    // Get the values of the modal inputs
-    const favoriteColor =
-      interaction.fields.getTextInputValue('favoriteColorInput');
-    const hobbies = interaction.fields.getTextInputValue('hobbiesInput');
+    // Get the value from the test input
+    const testInput = interaction.fields.getTextInputValue('test-input');
 
     // Respond to the interaction
     await interaction.reply({
-      content: `Your favorite color is ${favoriteColor} and your hobbies are: ${hobbies}`,
+      content: `You entered: ${testInput}`,
       flags: MessageFlags.Ephemeral,
     });
   },
