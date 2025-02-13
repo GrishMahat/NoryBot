@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
-import getSelects from '../../utils/getSelects.js';
+import getSelects from '../../utils/helpers/getSelects.js';
 import { SelectMenu } from '../../types/index.js';
 
 class LRUCache<K, V> {
@@ -25,7 +25,8 @@ class LRUCache<K, V> {
 
   get(key: K): V | undefined {
     if (!this.cache.has(key)) return undefined;
-    const item = this.cache.get(key)!;
+    const item = this.cache.get(key);
+    if (!item) return undefined;
     this.cache.delete(key);
     this.cache.set(key, item);
     return item;
@@ -91,15 +92,15 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
       // Define compiled permission checks
       selectMenu.compiledChecks = {
         userPermissions: selectMenu.userPermissions
-          ? (interaction: StringSelectMenuInteraction) =>
+          ? (interaction: StringSelectMenuInteraction): boolean =>
               checkPermissions(
                 interaction.member as GuildMember,
                 selectMenu.userPermissions || []
               )
-          : () => true,
+          : (): boolean => true,
 
         botPermissions: selectMenu.botPermissions
-          ? (interaction: StringSelectMenuInteraction) => {
+          ? (interaction: StringSelectMenuInteraction): boolean => {
               // Check if the bot member is available
               const botMember = interaction.guild?.members.me;
               if (!botMember) {
@@ -111,7 +112,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
                 selectMenu.botPermissions || []
               );
             }
-          : () => true,
+          : (): boolean => true,
       };
       // Store the select menu in the map
       selectMenus.set(selectMenu.customId, selectMenu);
@@ -155,15 +156,15 @@ const handleSelectMenu = async (
     return sendEmbedReply(interaction, 'Red', mConfig.commandDevOnly, true);
   }
 
-  if (selectMenu.testMode && interaction.guild!.id !== testServerId) {
+  if (selectMenu.testMode && interaction.guild?.id !== testServerId) {
     return sendEmbedReply(interaction, 'Red', mConfig.commandTestMode, true);
   }
 
-  if (!selectMenu.compiledChecks!.userPermissions(interaction)) {
+  if (selectMenu.compiledChecks?.userPermissions && !selectMenu.compiledChecks.userPermissions(interaction)) {
     return sendEmbedReply(interaction, 'Red', mConfig.userNoPermissions, true);
   }
 
-  if (!selectMenu.compiledChecks!.botPermissions(interaction)) {
+  if (selectMenu.compiledChecks?.botPermissions && !selectMenu.compiledChecks.botPermissions(interaction)) {
     return sendEmbedReply(interaction, 'Red', mConfig.botNoPermissions, true);
   }
 

@@ -5,10 +5,9 @@ import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
 } from 'discord.js';
-import { config } from '../../config/config.js';
-import getLocalContextMenus from '../../utils/getLocalContextMenus.js';
-import getApplicationCommands from '../../utils/getApplicationCommands.js';
-import compareContextMenus from '../../utils/contextmenusComparing.js';
+import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus.js';
+import getApplicationCommands from '../../utils/helpers/getApplicationCommands.js';
+import compareContextMenus from '../../utils/validators/contextmenusComparing.js';
 import { LocalContextMenu } from '../../types/index.js';
 
 export default async (client: Client): Promise<void> => {
@@ -46,10 +45,10 @@ export default async (client: Client): Promise<void> => {
       newContextMenus,
       deletedContextMenus
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Error during context menu sync: ${
-        err?.message ?? 'Unknown error'
+        err instanceof Error ? err.message : 'Unknown error'
       }`.red
     );
   }
@@ -117,11 +116,11 @@ async function updateOrCreateContextMenus(
         await createContextMenu(client, data);
         newContextMenus.push(contextMenuName);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         `[${new Date().toISOString()}] Error processing context menu ${
           localContextMenu.data?.name
-        }: ${error.message}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
       );
     }
   }
@@ -140,11 +139,11 @@ async function handleExistingContextMenu(
     try {
       await existingContextMenu.edit(localContextMenu.data);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         `[${new Date().toISOString()}] Error updating context menu ${
           localContextMenu.data.name
-        }: ${error.message}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
       );
       return false;
     }
@@ -162,11 +161,11 @@ async function createContextMenu(
 
   try {
     await client.application?.commands.create(data);
-  } catch (err: any) {
+    } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Failed to create context menu ${
         data.name
-      }: ${err?.message ?? 'Unknown error'}`.red
+      }: ${err instanceof Error ? err.message : 'Unknown error'}`.red
     );
   }
 }

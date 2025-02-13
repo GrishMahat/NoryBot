@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
-import { Button } from '../types/index.js';
+import { Button } from '../../types/index.js';
 
 // Helper to get the current directory path in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,7 +24,7 @@ export default async function importButtons(
   exceptions: string[] = []
 ): Promise<Button[]> {
   const buttons: Button[] = [];
-  const buttonDir = path.resolve(__dirname, '..', 'buttons');
+  const buttonDir = path.resolve(__dirname, '..', '..', 'buttons');
 
   // Retrieve all files in the 'buttons' directory
   const buttonFiles = getAllFiles(buttonDir, false).filter(

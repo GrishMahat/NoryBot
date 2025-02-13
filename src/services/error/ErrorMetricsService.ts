@@ -1,4 +1,4 @@
-import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types/error';
+import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types/error.js';
 
 export class ErrorMetricsService {
   private metrics: Map<string, ErrorMetrics>;
@@ -87,7 +87,7 @@ export class ErrorMetricsService {
 
   private cleanupOldMetrics(): void {
     const cutoff = Date.now() - this.retentionPeriod;
-    for (const [key, _] of this.metrics) {
+    for (const [key] of this.metrics) {
       const timestamp = parseInt(key.split(':')[1]);
       if (timestamp < cutoff) {
         this.metrics.delete(key);
@@ -112,15 +112,22 @@ export class ErrorMetricsService {
   }
 
   private createNewMetrics(): ErrorMetrics {
-    return {
+    const metrics: ErrorMetrics = {
       hourlyRate: 0,
       dailyRate: 0,
       topErrors: [],
       performance: {
-        memoryUsage: { heapUsed: 0, heapTotal: 0, external: 0 },
-        cpu: { usage: 0, load: [] },
+        memoryUsage: {
+          heapUsed: 0,
+          heapTotal: 0,
+          external: 0
+        },
+        cpu: {
+          usage: 0,
+          load: [0, 0, 0]
+        },
         uptime: 0,
-        responseTime: 0,
+        responseTime: 0
       },
       bySeverity: {
         [ErrorSeverity.LOW]: 0,
@@ -129,6 +136,7 @@ export class ErrorMetricsService {
         [ErrorSeverity.CRITICAL]: 0,
       },
     };
+    return metrics;
   }
 
   public destroy(): void {

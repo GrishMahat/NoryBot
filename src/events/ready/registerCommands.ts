@@ -5,10 +5,9 @@ import {
   ApplicationCommandType,
   ApplicationCommandOptionData,
 } from 'discord.js';
-import { config } from '../../config/config.js';
-import getLocalCommands from '../../utils/getLocalCommands.js';
-import getApplicationCommands from '../../utils/getApplicationCommands.js';
-import compareCommands from '../../utils/commandComparing.js';
+import getLocalCommands from '../../utils/helpers/getLocalCommands.js';
+import getApplicationCommands from '../../utils/helpers/getApplicationCommands.js';
+import compareCommands from '../../utils/validators/commandComparing.js';
 import { LocalCommand } from '../../types/index.js';
 
 /**
@@ -78,10 +77,10 @@ export default async (client: Client): Promise<void> => {
       newCommands,
       deletedCommands
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Error during command sync: ${
-        err?.message ?? 'Unknown error'
+        err instanceof Error ? err.message : 'Unknown error'
       }`.red
     );
   }
@@ -161,10 +160,10 @@ async function updateOrCreateCommands(
         await createCommand(client, data);
         newCommands.push(commandName);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         `[${new Date().toISOString()}] Error processing command ${index + 1}: ${
-          error.message
+          error instanceof Error ? error.message : 'Unknown error'
         }`.red
       );
     }
@@ -189,11 +188,11 @@ async function handleExistingCommand(
       });
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         `[${new Date().toISOString()}] Error updating command ${
           localCommand.data.name
-        }: ${error.message}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
       );
       return false;
     }
@@ -217,10 +216,10 @@ async function createCommand(
       integrationTypes: data.integration_types ?? [0, 1],
       options: (data.options as ApplicationCommandOptionData[]) ?? [],
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Failed to create command ${data.name}: ${
-        err?.message ?? 'Unknown error'
+        err instanceof Error ? err.message : 'Unknown error'
       }`.red
     );
   }

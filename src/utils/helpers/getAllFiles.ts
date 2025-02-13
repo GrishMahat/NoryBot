@@ -31,8 +31,8 @@ const getAllFiles = (
           if (foldersOnly) {
             result.push(fullPath);
           }
-        } else if (!foldersOnly && item.isFile()) {
-          // Check if the file matches our criteria
+        } else if (!foldersOnly) {
+          // Only include .js and .ts files, but exclude .d.ts and .js.map files
           if (
             (item.name.endsWith('.js') || item.name.endsWith('.ts')) &&
             !item.name.endsWith('.d.ts') &&
@@ -43,7 +43,7 @@ const getAllFiles = (
         }
       }
     } catch (error) {
-      console.error(`Error reading directory ${currentPath}:`, error);
+      console.error(`Error reading directory ${currentPath}:`.red, error);
     }
   }
 

@@ -8,17 +8,16 @@ import {
   TextChannel,
   NewsChannel,
   ChatInputCommandInteraction,
-  AutocompleteInteraction,
   PermissionResolvable,
   InteractionReplyOptions,
   Colors,
 } from 'discord.js';
 import { config } from '../../config/config.js';
 import mConfig from '../../config/messageConfig.js';
-import getLocalCommands from '../../utils/getLocalCommands.js';
-import LRUCache from '../../utils/Cache/LRUCache.js';
+import getLocalCommands from '../../utils/helpers/getLocalCommands.js';
+import LRUCache from '../../services/manager/LRUCache.js';
 import { LocalCommand } from '../../types/index.js';
-import cooldownManager from '../../utils/CooldownManager.js';
+import cooldownManager from '../../services/manager/CooldownManager.js';
 
 interface CommandMetrics {
   uses: number;
@@ -43,23 +42,23 @@ class CommandValidator {
       cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 minutes
       evictionPolicy: 'LRU',
       resetTTLOnAccess: true,
-      onExpiry: (key) => this.handleCacheExpiry(key),
+      onExpiry: (key): Promise<void> => this.handleCacheExpiry(key),
     });
   }
 
   private async handleCacheExpiry(key: string): Promise<void> {
-    const metrics = this.metrics.get(key);
+    const metrics = await this.metrics.get(key);
     if (metrics) {
       console.log(`Command ${key} expired from cache. Usage stats:`, metrics);
     }
   }
 
-  private async createEmbed(
+  private createEmbed(
     interaction: Interaction,
     color: ColorResolvable,
     description: string,
     options: Partial<InteractionReplyOptions> = {}
-  ): Promise<InteractionReplyOptions> {
+  ): InteractionReplyOptions {
     return {
       embeds: [
         new EmbedBuilder()
@@ -81,7 +80,7 @@ class CommandValidator {
     responseTime: number,
     failed: boolean = false
   ): void {
-    let metrics = this.metrics.get(commandName) || {
+    const metrics = this.metrics.get(commandName) || {
       uses: 0,
       lastUsed: new Date(),
       averageResponseTime: 0,
@@ -135,10 +134,10 @@ class CommandValidator {
     );
   }
 
-  private async validateCommand(
+  private validateCommand(
     interaction: ChatInputCommandInteraction,
     command: LocalCommand
-  ): Promise<InteractionReplyOptions | null> {
+  ): InteractionReplyOptions | null {
     const { developersId, testServerId, maintenance } = config;
 
     if (maintenance && !developersId.includes(interaction.user.id)) {
@@ -234,14 +233,9 @@ class CommandValidator {
     try {
       const command = this.commandMap.get(commandName);
       if (!command) {
-
-        if (interaction.isAutocomplete() && command.autocomplete) {
-          await command.autocomplete(client, interaction);
-          return;
-        }
         if (interaction.isChatInputCommand()) {
           await interaction.reply(
-            await this.createEmbed(
+            this.createEmbed(
               interaction,
               Colors.Red,
               'Command not found.'
@@ -251,9 +245,8 @@ class CommandValidator {
         return;
       }
 
-
       if (interaction.isChatInputCommand()) {
-        const validationError = await this.validateCommand(interaction, command);
+        const validationError = this.validateCommand(interaction, command);
         if (validationError) {
           await interaction.reply(validationError);
           return;
@@ -278,7 +271,7 @@ class CommandValidator {
 
       if (interaction.isChatInputCommand() && !interaction.replied) {
         await interaction.reply(
-          await this.createEmbed(
+          this.createEmbed(
             interaction,
             Colors.Red,
             'An error occurred while executing the command.'

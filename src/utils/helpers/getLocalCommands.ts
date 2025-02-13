@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from './getAllFiles.js';
-import { LocalCommand } from '../types/index.js';
+import { LocalCommand } from '../../types/index.js';
 
 // Helper to get the current directory path in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -71,21 +71,22 @@ async function importCommandFile(
 export default async function loadCommands(
   exceptions: string[] = []
 ): Promise<LocalCommand[]> {
-  const commandsDir = path.resolve(__dirname, '..', 'commands');
-  const allCommandFiles = getAllFiles(commandsDir).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter out files that do not end with '.js' or '.ts'
-  );
-
   const commands: LocalCommand[] = [];
-  for (const file of allCommandFiles) {
-    try {
-      const command = await importCommandFile(file, exceptions);
+
+  // Update path to point to the src/commands directory
+  const commandsPath = path.join(__dirname, '..', '..', 'commands');
+
+  try {
+    const commandFiles = getAllFiles(commandsPath);
+
+    for (const commandFile of commandFiles) {
+      const command = await importCommandFile(commandFile, exceptions);
       if (command) {
         commands.push(command);
       }
-    } catch (error) {
-      console.error(`Error processing command file ${file}:`, error);
     }
+  } catch (error) {
+    console.error('Error loading commands:'.red, error);
   }
 
   return commands;

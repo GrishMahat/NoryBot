@@ -7,7 +7,7 @@ import {
   LocalCommand,
   ApplicationCommandOption,
   ApplicationCommandOptionChoice,
-} from '../types/index.js';
+} from '../../types/index.js';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
