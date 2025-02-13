@@ -105,7 +105,10 @@ class CommandValidator {
       });
       this.isInitialized = true;
     } catch (error) {
-      await global.errorHandler.handleError(error, 'CommandInitializationError');
+      await global.errorHandler.handleError(
+        error,
+        'CommandInitializationError'
+      );
       throw error;
     }
   }
@@ -161,19 +164,11 @@ class CommandValidator {
     }
 
     if (command.devOnly && !developersId.includes(interaction.user.id)) {
-      return this.createEmbed(
-        interaction,
-        Colors.Red,
-        mConfig.commandDevOnly
-      );
+      return this.createEmbed(interaction, Colors.Red, mConfig.commandDevOnly);
     }
 
     if (command.testMode && interaction.guild?.id !== testServerId) {
-      return this.createEmbed(
-        interaction,
-        Colors.Red,
-        mConfig.commandTestMode
-      );
+      return this.createEmbed(interaction, Colors.Red, mConfig.commandTestMode);
     }
 
     if (
@@ -183,11 +178,7 @@ class CommandValidator {
         interaction.channel instanceof NewsChannel
       )
     ) {
-      return this.createEmbed(
-        interaction,
-        Colors.Red,
-        mConfig.nsfw
-      );
+      return this.createEmbed(interaction, Colors.Red, mConfig.nsfw);
     }
 
     if (
@@ -235,11 +226,7 @@ class CommandValidator {
       if (!command) {
         if (interaction.isChatInputCommand()) {
           await interaction.reply(
-            this.createEmbed(
-              interaction,
-              Colors.Red,
-              'Command not found.'
-            )
+            this.createEmbed(interaction, Colors.Red, 'Command not found.')
           );
         }
         return;

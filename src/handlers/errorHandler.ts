@@ -15,7 +15,6 @@ import {
   ErrorContext,
   ErrorMetrics,
   PerformanceMetrics,
-
 } from '../types/error.js';
 import determineErrorCategory from '../services/error/determineErrorCategory.js';
 import getRecoverySuggestions from '../services/error/getRecoverySuggestions.js';
@@ -131,19 +130,28 @@ class ErrorHandler {
       .setTitle('Error Metrics Report')
       .setDescription('Summary of error metrics for the last 24 hours')
       .addFields(
-        { name: 'Hourly Rate', value: report.hourlyRate.toString(), inline: true },
-        { name: 'Daily Rate', value: report.dailyRate.toString(), inline: true },
+        {
+          name: 'Hourly Rate',
+          value: report.hourlyRate.toString(),
+          inline: true,
+        },
+        {
+          name: 'Daily Rate',
+          value: report.dailyRate.toString(),
+          inline: true,
+        },
         {
           name: 'Top Errors',
-          value: report.topErrors
-            .slice(0, 5)
-            .map(
-              (error) =>
-                `• ${error.message} (${error.count}x, last: <t:${Math.floor(
-                  error.lastOccurrence.getTime() / 1000
-                )}:R>)`
-            )
-            .join('\n') || 'No errors recorded',
+          value:
+            report.topErrors
+              .slice(0, 5)
+              .map(
+                (error) =>
+                  `• ${error.message} (${error.count}x, last: <t:${Math.floor(
+                    error.lastOccurrence.getTime() / 1000
+                  )}:R>)`
+              )
+              .join('\n') || 'No errors recorded',
         }
       );
 
@@ -156,7 +164,7 @@ class ErrorHandler {
   ): Promise<void> {
     try {
       const errorDetails = await this.formatError(error, type);
-      
+
       // Track error metrics
       if (this.metricsService) {
         this.metricsService.trackError(errorDetails);
@@ -227,8 +235,7 @@ class ErrorHandler {
         50036,
       ];
       return (
-        typeof error.code === 'number' &&
-        !recoverableCodes.includes(error.code)
+        typeof error.code === 'number' && !recoverableCodes.includes(error.code)
       );
     }
     return true;
@@ -243,10 +250,14 @@ class ErrorHandler {
     console.log('ErrorHandler: Sending error notification via webhook...');
 
     if (!this.webhook) {
-      console.warn('ErrorHandler: Webhook client not available, attempting reinitialization...');
+      console.warn(
+        'ErrorHandler: Webhook client not available, attempting reinitialization...'
+      );
       this.setupWebhook();
       if (!this.webhook) {
-        console.error('ErrorHandler: Webhook reinitialization failed. Aborting error notification.');
+        console.error(
+          'ErrorHandler: Webhook reinitialization failed. Aborting error notification.'
+        );
         return;
       }
     }
@@ -257,16 +268,22 @@ class ErrorHandler {
     for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
       try {
         await this.sendErrorToWebhook(errorDetails);
-        console.log(`ErrorHandler: Successfully sent error notification on attempt ${attempt}.`);
+        console.log(
+          `ErrorHandler: Successfully sent error notification on attempt ${attempt}.`
+        );
         return;
       } catch (error) {
         console.error(`ErrorHandler: Attempt ${attempt} failed:`, error);
         if (attempt < this.config.retryAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.config.retryDelay)
+          );
         }
       }
     }
-    console.error('ErrorHandler: All retry attempts failed for sending error notification.');
+    console.error(
+      'ErrorHandler: All retry attempts failed for sending error notification.'
+    );
   }
 
   private shouldRateLimit(errorKey: string): boolean {
@@ -316,7 +333,9 @@ class ErrorHandler {
 
   private async sendErrorToWebhook(errorDetails: ErrorDetails): Promise<void> {
     if (!this.webhook) {
-      console.error('ErrorHandler: No webhook client available for sending error notification.');
+      console.error(
+        'ErrorHandler: No webhook client available for sending error notification.'
+      );
       return;
     }
 
@@ -344,7 +363,8 @@ class ErrorHandler {
       }
 
       // Add performance metrics
-      const performanceStr = MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
+      const performanceStr =
+        MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
       if (performanceStr) {
         embed.addFields({
           name: 'Performance Metrics',
@@ -401,7 +421,9 @@ class ErrorHandler {
         error instanceof Error &&
         error.message.includes('Invalid Webhook Token')
       ) {
-        console.warn('ErrorHandler: Invalid webhook token detected, reinitializing webhook...');
+        console.warn(
+          'ErrorHandler: Invalid webhook token detected, reinitializing webhook...'
+        );
         this.setupWebhook();
       }
       throw error;
@@ -467,7 +489,8 @@ class ErrorHandler {
     performance: PerformanceMetrics
   ): ErrorSeverity {
     if (
-      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal > 0.95 ||
+      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal >
+        0.95 ||
       performance.cpu.usage > 0.95
     ) {
       return ErrorSeverity.CRITICAL;

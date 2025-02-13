@@ -97,7 +97,8 @@ const loadModals = async (retryCount: number = 0): Promise<void> => {
         userPermissions: modal.userPermissions
           ? (interaction: ModalSubmitInteraction): boolean => {
               const member = interaction.member;
-              if (!(member instanceof GuildMember) || !modal.userPermissions) return false;
+              if (!(member instanceof GuildMember) || !modal.userPermissions)
+                return false;
               return checkPermissions(member, modal.userPermissions);
             }
           : (interaction: ModalSubmitInteraction): boolean => true,
@@ -154,11 +155,17 @@ const handleModal = async (
     return sendEmbedReply(interaction, 'Red', mConfig.commandTestMode, true);
   }
 
-  if (modal.compiledChecks && !modal.compiledChecks.userPermissions(interaction)) {
+  if (
+    modal.compiledChecks &&
+    !modal.compiledChecks.userPermissions(interaction)
+  ) {
     return sendEmbedReply(interaction, 'Red', mConfig.userNoPermissions, true);
   }
 
-  if (modal.compiledChecks && !modal.compiledChecks.botPermissions(interaction)) {
+  if (
+    modal.compiledChecks &&
+    !modal.compiledChecks.botPermissions(interaction)
+  ) {
     return sendEmbedReply(interaction, 'Red', mConfig.botNoPermissions, true);
   }
 

@@ -178,7 +178,9 @@ function normalizeObject(
  * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
-function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): unknown[] {
+function optionsArray(
+  cmd: ApplicationCommand | LocalCommand['data']
+): unknown[] {
   return (cmd.options || []).map((option) => {
     const cleanedOption = normalizeObject(
       option
