@@ -60,7 +60,7 @@ const factCommand: LocalCommand = {
 
       // Create collector from the interaction directly
       const collector = (
-        interaction as CommandInteraction
+        interaction
       ).channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
         filter: (i: ButtonInteraction) =>
