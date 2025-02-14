@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const deleteCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to delete')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -29,7 +29,10 @@ const deleteCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -57,7 +60,7 @@ const deleteCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🗑️ **${interaction.user.username}** wants to delete themselves!`
-            : `🗑️ **${interaction.user.username}** wants to delete **${targetUser.username}**!`
+            : `🗑️ **${interaction.user.username}** wants to delete **${targetUser.username}**!`,
         )
         .addFields({
           name: '❌ Target',
@@ -83,7 +86,7 @@ const deleteCommand: LocalCommand = {
             .setColor('#FF0000')
             .setTitle('❌ Error')
             .setDescription(
-              'Failed to generate the delete image. Please try again later.'
+              'Failed to generate the delete image. Please try again later.',
             )
             .setTimestamp(),
         ],

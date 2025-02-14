@@ -92,15 +92,14 @@ export interface LocalCommand extends BaseCommandConfig {
     name_localizations?: Record<string, string> | null;
     description_localizations?: Record<string, string> | null;
   };
-  nsfwMode?: boolean;
   category?: string;
   run: (
     client: Client,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
   ) => Promise<void>;
   autocomplete?: (
     client: Client,
-    interaction: AutocompleteInteraction
+    interaction: AutocompleteInteraction,
   ) => Promise<void>;
 }
 
@@ -111,7 +110,7 @@ export interface LocalContextMenu extends BaseCommandConfig {
   data: ContextMenuCommandBuilder;
   run: (
     client: Client,
-    interaction: ContextMenuCommandInteraction
+    interaction: ContextMenuCommandInteraction,
   ) => Promise<void>;
 }
 
@@ -122,7 +121,7 @@ export interface SelectMenu extends BaseCommandConfig {
   customId: string;
   run: (
     client: Client,
-    interaction: StringSelectMenuInteraction
+    interaction: StringSelectMenuInteraction,
   ) => Promise<void>;
   compiledChecks?: CompiledChecks<StringSelectMenuInteraction>;
 }

@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -15,13 +15,13 @@ const batslapCommand: LocalCommand = {
       option
         .setName('target')
         .setDescription('The user who gets slapped')
-        .setRequired(true)
+        .setRequired(true),
     )
     .addUserOption((option) =>
       option
         .setName('slapper')
         .setDescription('The user who does the slapping (defaults to you)')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -34,7 +34,10 @@ const batslapCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -72,7 +75,7 @@ const batslapCommand: LocalCommand = {
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
-          `💥 **${slapperUser.username}** just bat-slapped **${targetUser.username}**!`
+          `💥 **${slapperUser.username}** just bat-slapped **${targetUser.username}**!`,
         )
         .addFields(
           {
@@ -84,7 +87,7 @@ const batslapCommand: LocalCommand = {
             name: '😵 Target',
             value: `<@${targetUser.id}>`,
             inline: true,
-          }
+          },
         )
         .setImage('attachment://batslap.png')
         .setTimestamp()
@@ -104,7 +107,7 @@ const batslapCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the batslap image. Please make sure you mentioned a valid user and try again.'
+          'Failed to generate the batslap image. Please make sure you mentioned a valid user and try again.',
         )
         .setTimestamp();
 

@@ -11,7 +11,7 @@ import path from 'path';
  */
 const getAllFiles = (
   directory: string,
-  foldersOnly: boolean = false
+  foldersOnly: boolean = false,
 ): string[] => {
   const stack: string[] = [directory];
   const result: string[] = [];

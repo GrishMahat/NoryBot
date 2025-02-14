@@ -37,7 +37,7 @@ class PaginationError extends Error {
 const createButtonRow = (
   currentPage: number,
   totalPages: number,
-  settings: PaginationSettings
+  settings: PaginationSettings,
 ): ActionRowBuilder<MessageActionRowComponentBuilder> => {
   const row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
 
@@ -59,14 +59,14 @@ const createButtonRow = (
 const createSelectMenu = (
   pages: EmbedBuilder[],
   currentPage: number,
-  settings: PaginationSettings
+  settings: PaginationSettings,
 ): ActionRowBuilder<MessageActionRowComponentBuilder> => {
   const maxOptions = Math.min(settings.maxSelectOptions ?? 25, 25);
   const options = pages.slice(0, maxOptions).map((_, index) =>
     new StringSelectMenuOptionBuilder()
       .setLabel(`Page ${index + 1}`)
       .setValue(index.toString())
-      .setDefault(index === currentPage)
+      .setDefault(index === currentPage),
   );
 
   const menu = new StringSelectMenuBuilder()
@@ -81,7 +81,7 @@ const createSelectMenu = (
 export default async function createPagination(
   interaction: CommandInteraction,
   pages: EmbedBuilder[],
-  settings: PaginationSettings
+  settings: PaginationSettings,
 ): Promise<void> {
   try {
     if (!interaction) {
@@ -108,10 +108,12 @@ export default async function createPagination(
         ? [createButtonRow(currentPage, pages.length, defaultSettings)]
         : [createSelectMenu(pages, currentPage, defaultSettings)];
 
-    const initialMessage = await interaction.reply({
-      embeds: [pages[currentPage]],
-      components,
-    }).then(response => response);
+    const initialMessage = await interaction
+      .reply({
+        embeds: [pages[currentPage]],
+        components,
+      })
+      .then((response) => response);
 
     const collector = initialMessage.createMessageComponentCollector({
       time: defaultSettings.time,
@@ -139,7 +141,7 @@ export default async function createPagination(
           const updatedRow = createButtonRow(
             newPage,
             pages.length,
-            defaultSettings
+            defaultSettings,
           );
           await i.update({
             embeds: [pages[newPage]],
@@ -172,7 +174,7 @@ export default async function createPagination(
           const disabledComponents = components.map((row) => {
             const newRow =
               new ActionRowBuilder<MessageActionRowComponentBuilder>(
-                row.toJSON()
+                row.toJSON(),
               );
             newRow.components.forEach((comp) => {
               if ('setDisabled' in comp) {

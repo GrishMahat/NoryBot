@@ -1,10 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -17,7 +17,7 @@ const ripCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to memorialize')
-        .setRequired(false)
+        .setRequired(false),
     )
     .toJSON(),
   userPermissions: [],
@@ -28,7 +28,10 @@ const ripCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       const targetUser =
         interaction.options.get('user')?.user || interaction.user;
@@ -74,7 +77,7 @@ const ripCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🪦 Here lies **${interaction.user.username}**`
-            : `🪦 **${interaction.user.username}** pays respects to **${targetUser.username}**`
+            : `🪦 **${interaction.user.username}** pays respects to **${targetUser.username}**`,
         )
         .addFields(
           {
@@ -86,7 +89,7 @@ const ripCommand: LocalCommand = {
             name: '💐 Memorial',
             value: randomMemorial,
             inline: true,
-          }
+          },
         )
         .setImage('attachment://rip.png')
         .setTimestamp()
@@ -110,7 +113,7 @@ const ripCommand: LocalCommand = {
               .setColor('#FF0000')
               .setTitle('❌ Memorial Error')
               .setDescription(
-                'Unable to create the memorial at this time. Please try again later.'
+                'Unable to create the memorial at this time. Please try again later.',
               )
               .setTimestamp(),
           ],
@@ -123,7 +126,7 @@ const ripCommand: LocalCommand = {
               .setColor('#FF0000')
               .setTitle('❌ Memorial Error')
               .setDescription(
-                'Unable to create the memorial at this time. Please try again later.'
+                'Unable to create the memorial at this time. Please try again later.',
               )
               .setTimestamp(),
           ],

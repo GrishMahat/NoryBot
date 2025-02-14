@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -15,7 +15,7 @@ const sepiaCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user whose avatar to apply the effect to')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -28,7 +28,10 @@ const sepiaCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -50,7 +53,7 @@ const sepiaCommand: LocalCommand = {
       const embed = new EmbedBuilder()
         .setColor('#8B4513')
         .setDescription(
-          `${targetUser.toString()}'s avatar with a vintage effect`
+          `${targetUser.toString()}'s avatar with a vintage effect`,
         )
         .setImage('attachment://sepia.png')
         .setTimestamp();

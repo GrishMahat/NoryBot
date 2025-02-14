@@ -57,7 +57,7 @@ class CommandValidator {
     interaction: Interaction,
     color: ColorResolvable,
     description: string,
-    options: Partial<InteractionReplyOptions> = {}
+    options: Partial<InteractionReplyOptions> = {},
   ): InteractionReplyOptions {
     return {
       embeds: [
@@ -78,7 +78,7 @@ class CommandValidator {
   private updateMetrics(
     commandName: string,
     responseTime: number,
-    failed: boolean = false
+    failed: boolean = false,
   ): void {
     const metrics = this.metrics.get(commandName) || {
       uses: 0,
@@ -107,7 +107,7 @@ class CommandValidator {
     } catch (error) {
       await global.errorHandler.handleError(
         error,
-        'CommandInitializationError'
+        'CommandInitializationError',
       );
       throw error;
     }
@@ -125,7 +125,7 @@ class CommandValidator {
   private checkPermissions(
     interaction: Interaction,
     permissions: PermissionResolvable[],
-    type: 'user' | 'bot'
+    type: 'user' | 'bot',
   ): boolean {
     if (!interaction.guild) return false;
     const member =
@@ -133,13 +133,13 @@ class CommandValidator {
     if (!member) return false;
     if (typeof member.permissions === 'string') return false;
     return permissions.every((permission) =>
-      (member.permissions as Readonly<PermissionsBitField>).has(permission)
+      (member.permissions as Readonly<PermissionsBitField>).has(permission),
     );
   }
 
   private validateCommand(
     interaction: ChatInputCommandInteraction,
-    command: LocalCommand
+    command: LocalCommand,
   ): InteractionReplyOptions | null {
     const { developersId, testServerId, maintenance } = config;
 
@@ -147,19 +147,19 @@ class CommandValidator {
       return this.createEmbed(
         interaction,
         Colors.Red,
-        'Bot is currently in maintenance mode. Please try again later.'
+        'Bot is currently in maintenance mode. Please try again later.',
       );
     }
 
     const remainingCooldown = cooldownManager.checkCooldown(
       interaction.user.id,
-      command.data.name
+      command.data.name,
     );
     if (remainingCooldown > 0) {
       return this.createEmbed(
         interaction,
         Colors.Red,
-        mConfig.commandCooldown.replace('{time}', remainingCooldown.toString())
+        mConfig.commandCooldown.replace('{time}', remainingCooldown.toString()),
       );
     }
 
@@ -188,7 +188,7 @@ class CommandValidator {
       return this.createEmbed(
         interaction,
         Colors.Red,
-        mConfig.userNoPermissions
+        mConfig.userNoPermissions,
       );
     }
 
@@ -199,7 +199,7 @@ class CommandValidator {
       return this.createEmbed(
         interaction,
         Colors.Red,
-        mConfig.botNoPermissions
+        mConfig.botNoPermissions,
       );
     }
 
@@ -208,7 +208,7 @@ class CommandValidator {
 
   public async handleInteraction(
     client: Client,
-    interaction: Interaction
+    interaction: Interaction,
   ): Promise<void> {
     if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) {
       return;
@@ -226,7 +226,7 @@ class CommandValidator {
       if (!command) {
         if (interaction.isChatInputCommand()) {
           await interaction.reply(
-            this.createEmbed(interaction, Colors.Red, 'Command not found.')
+            this.createEmbed(interaction, Colors.Red, 'Command not found.'),
           );
         }
         return;
@@ -242,14 +242,14 @@ class CommandValidator {
         cooldownManager.setCooldown(
           interaction.user.id,
           command.data.name,
-          command.cooldown || 3
+          command.cooldown || 3,
         );
 
         await command.run(client, interaction);
         this.updateMetrics(commandName, Date.now() - startTime);
 
         console.log(
-          `Command executed: ${commandName} by ${interaction.user.tag}`.green
+          `Command executed: ${commandName} by ${interaction.user.tag}`.green,
         );
       }
     } catch (error) {
@@ -261,8 +261,8 @@ class CommandValidator {
           this.createEmbed(
             interaction,
             Colors.Red,
-            'An error occurred while executing the command.'
-          )
+            'An error occurred while executing the command.',
+          ),
         );
       }
     }
@@ -281,7 +281,7 @@ const commandValidator = new CommandValidator();
 
 export default async (
   client: Client,
-  interaction: Interaction
+  interaction: Interaction,
 ): Promise<void> => {
   await commandValidator.handleInteraction(client, interaction);
 };

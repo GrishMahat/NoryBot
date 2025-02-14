@@ -50,7 +50,7 @@ const sendEmbedReply = async (
   interaction: StringSelectMenuInteraction,
   color: ColorResolvable,
   description: string,
-  ephemeral: boolean = true
+  ephemeral: boolean = true,
 ): Promise<void> => {
   try {
     const embed = new EmbedBuilder()
@@ -73,14 +73,14 @@ const sendEmbedReply = async (
 
 const checkPermissions = (
   member: GuildMember,
-  permissions: PermissionResolvable[]
+  permissions: PermissionResolvable[],
 ): boolean =>
   permissions.every((permission) =>
     member.permissions.has(
       PermissionsBitField.Flags[
         permission as keyof typeof PermissionsBitField.Flags
-      ]
-    )
+      ],
+    ),
   );
 
 const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
@@ -95,7 +95,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
           ? (interaction: StringSelectMenuInteraction): boolean =>
               checkPermissions(
                 interaction.member as GuildMember,
-                selectMenu.userPermissions || []
+                selectMenu.userPermissions || [],
               )
           : (): boolean => true,
 
@@ -109,7 +109,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
               }
               return checkPermissions(
                 botMember,
-                selectMenu.botPermissions || []
+                selectMenu.botPermissions || [],
               );
             }
           : (): boolean => true,
@@ -125,14 +125,14 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
 
     if (retryCount < 3) {
       console.log(
-        `Retrying select menu load... (Attempt ${retryCount + 1})`.yellow
+        `Retrying select menu load... (Attempt ${retryCount + 1})`.yellow,
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
       await loadSelectMenus(retryCount + 1);
     } else {
       await global.errorHandler.handleError(
         new Error('Failed to load select menus after 3 attempts'),
-        'SelectMenuLoadMaxRetriesError'
+        'SelectMenuLoadMaxRetriesError',
       );
     }
   }
@@ -140,7 +140,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
 
 const handleSelectMenu = async (
   client: Client,
-  interaction: StringSelectMenuInteraction
+  interaction: StringSelectMenuInteraction,
 ): Promise<void> => {
   const { customId } = interaction;
   let selectMenu = selectMenuCache.get(customId);
@@ -190,7 +190,7 @@ const handleSelectMenu = async (
         interaction,
         'Red',
         `Please wait ${remainingTime} seconds before using this select menu again.`,
-        true
+        true,
       );
     }
     cooldowns.set(cooldownKey, Date.now() + selectMenu.cooldown * 1000);
@@ -198,7 +198,7 @@ const handleSelectMenu = async (
 
   try {
     console.log(
-      `Executing select menu ${customId} for user ${interaction.user.tag}`.cyan
+      `Executing select menu ${customId} for user ${interaction.user.tag}`.cyan,
     );
     await selectMenu.run(client, interaction);
   } catch (error) {
@@ -208,14 +208,14 @@ const handleSelectMenu = async (
       interaction,
       'Red',
       'There was an error while executing this select menu!',
-      true
+      true,
     );
   }
 };
 
 export default async (
   client: Client,
-  interaction: StringSelectMenuInteraction
+  interaction: StringSelectMenuInteraction,
 ): Promise<void> => {
   if (!interaction.isStringSelectMenu()) return;
 

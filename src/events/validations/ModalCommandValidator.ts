@@ -62,7 +62,7 @@ const sendEmbedReply = async (
   interaction: ModalSubmitInteraction,
   color: ColorResolvable,
   description: string,
-  ephemeral: boolean = true
+  ephemeral: boolean = true,
 ): Promise<void> => {
   try {
     const embed = new EmbedBuilder()
@@ -85,7 +85,7 @@ const sendEmbedReply = async (
 
 const checkPermissions = (
   member: GuildMember,
-  permissions: PermissionResolvable[]
+  permissions: PermissionResolvable[],
 ): boolean =>
   permissions.every((permission) => member.permissions.has(permission));
 
@@ -126,7 +126,7 @@ const loadModals = async (retryCount: number = 0): Promise<void> => {
     } else {
       await global.errorHandler.handleError(
         new Error('Failed to load modals after 3 attempts'),
-        'ModalLoadMaxRetriesError'
+        'ModalLoadMaxRetriesError',
       );
     }
   }
@@ -134,7 +134,7 @@ const loadModals = async (retryCount: number = 0): Promise<void> => {
 
 const handleModal = async (
   client: Client,
-  interaction: ModalSubmitInteraction
+  interaction: ModalSubmitInteraction,
 ): Promise<void> => {
   const { customId } = interaction;
   let modal = modalCache.get(customId);
@@ -178,7 +178,7 @@ const handleModal = async (
         interaction,
         'Red',
         `Please wait ${remainingTime} seconds before using this modal again.`,
-        true
+        true,
       );
     }
     cooldowns.set(cooldownKey, Date.now() + modal.cooldown * 1000);
@@ -186,7 +186,7 @@ const handleModal = async (
 
   try {
     console.log(
-      `Executing modal ${customId} for user ${interaction.user.tag}`.cyan
+      `Executing modal ${customId} for user ${interaction.user.tag}`.cyan,
     );
     await modal.run(client, interaction);
   } catch (error) {
@@ -196,14 +196,14 @@ const handleModal = async (
       interaction,
       'Red',
       'There was an error while processing this modal!',
-      true
+      true,
     );
   }
 };
 
 export default async (
   client: Client,
-  interaction: ModalSubmitInteraction
+  interaction: ModalSubmitInteraction,
 ): Promise<void> => {
   if (!interaction.isModalSubmit()) return;
 

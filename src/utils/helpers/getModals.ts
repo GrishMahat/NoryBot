@@ -26,7 +26,7 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
 
   // Retrieve all files in the 'modals' directory
   const modalFiles = getAllFiles(modalDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter by JS or TS files
+    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
   );
 
   // Iterate through each modal file
@@ -46,7 +46,7 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
         typeof modalObject.run !== 'function'
       ) {
         console.warn(
-          `Skipped importing ${modalFileURL} as it does not export a valid modal object.`
+          `Skipped importing ${modalFileURL} as it does not export a valid modal object.`,
         );
         continue;
       }
@@ -58,7 +58,7 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
       modals.push(modalObject);
     } catch (error) {
       console.error(
-        `Failed to import ${modalFileURL}: ${(error as Error).message}`
+        `Failed to import ${modalFileURL}: ${(error as Error).message}`,
       );
     }
   }

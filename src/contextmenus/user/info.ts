@@ -5,7 +5,6 @@ import {
   ContextMenuCommandInteraction,
   Client,
   GuildMember,
-  User,
   MessageFlags,
 } from 'discord.js';
 
@@ -46,7 +45,10 @@ export default {
     .setName('User Info')
     .setType(ApplicationCommandType.User),
 
-  async run(client: Client, interaction: ContextMenuCommandInteraction) {
+  async run(
+    client: Client,
+    interaction: ContextMenuCommandInteraction,
+  ): Promise<void> {
     if (!interaction.isUserContextMenuCommand()) return;
 
     const user = interaction.targetUser;
@@ -72,7 +74,9 @@ export default {
             `**ID:** ${user.id}`,
             `**Status:** ${getStatusEmoji(member)}`,
             `**Account Created:** ${formatDate(user.createdAt)}`,
-            member ? `**Joined Server:** ${formatDate(member.joinedAt!)}` : '',
+            member?.joinedAt
+              ? `**Joined Server:** ${formatDate(member.joinedAt)}`
+              : '',
           ].join('\n'),
         },
         {
@@ -96,7 +100,7 @@ export default {
 
     if (member?.presence?.activities.length) {
       const activities = member.presence.activities.map(
-        (activity) => `**${activity.type}:** ${activity.name}`
+        (activity) => `**${activity.type}:** ${activity.name}`,
       );
       embed.addFields({
         name: '🎮 Activities',

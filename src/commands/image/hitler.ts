@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const hitlerCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to feature in the meme')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -29,7 +29,10 @@ const hitlerCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -57,7 +60,7 @@ const hitlerCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `📺 **${interaction.user.username}** made a historical appearance!`
-            : `📺 **${interaction.user.username}** put **${targetUser.username}** in a history meme!`
+            : `📺 **${interaction.user.username}** put **${targetUser.username}** in a history meme!`,
         )
         .setImage('attachment://hitler.png')
         .setTimestamp()
@@ -78,7 +81,7 @@ const hitlerCommand: LocalCommand = {
             .setColor('#FF0000')
             .setTitle('❌ Error')
             .setDescription(
-              'Failed to generate the history meme. Please try again later.'
+              'Failed to generate the history meme. Please try again later.',
             )
             .setTimestamp(),
         ],

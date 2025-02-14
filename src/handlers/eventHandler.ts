@@ -39,7 +39,7 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
 const registerEvent = (
   eventRegistry: EventRegistry,
   eventName: keyof ClientEvents,
-  eventInfo: EventInfo
+  eventInfo: EventInfo,
 ): void => {
   const events = eventRegistry.get(eventName) ?? [];
   events.push(eventInfo);
@@ -56,7 +56,7 @@ const registerEvent = (
 const loadEventFile = async (
   eventFile: string,
   eventName: keyof ClientEvents,
-  eventRegistry: EventRegistry
+  eventRegistry: EventRegistry,
 ): Promise<void> => {
   try {
     const cachedEvent = eventModuleCache.get(eventFile);
@@ -93,7 +93,7 @@ const loadEventFile = async (
  */
 const processEventFolder = async (
   eventFolder: string,
-  eventRegistry: EventRegistry
+  eventRegistry: EventRegistry,
 ): Promise<void> => {
   try {
     const files = await fs.readdir(eventFolder);
@@ -110,7 +110,7 @@ const processEventFolder = async (
       (file) =>
         /\.(js|ts)$/.test(file) &&
         !file.endsWith('.d.ts') &&
-        !file.endsWith('.js.map')
+        !file.endsWith('.js.map'),
     );
 
     await Promise.all(
@@ -118,11 +118,11 @@ const processEventFolder = async (
         loadEventFile(
           path.join(eventFolder, file),
           eventName as keyof ClientEvents,
-          eventRegistry
+          eventRegistry,
         ).catch(async (error) => {
           await global.errorHandler.handleError(error, 'EventFileProcessError');
-        })
-      )
+        }),
+      ),
     );
   } catch (error) {
     await global.errorHandler.handleError(error, 'EventFolderProcessError');
@@ -148,11 +148,11 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
   try {
     const eventFolders = getAllFiles(
       path.join(__dirname, '..', 'events'),
-      true
+      true,
     );
 
     await Promise.all(
-      eventFolders.map((folder) => processEventFolder(folder, eventRegistry))
+      eventFolders.map((folder) => processEventFolder(folder, eventRegistry)),
     );
 
     for (const [eventName, handlers] of eventRegistry.entries()) {
@@ -173,7 +173,7 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
                 eventName: typedEventName,
                 fileName,
                 handler: handler.name,
-              }
+              },
             );
           }
         }

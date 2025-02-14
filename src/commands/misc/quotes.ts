@@ -69,9 +69,8 @@ const quotesCommand: LocalCommand = {
 
       const collector = interaction.channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        filter: (i: ButtonInteraction) => {
-          return i.user.id === interaction.user.id && i.message.id === reply.id;
-        },
+        filter: (i: ButtonInteraction) =>
+          i.user.id === interaction.user.id && i.message.id === reply.id,
         time: 120000,
       });
 
@@ -98,7 +97,7 @@ const quotesCommand: LocalCommand = {
 
             const newTempPath = join(
               process.cwd(),
-              `temp_quote_${Date.now()}.png`
+              `temp_quote_${Date.now()}.png`,
             );
             writeFileSync(newTempPath, newImageBuffer);
 
@@ -119,7 +118,7 @@ const quotesCommand: LocalCommand = {
             } catch (err) {
               console.error('Failed to delete temp file:', err);
             }
-          } catch (error) {
+          } catch {
             await i.editReply({
               content: `${emojiConfig.notag} Failed to fetch new quote. Please try again later.`,
               components: [row],
@@ -131,7 +130,7 @@ const quotesCommand: LocalCommand = {
       collector?.on('end', () => {
         interaction.editReply({ components: [] }).catch(() => {});
       });
-    } catch (error) {
+    } catch {
       // Clean up temp file if it exists
       if (tempImagePath) {
         try {
@@ -173,14 +172,14 @@ async function fetchQuote(): Promise<QuoteResponse> {
       quote: data.quote,
       author: data.author,
     };
-  } catch (error) {
+  } catch {
     return fallbackQuote;
   }
 }
 
 function createQuoteEmbed(
   client: Client,
-  attachment: AttachmentBuilder
+  attachment: AttachmentBuilder,
 ): EmbedBuilder {
   return new EmbedBuilder()
     .setColor('#2b2d31')
@@ -195,7 +194,7 @@ function createButtonRow(): ActionRowBuilder<ButtonBuilder> {
       .setCustomId('new_quote')
       .setLabel('New Quote')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji({ name: '🔄' })
+      .setEmoji({ name: '🔄' }),
   );
 }
 

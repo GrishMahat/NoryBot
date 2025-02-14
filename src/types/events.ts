@@ -42,7 +42,7 @@ export interface EventRegistry extends Map<string, EventInfo[]> {
 export class EventError extends Error {
   constructor(
     message: string,
-    public readonly context?: Record<string, unknown>
+    public readonly context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'EventError';

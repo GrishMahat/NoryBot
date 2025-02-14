@@ -1,18 +1,14 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   ChatInputCommandInteraction,
   CacheType,
-  InteractionEditReplyOptions,
-  MessagePayload,
   time,
 } from 'discord.js';
 import axios from 'axios';
 import fs from 'fs/promises';
 import path from 'path';
-import mConfig from '../../config/messageConfig';
 import emojiConfig from '../../config/emoji.js';
 import {
   commonCurrencies,
@@ -24,7 +20,7 @@ const apiUrl =
   'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
 const CACHE_FILE = path.join(
   process.cwd(),
-  'src/assets/json/exchangeRates.json'
+  'src/assets/json/exchangeRates.json',
 );
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
@@ -37,38 +33,38 @@ const currencyCommand: LocalCommand = {
         .setName('amount')
         .setDescription('The amount of money to convert')
         .setRequired(true)
-        .setMinValue(0.01)
+        .setMinValue(0.01),
     )
     .addStringOption((option) =>
       option
         .setName('source_currency')
         .setDescription('The currency you want to convert from (e.g., USD)')
         .setRequired(true)
-        .setAutocomplete(true)
+        .setAutocomplete(true),
     )
     .addStringOption((option) =>
       option
 
         .setName('target_currency')
         .setDescription(
-          'The currency you want to convert to (e.g., EUR,GBP,JPY)'
+          'The currency you want to convert to (e.g., EUR,GBP,JPY)',
         )
         .setRequired(true)
-        .setAutocomplete(true)
+        .setAutocomplete(true),
     )
     .addBooleanOption((option) =>
       option
         .setName('show_details')
         .setDescription(
-          'Show additional details like exchange rate trends and currency info'
+          'Show additional details like exchange rate trends and currency info',
         )
-        .setRequired(false)
+        .setRequired(false),
     )
     .addBooleanOption((option) =>
       option
         .setName('reverse')
         .setDescription('Also show the reverse conversion')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -83,7 +79,7 @@ const currencyCommand: LocalCommand = {
 
   run: async (
     client: Client<boolean>,
-    interaction: ChatInputCommandInteraction<CacheType>
+    interaction: ChatInputCommandInteraction<CacheType>,
   ): Promise<void> => {
     try {
       await interaction.deferReply();
@@ -105,13 +101,13 @@ const currencyCommand: LocalCommand = {
 
       // Validate all currencies
       const invalidCurrencies = [sourceCurrency, ...targetCurrencies].filter(
-        (currency) => !exchangeRates[currency]
+        (currency) => !exchangeRates[currency],
       );
 
       if (invalidCurrencies.length > 0) {
         await interaction.editReply({
           content: `${emojiConfig.notag} The following currencies are not supported: ${invalidCurrencies.join(
-            ', '
+            ', ',
           )}. Use the autocomplete feature to select valid currencies.`,
         });
         return;
@@ -121,7 +117,7 @@ const currencyCommand: LocalCommand = {
       const currencyNames = {
         [sourceCurrency]: getCurrencyName(sourceCurrency),
         ...Object.fromEntries(
-          targetCurrencies.map((c) => [c, getCurrencyName(c)])
+          targetCurrencies.map((c) => [c, getCurrencyName(c)]),
         ),
       };
 
@@ -140,7 +136,7 @@ const currencyCommand: LocalCommand = {
             })}**`,
             '',
             `${emojiConfig.statistics} **Conversion Results**`,
-          ].join('\n')
+          ].join('\n'),
         )
         .setTimestamp();
 
@@ -171,7 +167,7 @@ const currencyCommand: LocalCommand = {
               currency: sourceCurrency,
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            }
+            },
           )}`;
         }
 

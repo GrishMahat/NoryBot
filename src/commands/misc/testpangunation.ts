@@ -1,11 +1,17 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import pangunation from '../../utils/helpers/buttonPagination.js';
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ChatInputCommandInteraction,
+  Client,
+} from 'discord.js';
+import pangunation from '../../utils/helpers/Pagination.js';
 
 const testPangunation: LocalCommand = {
   data: new SlashCommandBuilder()
     .setName('testpangunation')
-    .setDescription('Test pangunation').toJSON(),
-  run: async (client, interaction) => {
+    .setDescription('Test pangunation')
+    .toJSON(),
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     // Create a set of embed pages.
     const pages = [
       new EmbedBuilder()

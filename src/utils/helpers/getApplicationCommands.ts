@@ -34,7 +34,7 @@ import {
  */
 const fetchApplicationCommands = async (
   client: Client,
-  guildId?: string
+  guildId?: string,
 ): Promise<Array<ApplicationCommand>> => {
   let applicationCommands:
     | GuildApplicationCommandManager

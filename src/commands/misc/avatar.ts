@@ -17,13 +17,16 @@ const avatarCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('User whose avatar you want to see')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
     .toJSON(),
 
-  run: async (client, interaction): Promise<void> => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -49,7 +52,7 @@ const avatarCommand: LocalCommand = {
       const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
       const avatarData = await getAvatarData(targetUser, targetMember);
-      const { globalAvatars, serverAvatars, allAvatars } = avatarData;
+      const { allAvatars } = avatarData;
 
       if (allAvatars.length === 0) {
         await interaction.editReply({
@@ -101,7 +104,7 @@ const avatarCommand: LocalCommand = {
 
 async function handleDMAvatar(
   interaction: ChatInputCommandInteraction,
-  targetUser: User
+  targetUser: User,
 ): Promise<void> {
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -110,7 +113,7 @@ async function handleDMAvatar(
     })
     .setTitle(`${emojiConfig.avatar_diamond} Avatar Information`)
     .setDescription(
-      `${emojiConfig.user} **User:** ${targetUser.toString()} (${targetUser.id})`
+      `${emojiConfig.user} **User:** ${targetUser.toString()} (${targetUser.id})`,
     )
     .setImage(targetUser.displayAvatarURL({ size: 4096 }))
     .setColor('#2F3136')
@@ -119,7 +122,14 @@ async function handleDMAvatar(
   await interaction.editReply({ embeds: [embed] });
 }
 
-async function getAvatarData(targetUser: User, targetMember: GuildMember) {
+function getAvatarData(
+  targetUser: User,
+  targetMember: GuildMember,
+): {
+  globalAvatars: Array<{ format: string; url: string; type: string }>;
+  serverAvatars: Array<{ format: string; url: string; type: string }>;
+  allAvatars: Array<{ format: string; url: string; type: string }>;
+} {
   const formats = ['png', 'jpg', 'webp'];
   if (
     targetUser.avatar?.startsWith('a_') ||
@@ -158,5 +168,4 @@ async function getAvatarData(targetUser: User, targetMember: GuildMember) {
 
   return { globalAvatars, serverAvatars, allAvatars };
 }
-
 export default avatarCommand;
