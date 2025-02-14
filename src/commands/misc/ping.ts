@@ -25,7 +25,6 @@ const pingCommand: LocalCommand = {
       const execStart = process.hrtime();
       const startTime = Date.now();
       await interaction.deferReply();
-      // const message = await interaction.fetchReply();
       const endTime = Date.now();
 
       const botLatency = endTime - startTime;
