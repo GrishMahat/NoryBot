@@ -10,7 +10,7 @@ import { LocalContextMenu } from '../../types/index.js';
  */
 const compareContextMenuCommands = (
   existing: ApplicationCommand,
-  local: LocalContextMenu
+  local: LocalContextMenu,
 ): boolean => {
   // Default values for context menu commands
   const defaultValues = {
@@ -25,7 +25,7 @@ const compareContextMenuCommands = (
   const changed = <T>(
     existingValue: T | null | undefined,
     localValue: T | undefined,
-    defaultValue: T | null = null
+    defaultValue: T | null = null,
   ): boolean => {
     // If both values are undefined or null, they're equal
     if (
@@ -51,7 +51,7 @@ const compareContextMenuCommands = (
       local.data.type !== ApplicationCommandType.Message)
   ) {
     throw new Error(
-      'Not a context menu command. Type must be USER (2) or MESSAGE (3)'
+      'Not a context menu command. Type must be USER (2) or MESSAGE (3)',
     );
   }
 

@@ -15,7 +15,6 @@ import {
   ErrorContext,
   ErrorMetrics,
   PerformanceMetrics,
-
 } from '../types/error.js';
 import determineErrorCategory from '../services/error/determineErrorCategory.js';
 import getRecoverySuggestions from '../services/error/getRecoverySuggestions.js';
@@ -94,7 +93,7 @@ class ErrorHandler {
     this.client = client;
     this.performanceMonitor = new PerformanceMonitor(
       client,
-      this.config.performanceThresholds
+      this.config.performanceThresholds,
     );
     this.metricsService = new ErrorMetricsService(this.config.cacheExpiration);
     this.setupEventListeners();
@@ -103,13 +102,13 @@ class ErrorHandler {
 
   private setupEventListeners(): void {
     this.client.on(Events.Error, (error) =>
-      this.handleError(error, 'ClientError')
+      this.handleError(error, 'ClientError'),
     );
     process.on('unhandledRejection', (error) =>
-      this.handleError(error, 'UnhandledRejection')
+      this.handleError(error, 'UnhandledRejection'),
     );
     process.on('uncaughtException', (error) =>
-      this.handleError(error, 'UncaughtException')
+      this.handleError(error, 'UncaughtException'),
     );
   }
 
@@ -131,20 +130,29 @@ class ErrorHandler {
       .setTitle('Error Metrics Report')
       .setDescription('Summary of error metrics for the last 24 hours')
       .addFields(
-        { name: 'Hourly Rate', value: report.hourlyRate.toString(), inline: true },
-        { name: 'Daily Rate', value: report.dailyRate.toString(), inline: true },
+        {
+          name: 'Hourly Rate',
+          value: report.hourlyRate.toString(),
+          inline: true,
+        },
+        {
+          name: 'Daily Rate',
+          value: report.dailyRate.toString(),
+          inline: true,
+        },
         {
           name: 'Top Errors',
-          value: report.topErrors
-            .slice(0, 5)
-            .map(
-              (error) =>
-                `• ${error.message} (${error.count}x, last: <t:${Math.floor(
-                  error.lastOccurrence.getTime() / 1000
-                )}:R>)`
-            )
-            .join('\n') || 'No errors recorded',
-        }
+          value:
+            report.topErrors
+              .slice(0, 5)
+              .map(
+                (error) =>
+                  `• ${error.message} (${error.count}x, last: <t:${Math.floor(
+                    error.lastOccurrence.getTime() / 1000,
+                  )}:R>)`,
+              )
+              .join('\n') || 'No errors recorded',
+        },
       );
 
     await this.webhook.send({ embeds: [embed] });
@@ -152,11 +160,11 @@ class ErrorHandler {
 
   public async handleError(
     error: Error | unknown,
-    type: string
+    type: string,
   ): Promise<void> {
     try {
       const errorDetails = await this.formatError(error, type);
-      
+
       // Track error metrics
       if (this.metricsService) {
         this.metricsService.trackError(errorDetails);
@@ -176,12 +184,12 @@ class ErrorHandler {
   private async formatError(
     error: unknown,
     type: string,
-    context?: ErrorContext
+    context?: ErrorContext,
   ): Promise<ErrorDetails> {
     const err = error instanceof Error ? error : new Error(String(error));
     const isDiscordError = error instanceof DiscordAPIError;
     const category = determineErrorCategory(
-      isDiscordError ? (error as DiscordAPIError) : undefined
+      isDiscordError ? (error as DiscordAPIError) : undefined,
     );
     const recoverySuggestions = await getRecoverySuggestions(err);
     const performance = this.performanceMonitor
@@ -227,8 +235,7 @@ class ErrorHandler {
         50036,
       ];
       return (
-        typeof error.code === 'number' &&
-        !recoverableCodes.includes(error.code)
+        typeof error.code === 'number' && !recoverableCodes.includes(error.code)
       );
     }
     return true;
@@ -243,10 +250,14 @@ class ErrorHandler {
     console.log('ErrorHandler: Sending error notification via webhook...');
 
     if (!this.webhook) {
-      console.warn('ErrorHandler: Webhook client not available, attempting reinitialization...');
+      console.warn(
+        'ErrorHandler: Webhook client not available, attempting reinitialization...',
+      );
       this.setupWebhook();
       if (!this.webhook) {
-        console.error('ErrorHandler: Webhook reinitialization failed. Aborting error notification.');
+        console.error(
+          'ErrorHandler: Webhook reinitialization failed. Aborting error notification.',
+        );
         return;
       }
     }
@@ -257,16 +268,22 @@ class ErrorHandler {
     for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
       try {
         await this.sendErrorToWebhook(errorDetails);
-        console.log(`ErrorHandler: Successfully sent error notification on attempt ${attempt}.`);
+        console.log(
+          `ErrorHandler: Successfully sent error notification on attempt ${attempt}.`,
+        );
         return;
       } catch (error) {
         console.error(`ErrorHandler: Attempt ${attempt} failed:`, error);
         if (attempt < this.config.retryAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.config.retryDelay),
+          );
         }
       }
     }
-    console.error('ErrorHandler: All retry attempts failed for sending error notification.');
+    console.error(
+      'ErrorHandler: All retry attempts failed for sending error notification.',
+    );
   }
 
   private shouldRateLimit(errorKey: string): boolean {
@@ -316,7 +333,9 @@ class ErrorHandler {
 
   private async sendErrorToWebhook(errorDetails: ErrorDetails): Promise<void> {
     if (!this.webhook) {
-      console.error('ErrorHandler: No webhook client available for sending error notification.');
+      console.error(
+        'ErrorHandler: No webhook client available for sending error notification.',
+      );
       return;
     }
 
@@ -344,7 +363,8 @@ class ErrorHandler {
       }
 
       // Add performance metrics
-      const performanceStr = MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
+      const performanceStr =
+        MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
       if (performanceStr) {
         embed.addFields({
           name: 'Performance Metrics',
@@ -401,7 +421,9 @@ class ErrorHandler {
         error instanceof Error &&
         error.message.includes('Invalid Webhook Token')
       ) {
-        console.warn('ErrorHandler: Invalid webhook token detected, reinitializing webhook...');
+        console.warn(
+          'ErrorHandler: Invalid webhook token detected, reinitializing webhook...',
+        );
         this.setupWebhook();
       }
       throw error;
@@ -449,7 +471,7 @@ class ErrorHandler {
     if (alerts.length > 0) {
       await this.handleError(
         new Error(`Performance alerts: ${alerts.join(', ')}`),
-        'PerformanceAlert'
+        'PerformanceAlert',
       );
     }
   }
@@ -457,17 +479,18 @@ class ErrorHandler {
   private generateErrorHash(error: Error, context: ErrorContext): string {
     const stackLines = error.stack?.split('\n').slice(0, 3) || [];
     const hashContent = `${error.message}:${stackLines.join()}:${JSON.stringify(
-      context
+      context,
     )}`;
     return createHash('sha256').update(hashContent).digest('hex').slice(0, 10);
   }
 
   private determineSeverity(
     error: Error,
-    performance: PerformanceMetrics
+    performance: PerformanceMetrics,
   ): ErrorSeverity {
     if (
-      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal > 0.95 ||
+      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal >
+        0.95 ||
       performance.cpu.usage > 0.95
     ) {
       return ErrorSeverity.CRITICAL;
@@ -507,7 +530,7 @@ class ErrorHandler {
           context.command.args
             ? ` (Args: ${context.command.args.join(', ')})`
             : ''
-        }`
+        }`,
       );
     }
     if (context.user) {
@@ -518,7 +541,7 @@ class ErrorHandler {
     }
     if (context.channel) {
       sections.push(
-        `Channel: ${context.channel.name} (${context.channel.id}, Type: ${context.channel.type})`
+        `Channel: ${context.channel.name} (${context.channel.id}, Type: ${context.channel.type})`,
       );
     }
     return sections.length ? sections.join('\n') : 'No context available';

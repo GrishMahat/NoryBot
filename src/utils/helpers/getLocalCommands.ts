@@ -32,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 async function importCommandFile(
   commandFile: string,
-  exceptions: string[]
+  exceptions: string[],
 ): Promise<LocalCommand | null> {
   try {
     const commandFileURL = pathToFileURL(commandFile).href;
@@ -40,7 +40,7 @@ async function importCommandFile(
 
     if (!commandModule?.default) {
       console.error(
-        `Command module at ${commandFile} is missing a default export.`
+        `Command module at ${commandFile} is missing a default export.`,
       );
       return null;
     }
@@ -50,14 +50,14 @@ async function importCommandFile(
     // Validate the command file by checking if it exports a default object with a 'name' property.
     if (!commandObject?.data?.name) {
       throw new Error(
-        `Command file ${commandFile} is invalid or missing a 'name' property.`
+        `Command file ${commandFile} is invalid or missing a 'name' property.`,
       );
     }
 
     // Check if the command name is in the list of exceptions provided.
     if (exceptions.includes(commandObject.data.name)) {
       throw new Error(
-        `Command ${commandObject.data.name} is in the exception list.`
+        `Command ${commandObject.data.name} is in the exception list.`,
       );
     }
 
@@ -69,7 +69,7 @@ async function importCommandFile(
 }
 
 export default async function loadCommands(
-  exceptions: string[] = []
+  exceptions: string[] = [],
 ): Promise<LocalCommand[]> {
   const commands: LocalCommand[] = [];
 

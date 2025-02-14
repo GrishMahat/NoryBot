@@ -6,7 +6,7 @@ import { ClientEvents } from 'discord.js';
  * @returns {boolean} True if the event name is a valid Discord.js event
  */
 export function isValidEventName(
-  eventName: string
+  eventName: string,
 ): eventName is keyof ClientEvents {
   // Define known Discord.js events as a Set for faster lookups
   const validEvents = new Set([

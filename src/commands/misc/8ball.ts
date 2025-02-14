@@ -1,12 +1,11 @@
 import {
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   EmbedBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
-import emojiConfig from '../../config/emoji.js';
 
 const responses = [
   'It is certain.',
@@ -39,14 +38,14 @@ const eightBallCommand: LocalCommand = {
       option
         .setName('question')
         .setDescription('The question you want to ask')
-        .setRequired(true)
+        .setRequired(true),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
     .toJSON(),
   cooldown: 5,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     try {
       const question = interaction.options.get('question')?.value as string;
       const response = responses[Math.floor(Math.random() * responses.length)];
@@ -56,7 +55,7 @@ const eightBallCommand: LocalCommand = {
         .setTitle('🎱 Magic 8 Ball')
         .addFields(
           { name: 'Question', value: question },
-          { name: 'Answer', value: response }
+          { name: 'Answer', value: response },
         )
         .setTimestamp();
 

@@ -14,7 +14,7 @@ export interface QuoteResponse {
   };
 }
 
-function validateInput(data: QuoteResponse) {
+function validateInput(data: QuoteResponse): void {
   if (!data.quote || typeof data.quote !== 'string') {
     throw new Error('Quote must be a non-empty string');
   }
@@ -30,8 +30,8 @@ function applyShadow(
     blur: 3,
     offsetX: 1,
     offsetY: 1,
-  }
-) {
+  },
+): void {
   ctx.shadowColor = options.color;
   ctx.shadowBlur = options.blur;
   ctx.shadowOffsetX = options.offsetX;
@@ -42,8 +42,8 @@ function createGradientBackground(
   ctx: NodeCanvasRenderingContext2D,
   width: number,
   height: number,
-  options?: QuoteResponse['gradient']
-) {
+  options?: QuoteResponse['gradient'],
+): { h: number; s: number; l: number } {
   const h = Math.random() * 360;
   const s = 50 + Math.random() * 30;
   const l = 75 + Math.random() * 15;
@@ -58,7 +58,7 @@ function createGradientBackground(
       0,
       width / 2,
       height / 2,
-      Math.max(width, height) / 1.1
+      Math.max(width, height) / 1.1,
     );
   }
 
@@ -87,15 +87,15 @@ function addPatternOverlay(
   h: number,
   s: number,
   l: number,
-  pattern?: QuoteResponse['pattern']
-) {
+  pattern?: QuoteResponse['pattern'],
+): void {
   const opacity = pattern?.opacity ?? 0.04;
   const scale = pattern?.scale ?? 1;
   ctx.fillStyle = `hsla(${h}, ${s}%, ${l - 30}%, ${opacity})`;
   ctx.strokeStyle = `hsla(${h}, ${s}%, ${l - 30}%, ${opacity})`;
 
   switch (pattern?.type) {
-    case 'dots':
+    case 'dots': {
       const spacing = 30 * scale;
       for (let x = spacing; x < width; x += spacing) {
         for (let y = spacing; y < height; y += spacing) {
@@ -105,6 +105,7 @@ function addPatternOverlay(
         }
       }
       break;
+    }
 
     case 'grid':
       ctx.lineWidth = 0.5 * scale;
@@ -122,7 +123,7 @@ function addPatternOverlay(
       }
       break;
 
-    case 'waves':
+    case 'waves': {
       ctx.lineWidth = 0.8 * scale;
       const amplitude = 20 * scale;
       const frequency = 0.02 / scale;
@@ -135,8 +136,9 @@ function addPatternOverlay(
         ctx.stroke();
       }
       break;
+    }
 
-    case 'chevron':
+    case 'chevron': {
       ctx.lineWidth = 0.8 * scale;
       const chevronWidth = 40 * scale;
       const chevronHeight = 20 * scale;
@@ -150,6 +152,7 @@ function addPatternOverlay(
         }
       }
       break;
+    }
 
     case 'lines':
     default:
@@ -167,15 +170,15 @@ function addPatternOverlay(
 function addVignetteEffect(
   ctx: NodeCanvasRenderingContext2D,
   width: number,
-  height: number
-) {
+  height: number,
+): void {
   const vignette = ctx.createRadialGradient(
     width / 2,
     height / 2,
     height / 2.2,
     width / 2,
     height / 2,
-    height * 1.1
+    height * 1.1,
   );
   vignette.addColorStop(0, 'rgba(0,0,0,0)');
   vignette.addColorStop(0.6, 'rgba(0,0,0,0.08)');
@@ -184,7 +187,7 @@ function addVignetteEffect(
   ctx.fillRect(0, 0, width, height);
 }
 
-function setupTextStyle(ctx: NodeCanvasRenderingContext2D) {
+function setupTextStyle(ctx: NodeCanvasRenderingContext2D): void {
   ctx.fillStyle = 'rgba(0,0,0,0.82)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -201,7 +204,7 @@ function calculateOptimalFontSize(
   ctx: NodeCanvasRenderingContext2D,
   text: string,
   maxWidth: number,
-  maxHeight: number
+  maxHeight: number,
 ): TextMetrics {
   let upperBound = 72;
   let lowerBound = 20;
@@ -242,7 +245,7 @@ function calculateOptimalFontSize(
 function wrapText(
   ctx: NodeCanvasRenderingContext2D,
   text: string,
-  maxWidth: number
+  maxWidth: number,
 ): string[] {
   const words = text.split(' ');
   const lines: string[] = [];
@@ -274,9 +277,9 @@ function drawQuoteText(
   height: number,
   maxWidth: number,
   fontSize: number,
-  lineHeight: number
-) {
-  let y = height / 2 - (lines.length * lineHeight) / 2;
+  lineHeight: number,
+): { lastLineY: number } {
+  const y = height / 2 - (lines.length * lineHeight) / 2;
   const quoteMarkOffset = fontSize * 0.6;
 
   // Draw opening quote mark with fallback fonts
@@ -290,7 +293,7 @@ function drawQuoteText(
   ctx.fillText(
     '❝',
     width / 2 - maxWidth / 2 - quoteMarkOffset,
-    y - fontSize * 0.3
+    y - fontSize * 0.3,
   );
 
   // Draw quote text with fallback fonts
@@ -313,7 +316,7 @@ function drawQuoteText(
   ctx.fillText(
     '❞',
     width / 2 + maxWidth / 2 + quoteMarkOffset,
-    lastLineY + fontSize * 0.3
+    lastLineY + fontSize * 0.3,
   );
 
   return { lastLineY };
@@ -323,8 +326,8 @@ function drawAuthor(
   ctx: NodeCanvasRenderingContext2D,
   author: string,
   width: number,
-  lastLineY: number
-) {
+  lastLineY: number,
+): { authorY: number } {
   applyShadow(ctx, {
     color: 'rgba(255,255,255,0.3)',
     blur: 2,
@@ -341,8 +344,8 @@ function drawDecorativeFlourishes(
   ctx: NodeCanvasRenderingContext2D,
   author: string,
   width: number,
-  authorY: number
-) {
+  authorY: number,
+): void {
   ctx.strokeStyle = 'rgba(0,0,0,0.4)';
   ctx.lineWidth = 1.5;
   const lineWidth = ctx.measureText(`— ${author} —`).width * 0.9;
@@ -361,7 +364,7 @@ function drawDecorativeFlourishes(
     width / 2 + lineWidth / 2,
     authorY + 35,
     width / 2 + lineWidth,
-    authorY + 30
+    authorY + 30,
   );
   ctx.stroke();
 
@@ -373,7 +376,7 @@ function drawDecorativeFlourishes(
     width / 2 + lineWidth / 2,
     authorY + 40,
     width / 2 + lineWidth,
-    authorY + 35
+    authorY + 35,
   );
   ctx.stroke();
 }
@@ -384,8 +387,8 @@ function drawBorder(
   height: number,
   h: number,
   s: number,
-  l: number
-) {
+  l: number,
+): void {
   ctx.strokeStyle = `hsla(${h}, ${s}%, ${l - 30}%, 0.2)`;
   ctx.lineWidth = 8;
   ctx.beginPath();
@@ -426,11 +429,11 @@ function calculateCanvasDimensions(quote: string): {
     // For very short quotes, decrease dimensions
     width = Math.max(
       minWidth,
-      baseWidth - Math.floor((50 - textLength) / 2) * 20
+      baseWidth - Math.floor((50 - textLength) / 2) * 20,
     );
     height = Math.max(
       minHeight,
-      baseHeight - Math.floor((50 - textLength) / 2) * 15
+      baseHeight - Math.floor((50 - textLength) / 2) * 15,
     );
   }
 
@@ -458,7 +461,7 @@ export async function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
     ctx,
     width,
     height,
-    data.gradient
+    data.gradient,
   );
   addPatternOverlay(ctx, width, height, h, s, l, data.pattern);
   addVignetteEffect(ctx, width, height);
@@ -470,7 +473,7 @@ export async function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
     ctx,
     data.quote,
     maxWidth,
-    maxTextHeight
+    maxTextHeight,
   );
   const { lastLineY } = drawQuoteText(
     ctx,
@@ -479,7 +482,7 @@ export async function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
     height,
     maxWidth,
     fontSize,
-    lineHeight
+    lineHeight,
   );
   const { authorY } = drawAuthor(ctx, data.author, width, lastLineY);
 

@@ -21,14 +21,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * });
  */
 export default async function importButtons(
-  exceptions: string[] = []
+  exceptions: string[] = [],
 ): Promise<Button[]> {
   const buttons: Button[] = [];
   const buttonDir = path.resolve(__dirname, '..', '..', 'buttons');
 
   // Retrieve all files in the 'buttons' directory
   const buttonFiles = getAllFiles(buttonDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter by JS or TS files
+    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
   );
 
   // Iterate through each button file
@@ -48,7 +48,7 @@ export default async function importButtons(
         typeof buttonObject.run !== 'function'
       ) {
         console.warn(
-          `Skipped importing ${buttonFileURL} as it does not export a valid button object.`
+          `Skipped importing ${buttonFileURL} as it does not export a valid button object.`,
         );
         continue;
       }
@@ -60,7 +60,7 @@ export default async function importButtons(
       buttons.push(buttonObject);
     } catch (error) {
       console.error(
-        `Failed to import ${buttonFileURL}: ${(error as Error).message}`
+        `Failed to import ${buttonFileURL}: ${(error as Error).message}`,
       );
     }
   }

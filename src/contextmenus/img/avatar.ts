@@ -1,6 +1,5 @@
 import {
   ContextMenuCommandBuilder,
-  ApplicationCommandType,
   EmbedBuilder,
   Client,
   UserContextMenuCommandInteraction,
@@ -73,8 +72,8 @@ const UserAvatarContextMenu: LocalContextMenu = {
             new ButtonBuilder()
               .setLabel(`${avatar.type} ${avatar.format.toUpperCase()}`)
               .setStyle(ButtonStyle.Link)
-              .setURL(avatar.url)
-          )
+              .setURL(avatar.url),
+          ),
       );
 
       const embedDescription = [
@@ -88,7 +87,7 @@ const UserAvatarContextMenu: LocalContextMenu = {
 
       if (user.banner) {
         embedDescription.push(
-          `🎌 **Banner:** [View Banner](${user.bannerURL({ size: 4096 })})`
+          `🎌 **Banner:** [View Banner](${user.bannerURL({ size: 4096 })})`,
         );
       }
 

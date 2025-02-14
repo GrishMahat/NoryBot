@@ -36,7 +36,7 @@ const ticketSetupSchema = new Schema<ITicketSetup>(
   },
   {
     strict: false,
-  }
+  },
 );
 
 export default model<ITicketSetup>('ticketSetup', ticketSetupSchema);

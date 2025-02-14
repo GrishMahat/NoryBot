@@ -28,7 +28,7 @@ export default async (client: Client): Promise<void> => {
     await deleteUnusedContextMenus(
       applicationCommands,
       localContextMenus,
-      deletedContextMenus
+      deletedContextMenus,
     );
 
     await updateOrCreateContextMenus(
@@ -36,20 +36,20 @@ export default async (client: Client): Promise<void> => {
       localContextMenus,
       client,
       updatedContextMenus,
-      newContextMenus
+      newContextMenus,
     );
 
     logContextMenuChanges(
       localContextMenus,
       updatedContextMenus,
       newContextMenus,
-      deletedContextMenus
+      deletedContextMenus,
     );
   } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Error during context menu sync: ${
         err instanceof Error ? err.message : 'Unknown error'
-      }`.red
+      }`.red,
     );
   }
 };
@@ -57,17 +57,17 @@ export default async (client: Client): Promise<void> => {
 async function deleteUnusedContextMenus(
   applicationCommands: ApplicationCommand[],
   localContextMenus: LocalContextMenu[],
-  deletedContextMenus: string[]
+  deletedContextMenus: string[],
 ): Promise<void> {
   const localContextMenuNames = new Set(
-    localContextMenus.map((menu) => menu.data?.name).filter(Boolean)
+    localContextMenus.map((menu) => menu.data?.name).filter(Boolean),
   );
   const contextMenusToDelete = applicationCommands.filter(
     (cmd) =>
       (cmd.type === ApplicationCommandType.User ||
         cmd.type === ApplicationCommandType.Message) &&
       cmd.name &&
-      !localContextMenuNames.has(cmd.name)
+      !localContextMenuNames.has(cmd.name),
   );
 
   await Promise.all(
@@ -76,7 +76,7 @@ async function deleteUnusedContextMenus(
         await cmd.delete();
         deletedContextMenus.push(cmd.name);
       }
-    })
+    }),
   );
 }
 
@@ -85,7 +85,7 @@ async function updateOrCreateContextMenus(
   localContextMenus: LocalContextMenu[],
   client: Client,
   updatedContextMenus: string[],
-  newContextMenus: string[]
+  newContextMenus: string[],
 ): Promise<void> {
   for (const localContextMenu of localContextMenus) {
     try {
@@ -103,13 +103,13 @@ async function updateOrCreateContextMenus(
       const existingContextMenu = applicationCommands.find(
         (cmd) =>
           cmd.name === contextMenuName &&
-          (cmd.type === 1 || cmd.type === 2 || cmd.type === 3) // 1 for ChatInput, 2 for User, 3 for Message
+          (cmd.type === 1 || cmd.type === 2 || cmd.type === 3), // 1 for ChatInput, 2 for User, 3 for Message
       );
 
       if (existingContextMenu) {
         const isUpdated = await handleExistingContextMenu(
           existingContextMenu,
-          localContextMenu
+          localContextMenu,
         );
         if (isUpdated) updatedContextMenus.push(contextMenuName);
       } else {
@@ -120,7 +120,7 @@ async function updateOrCreateContextMenus(
       console.error(
         `[${new Date().toISOString()}] Error processing context menu ${
           localContextMenu.data?.name
-        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red,
       );
     }
   }
@@ -128,11 +128,11 @@ async function updateOrCreateContextMenus(
 
 async function handleExistingContextMenu(
   existingContextMenu: ApplicationCommand,
-  localContextMenu: LocalContextMenu
+  localContextMenu: LocalContextMenu,
 ): Promise<boolean> {
   const needsUpdate = compareContextMenus(
     existingContextMenu,
-    localContextMenu
+    localContextMenu,
   );
 
   if (needsUpdate) {
@@ -143,7 +143,7 @@ async function handleExistingContextMenu(
       console.error(
         `[${new Date().toISOString()}] Error updating context menu ${
           localContextMenu.data.name
-        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red,
       );
       return false;
     }
@@ -153,7 +153,7 @@ async function handleExistingContextMenu(
 
 async function createContextMenu(
   client: Client,
-  data: ContextMenuCommandBuilder
+  data: ContextMenuCommandBuilder,
 ): Promise<void> {
   if (!data || !data.name) {
     return;
@@ -161,11 +161,11 @@ async function createContextMenu(
 
   try {
     await client.application?.commands.create(data);
-    } catch (err: unknown) {
+  } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Failed to create context menu ${
         data.name
-      }: ${err instanceof Error ? err.message : 'Unknown error'}`.red
+      }: ${err instanceof Error ? err.message : 'Unknown error'}`.red,
     );
   }
 }
@@ -174,7 +174,7 @@ function logContextMenuChanges(
   localContextMenus: LocalContextMenu[],
   updatedContextMenus: string[],
   newContextMenus: string[],
-  deletedContextMenus: string[]
+  deletedContextMenus: string[],
 ): void {
   const SEPARATOR = {
     DOUBLE: '═',
@@ -188,12 +188,12 @@ function logContextMenuChanges(
 
   console.log(header);
   console.log(
-    `║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan
+    `║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan,
   );
   console.log(divider);
   console.log(
     `║ Total Menus: ${localContextMenus.length.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 15 - localContextMenus.length.toString().length)} ║`
-      .cyan
+      .cyan,
   );
 
   if (updatedContextMenus.length) {
@@ -202,8 +202,8 @@ function logContextMenuChanges(
     updatedContextMenus.forEach((menu) =>
       console.log(
         `║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-          .cyan
-      )
+          .cyan,
+      ),
     );
   }
 
@@ -213,8 +213,8 @@ function logContextMenuChanges(
     newContextMenus.forEach((menu) =>
       console.log(
         `║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-          .cyan
-      )
+          .cyan,
+      ),
     );
   }
 
@@ -224,8 +224,8 @@ function logContextMenuChanges(
     deletedContextMenus.forEach((menu) =>
       console.log(
         `║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-          .cyan
-      )
+          .cyan,
+      ),
     );
   }
 

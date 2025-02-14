@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const clownCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('User whose avatar you want to turn into a clown')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -29,7 +29,10 @@ const clownCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -61,7 +64,7 @@ const clownCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🤡 **${interaction.user.username}** joined the circus!`
-            : `🤡 **${interaction.user.username}** turned **${targetUser.username}** into a clown!`
+            : `🤡 **${interaction.user.username}** turned **${targetUser.username}** into a clown!`,
         )
         .setImage('attachment://clown.png')
         .setTimestamp()
@@ -81,7 +84,7 @@ const clownCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the clown image. Please try again later.'
+          'Failed to generate the clown image. Please try again later.',
         )
         .setTimestamp();
 

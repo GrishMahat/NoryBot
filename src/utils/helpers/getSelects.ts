@@ -21,14 +21,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * });
  */
 const importSelectMenus = async (
-  exceptions: string[] = []
+  exceptions: string[] = [],
 ): Promise<SelectMenu[]> => {
   const selectMenus: SelectMenu[] = [];
   const selectMenuDir = path.resolve(__dirname, '..', '..', 'selects');
 
   // Retrieve all files in the 'selects' directory
   const selectMenuFiles = getAllFiles(selectMenuDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter by JS or TS files
+    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
   );
 
   // Iterate through each select menu file
@@ -48,7 +48,7 @@ const importSelectMenus = async (
         typeof selectMenuObject.run !== 'function'
       ) {
         console.warn(
-          `Skipped importing ${selectMenuFileURL} as it does not export a valid select menu object.`
+          `Skipped importing ${selectMenuFileURL} as it does not export a valid select menu object.`,
         );
         continue;
       }
@@ -60,7 +60,7 @@ const importSelectMenus = async (
       selectMenus.push(selectMenuObject);
     } catch (error) {
       console.error(
-        `Failed to import ${selectMenuFileURL}: ${(error as Error).message}`
+        `Failed to import ${selectMenuFileURL}: ${(error as Error).message}`,
       );
     }
   }

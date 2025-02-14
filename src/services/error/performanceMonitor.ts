@@ -25,7 +25,10 @@ export class PerformanceMonitor {
   public async captureMetrics(): Promise<PerformanceMetrics> {
     // Return cached metrics if within TTL
     const now = Date.now();
-    if (this.cachedMetrics && now - this.lastMetricsTimestamp < this.CACHE_TTL) {
+    if (
+      this.cachedMetrics &&
+      now - this.lastMetricsTimestamp < this.CACHE_TTL
+    ) {
       return this.cachedMetrics;
     }
 
@@ -62,22 +65,23 @@ export class PerformanceMonitor {
     const metrics = await this.captureMetrics();
     const alerts: string[] = [];
 
-    const memoryUsagePercent = metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal;
+    const memoryUsagePercent =
+      metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal;
     if (memoryUsagePercent > this.thresholds.memory) {
       alerts.push(
-        `Critical: Memory usage at ${(memoryUsagePercent * 100).toFixed(2)}% (${this.formatBytes(metrics.memoryUsage.heapUsed)}/${this.formatBytes(metrics.memoryUsage.heapTotal)})`
+        `Critical: Memory usage at ${(memoryUsagePercent * 100).toFixed(2)}% (${this.formatBytes(metrics.memoryUsage.heapUsed)}/${this.formatBytes(metrics.memoryUsage.heapTotal)})`,
       );
     }
 
     if (metrics.cpu.usage > this.thresholds.cpu) {
       alerts.push(
-        `Warning: CPU usage at ${metrics.cpu.usage.toFixed(2)}% across ${os.cpus().length} cores`
+        `Warning: CPU usage at ${metrics.cpu.usage.toFixed(2)}% across ${os.cpus().length} cores`,
       );
     }
 
     if (metrics.responseTime > this.thresholds.responseTime) {
       alerts.push(
-        `Performance: High response time of ${metrics.responseTime.toFixed(2)}ms (threshold: ${this.thresholds.responseTime}ms)`
+        `Performance: High response time of ${metrics.responseTime.toFixed(2)}ms (threshold: ${this.thresholds.responseTime}ms)`,
       );
     }
 
@@ -93,12 +97,12 @@ export class PerformanceMonitor {
     const units = ['B', 'KB', 'MB', 'GB'];
     let value = bytes;
     let unitIndex = 0;
-    
+
     while (value >= 1024 && unitIndex < units.length - 1) {
       value /= 1024;
       unitIndex++;
     }
-    
+
     return `${value.toFixed(2)}${units[unitIndex]}`;
   }
 

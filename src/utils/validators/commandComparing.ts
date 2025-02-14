@@ -27,7 +27,7 @@ import {
  */
 const compareCommands = (
   existing: ApplicationCommand,
-  local: LocalCommand
+  local: LocalCommand,
 ): boolean => {
   const defaultValues = {
     name: null,
@@ -43,7 +43,7 @@ const compareCommands = (
   const changed = <T>(
     a: T | null | undefined,
     b: T | undefined,
-    defaultValue: T | null = null
+    defaultValue: T | null = null,
   ): boolean => {
     if (b === undefined) {
       return JSON.stringify(a) !== JSON.stringify(defaultValue);
@@ -118,7 +118,7 @@ const compareCommands = (
   const optionsChanged = changed(
     optionsArray(existing),
     local.data.options ? optionsArray(local.data) : undefined,
-    []
+    [],
   );
 
   if (optionsChanged) {
@@ -154,11 +154,11 @@ function cleanObject(obj: Record<string, unknown>): void {
  * @returns {Partial<ApplicationCommandOption> | Partial<ApplicationCommandOption>[]} - The normalized command option(s).
  */
 function normalizeObject(
-  input: ApplicationCommandOption | ApplicationCommandOption[]
+  input: ApplicationCommandOption | ApplicationCommandOption[],
 ): Partial<ApplicationCommandOption> | Partial<ApplicationCommandOption>[] {
   if (Array.isArray(input)) {
     return input.map(
-      (item) => normalizeObject(item) as Partial<ApplicationCommandOption>
+      (item) => normalizeObject(item) as Partial<ApplicationCommandOption>,
     );
   }
   return {
@@ -178,10 +178,12 @@ function normalizeObject(
  * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
-function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): unknown[] {
+function optionsArray(
+  cmd: ApplicationCommand | LocalCommand['data'],
+): unknown[] {
   return (cmd.options || []).map((option) => {
     const cleanedOption = normalizeObject(
-      option
+      option,
     ) as Partial<ApplicationCommandOption>;
     cleanObject(cleanedOption);
     return {

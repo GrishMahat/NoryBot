@@ -56,8 +56,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 
 const main = async (): Promise<void> => {
   try {
-    const client = await initializeClient();
-    console.log(`Logged in as ${client.user?.tag}`);
+    await initializeClient();
   } catch (error) {
     await errorHandler.handleError(error, 'MainProcessError');
     process.exit(1);

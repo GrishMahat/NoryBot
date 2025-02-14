@@ -57,7 +57,7 @@ class ButtonManager {
     interaction: ButtonInteraction,
     color: ColorResolvable,
     description: string,
-    options: Partial<InteractionReplyOptions> = {}
+    options: Partial<InteractionReplyOptions> = {},
   ): InteractionReplyOptions {
     const embed = new EmbedBuilder()
       .setColor(color)
@@ -78,7 +78,7 @@ class ButtonManager {
   private updateMetrics(
     customId: string,
     responseTime: number,
-    failed: boolean = false
+    failed: boolean = false,
   ): void {
     const metrics = this.metrics.get(customId) || {
       uses: 0,
@@ -126,7 +126,10 @@ class ButtonManager {
         ? (interaction: ButtonInteraction): boolean => {
             const guild = interaction.guild;
             if (!guild?.members.me) return false;
-            return this.checkPermissions(guild.members.me, button.botPermissions || []);
+            return this.checkPermissions(
+              guild.members.me,
+              button.botPermissions || [],
+            );
           }
         : (): boolean => true,
     };
@@ -135,20 +138,20 @@ class ButtonManager {
 
   private checkPermissions(
     member: GuildMember,
-    permissions: PermissionResolvable[]
+    permissions: PermissionResolvable[],
   ): boolean {
     return permissions.every((permission) =>
       member.permissions.has(
         PermissionsBitField.Flags[
           permission as keyof typeof PermissionsBitField.Flags
-        ]
-      )
+        ],
+      ),
     );
   }
 
   public async handleInteraction(
     client: Client,
-    interaction: ButtonInteraction
+    interaction: ButtonInteraction,
   ): Promise<void> {
     if (!this.isLoaded) {
       await this.loadButtons();
@@ -160,17 +163,7 @@ class ButtonManager {
     try {
       const button =
         this.buttonCache.get(customId) || this.buttons.get(customId);
-      if (!button) {
-        await interaction.reply(
-          this.createEmbed(
-            interaction,
-            'Red',
-            'This button is no longer valid.',
-            { ephemeral: true }
-          )
-        );
-        return;
-      }
+      if (!button) return;
 
       // Validate button usage
       const validationError = await this.validateButtonUse(button, interaction);
@@ -193,43 +186,57 @@ class ButtonManager {
           interaction,
           'Red',
           'An error occurred while processing your request.',
-          { ephemeral: true }
-        )
+          { ephemeral: true },
+        ),
       );
     }
   }
 
   private validateButtonUse(
     button: Button,
-    interaction: ButtonInteraction
+    interaction: ButtonInteraction,
   ): Promise<InteractionReplyOptions | null> {
     const { developersId, testServerId } = config;
 
     // Dev-only check
     if (button.devOnly && !developersId.includes(interaction.user.id)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
+          ephemeral: true,
+        }),
+      );
     }
 
     // Test mode check
     if (button.testMode && interaction.guild?.id !== testServerId) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.commandTestMode, {
+          ephemeral: true,
+        }),
+      );
     }
 
     // Permission checks
-    if (button.compiledChecks?.userPermissions && !button.compiledChecks.userPermissions(interaction)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
-        ephemeral: true,
-      }));
+    if (
+      button.compiledChecks?.userPermissions &&
+      !button.compiledChecks.userPermissions(interaction)
+    ) {
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.userNoPermissions, {
+          ephemeral: true,
+        }),
+      );
     }
 
-    if (button.compiledChecks?.botPermissions && !button.compiledChecks.botPermissions(interaction)) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
-        ephemeral: true,
-      }));
+    if (
+      button.compiledChecks?.botPermissions &&
+      !button.compiledChecks.botPermissions(interaction)
+    ) {
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.botNoPermissions, {
+          ephemeral: true,
+        }),
+      );
     }
 
     // Original user check
@@ -237,9 +244,11 @@ class ButtonManager {
       interaction.message.interaction &&
       interaction.message.interaction.user.id !== interaction.user.id
     ) {
-      return Promise.resolve(this.createEmbed(interaction, 'Red', mConfig.cannotUseButton, {
-        ephemeral: true,
-      }));
+      return Promise.resolve(
+        this.createEmbed(interaction, 'Red', mConfig.cannotUseButton, {
+          ephemeral: true,
+        }),
+      );
     }
 
     // Cooldown check
@@ -247,19 +256,21 @@ class ButtonManager {
       if (cooldownManager.isOnCooldown(interaction.user.id, button.customId)) {
         const remainingTime = cooldownManager.getRemainingTime(
           interaction.user.id,
-          button.customId
+          button.customId,
         );
-        return Promise.resolve(this.createEmbed(
-          interaction,
-          'Red',
-          `Please wait ${remainingTime} seconds before using this button again.`,
-          { ephemeral: true }
-        ));
+        return Promise.resolve(
+          this.createEmbed(
+            interaction,
+            'Red',
+            `Please wait ${remainingTime} seconds before using this button again.`,
+            { ephemeral: true },
+          ),
+        );
       }
       cooldownManager.setCooldown(
         interaction.user.id,
         button.customId,
-        button.cooldown
+        button.cooldown,
       );
     }
 
@@ -280,7 +291,7 @@ const buttonManager = new ButtonManager();
 
 export default async (
   client: Client,
-  interaction: ButtonInteraction
+  interaction: ButtonInteraction,
 ): Promise<void> => {
   if (!interaction.isButton()) return;
   await buttonManager.handleInteraction(client, interaction);

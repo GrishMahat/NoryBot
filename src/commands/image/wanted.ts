@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const wantedCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to put on the wanted poster')
-        .setRequired(false)
+        .setRequired(false),
     )
     .addNumberOption((option) =>
       option
@@ -24,7 +24,7 @@ const wantedCommand: LocalCommand = {
         .setDescription('The reward amount (default: 1000)')
         .setRequired(false)
         .setMinValue(1)
-        .setMaxValue(1000000)
+        .setMaxValue(1000000),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -37,7 +37,7 @@ const wantedCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     try {
       await interaction.deferReply();
 
@@ -54,7 +54,7 @@ const wantedCommand: LocalCommand = {
       // Generate the Wanted image
       const img = await new DIG.Wanted().getImage(
         avatarUrl,
-        currency.toString()
+        currency.toString(),
       );
 
       // Create an attachment
@@ -67,7 +67,7 @@ const wantedCommand: LocalCommand = {
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
-          `🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** $${currency.toLocaleString()}`
+          `🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** $${currency.toLocaleString()}`,
         )
         .setImage('attachment://wanted.png')
         .setTimestamp()
@@ -87,7 +87,7 @@ const wantedCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the wanted poster. Please try again later.'
+          'Failed to generate the wanted poster. Please try again later.',
         )
         .setTimestamp();
 

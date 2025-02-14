@@ -21,8 +21,9 @@ export class MetricsFormatter {
         '',
         'Shard Stats:',
         ...metrics.shardStats.map(
-          (shard) => `  Shard ${shard.id}: ${shard.status} (Latency: ${shard.ping}ms)`
-        )
+          (shard) =>
+            `  Shard ${shard.id}: ${shard.status} (Latency: ${shard.ping}ms)`,
+        ),
       );
     }
 

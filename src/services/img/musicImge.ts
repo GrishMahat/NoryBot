@@ -66,27 +66,28 @@ function formatTime(seconds: number): string {
 
 /**
  * Draws a rounded rectangle on the canvas.
+ * this is from random user on github i dont know who it is
  */
-function drawRoundedRect(
-  ctx: NodeCanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-}
+// function drawRoundedRect(
+//   ctx: NodeCanvasRenderingContext2D,
+//   x: number,
+//   y: number,
+//   width: number,
+//   height: number,
+//   radius: number
+// ): void {
+//   ctx.beginPath();
+//   ctx.moveTo(x + radius, y);
+//   ctx.lineTo(x + width - radius, y);
+//   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+//   ctx.lineTo(x + width, y + height - radius);
+//   ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+//   ctx.lineTo(x + radius, y + height);
+//   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+//   ctx.lineTo(x, y + radius);
+//   ctx.quadraticCurveTo(x, y, x + radius, y);
+//   ctx.closePath();
+// }
 
 /**
  * Draws a glowing circle
@@ -96,8 +97,8 @@ function drawGlowingCircle(
   x: number,
   y: number,
   radius: number,
-  color: string
-) {
+  color: string,
+): void {
   ctx.save();
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -117,8 +118,8 @@ function drawVisualizer(
   y: number,
   width: number,
   height: number,
-  color: string
-) {
+  color: string,
+): void {
   const bars = 20;
   const barWidth = width / (bars * 2);
   const maxBarHeight = height;
@@ -147,8 +148,8 @@ function drawPlayButton(
   x: number,
   y: number,
   size: number,
-  isPlaying: boolean = false
-) {
+  isPlaying: boolean = false,
+): void {
   ctx.save();
 
   ctx.beginPath();
@@ -182,7 +183,7 @@ function drawPlayButton(
  * Generates the music image with enhanced visuals
  */
 export async function generateMusicImage(
-  options: MusicImageOptions
+  options: MusicImageOptions,
 ): Promise<Buffer> {
   validateInput(options);
 
@@ -198,7 +199,7 @@ export async function generateMusicImage(
     0,
     width / 2,
     height / 2,
-    height
+    height,
   );
   gradient.addColorStop(0, '#3a2a5a');
   gradient.addColorStop(0.5, '#2e1e3e');
@@ -245,9 +246,9 @@ export async function generateMusicImage(
     ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
     ctx.shadowBlur = 20;
     ctx.fillText(
-      truncateText(options.title!, ctx, textWidth),
+      truncateText(options.title ?? '', ctx, textWidth),
       textX,
-      height * 0.3
+      height * 0.3,
     );
     ctx.restore();
 
@@ -258,9 +259,9 @@ export async function generateMusicImage(
     ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
     ctx.shadowBlur = 10;
     ctx.fillText(
-      truncateText(options.artist!, ctx, textWidth),
+      truncateText(options.artist ?? '', ctx, textWidth),
       textX,
-      height * 0.3 + 50
+      height * 0.3 + 50,
     );
     ctx.restore();
 
@@ -271,7 +272,7 @@ export async function generateMusicImage(
       height * 0.45,
       textWidth,
       40,
-      'rgba(174, 82, 221, 0.6)'
+      'rgba(174, 82, 221, 0.6)',
     );
 
     // Draw enhanced progress bar
@@ -288,7 +289,7 @@ export async function generateMusicImage(
       progressBarY,
       progressBarWidth,
       progressBarHeight,
-      progressBarHeight / 2
+      progressBarHeight / 2,
     );
     ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.fill();
@@ -298,7 +299,7 @@ export async function generateMusicImage(
       textX,
       0,
       textX + progressBarWidth,
-      0
+      0,
     );
     progressGradient.addColorStop(0, '#ae3ec9');
     progressGradient.addColorStop(0.5, '#8a51e3');
@@ -310,7 +311,7 @@ export async function generateMusicImage(
       progressBarY,
       progressBarWidth * progress,
       progressBarHeight,
-      progressBarHeight / 2
+      progressBarHeight / 2,
     );
     ctx.fillStyle = progressGradient;
     ctx.fill();
@@ -329,13 +330,13 @@ export async function generateMusicImage(
     ctx.fillText(
       formatTime(options.time.currentTime),
       textX,
-      progressBarY + 40
+      progressBarY + 40,
     );
     ctx.textAlign = 'right';
     ctx.fillText(
       formatTime(options.time.totalTime),
       textX + progressBarWidth,
-      progressBarY + 40
+      progressBarY + 40,
     );
     ctx.restore();
 
@@ -352,7 +353,7 @@ export async function generateMusicImage(
       controlsY,
       '⏭',
       false,
-      true
+      true,
     );
     drawControl(
       ctx,
@@ -360,7 +361,7 @@ export async function generateMusicImage(
       controlsY,
       '🔊',
       false,
-      true
+      true,
     );
     drawControl(
       ctx,
@@ -368,7 +369,7 @@ export async function generateMusicImage(
       controlsY,
       '🔀',
       false,
-      true
+      true,
     );
   } catch (error) {
     console.error('Error generating music image:', error);
@@ -383,7 +384,7 @@ export async function generateMusicImage(
 function truncateText(
   text: string,
   ctx: NodeCanvasRenderingContext2D,
-  maxWidth: number
+  maxWidth: number,
 ): string {
   let truncated = text;
   while (ctx.measureText(truncated).width > maxWidth && truncated.length > 0) {
@@ -401,8 +402,8 @@ function drawControl(
   y: number,
   symbol: string,
   isMain: boolean = false,
-  withGlow: boolean = false
-) {
+  withGlow: boolean = false,
+): void {
   ctx.save();
   ctx.font = isMain ? '48px Arial' : '32px Arial';
   ctx.fillStyle = isMain ? '#ffffff' : '#d3d3d3';

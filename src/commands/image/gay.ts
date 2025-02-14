@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const gayCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription("The user's avatar to add the effect to")
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -29,7 +29,10 @@ const gayCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -58,7 +61,7 @@ const gayCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🌈 **${interaction.user.username}** added a rainbow effect to their avatar!`
-            : `🌈 **${interaction.user.username}** added a rainbow effect to **${targetUser.username}**'s avatar!`
+            : `🌈 **${interaction.user.username}** added a rainbow effect to **${targetUser.username}**'s avatar!`,
         )
         .setImage('attachment://gay.png')
         .setTimestamp()

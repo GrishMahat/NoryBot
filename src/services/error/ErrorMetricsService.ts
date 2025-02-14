@@ -1,4 +1,8 @@
-import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types/error.js';
+import {
+  ErrorMetrics,
+  ErrorDetails,
+  ErrorSeverity,
+} from '../../types/error.js';
 
 export class ErrorMetricsService {
   private metrics: Map<string, ErrorMetrics>;
@@ -38,7 +42,7 @@ export class ErrorMetricsService {
     const metrics = this.metrics.get(dayKey) || this.createNewMetrics();
 
     const existingError = metrics.topErrors.find(
-      (e) => e.message === error.message
+      (e) => e.message === error.message,
     );
     if (existingError) {
       existingError.count++;
@@ -120,14 +124,14 @@ export class ErrorMetricsService {
         memoryUsage: {
           heapUsed: 0,
           heapTotal: 0,
-          external: 0
+          external: 0,
         },
         cpu: {
           usage: 0,
-          load: [0, 0, 0]
+          load: [0, 0, 0],
         },
         uptime: 0,
-        responseTime: 0
+        responseTime: 0,
       },
       bySeverity: {
         [ErrorSeverity.LOW]: 0,

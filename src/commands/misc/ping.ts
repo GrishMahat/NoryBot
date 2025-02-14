@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   version as discordVersion,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index.js';
 import os from 'os';
@@ -13,19 +13,18 @@ const pingCommand: LocalCommand = {
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription(
-      'Shows detailed system statistics and bot performance metrics'
+      'Shows detailed system statistics and bot performance metrics',
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
     .toJSON(),
   devOnly: true,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     try {
       const execStart = process.hrtime();
       const startTime = Date.now();
       await interaction.deferReply();
-      const message = await interaction.fetchReply();
       const endTime = Date.now();
 
       const botLatency = endTime - startTime;
@@ -117,7 +116,7 @@ const pingCommand: LocalCommand = {
               `${emojiConfig.yestag} Arch: \`${os.arch()}\``,
             ].join('\n'),
             inline: false,
-          }
+          },
         )
         .setFooter({ text: `Last Updated • Host: ${os.hostname()}` })
         .setTimestamp();

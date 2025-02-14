@@ -1,6 +1,10 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  Client,
+  ChatInputCommandInteraction,
+} from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import mConfig from '../../config/messageConfig';
 import emojiConfig from '../../config/emoji.js';
 
 const timestampCommand: LocalCommand = {
@@ -11,21 +15,21 @@ const timestampCommand: LocalCommand = {
       option
         .setName('date')
         .setDescription(
-          'Date to convert (e.g., 2024-03-25, now, tomorrow, next week)'
+          'Date to convert (e.g., 2024-03-25, now, tomorrow, next week)',
         )
-        .setRequired(true)
+        .setRequired(true),
     )
     .addStringOption((option) =>
       option
         .setName('time')
         .setDescription('Time for the timestamp (e.g., 15:30, 3:30 PM)')
-        .setRequired(false)
+        .setRequired(false),
     )
     .addBooleanOption((option) =>
       option
         .setName('preview')
         .setDescription('Show a preview of how the timestamp will look')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -38,7 +42,7 @@ const timestampCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client, interaction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
 
     try {
@@ -76,7 +80,7 @@ const timestampCommand: LocalCommand = {
           // If time is provided, try to set it
           if (timeInput) {
             const timeParts = timeInput.match(
-              /(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i
+              /(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i,
             );
             if (timeParts) {
               let hours = parseInt(timeParts[1]);
@@ -121,7 +125,7 @@ const timestampCommand: LocalCommand = {
             'US English (🇺🇸) shows 12-hour format\n' +
             'UK English (🇬🇧) shows 24-hour format\n\n' +
             `${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n\n' : ''}` +
-            '**Note:** Click on the codes to copy them!'
+            '**Note:** Click on the codes to copy them!',
         )
         .addFields([
           {
