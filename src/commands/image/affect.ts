@@ -1,10 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -12,13 +12,13 @@ const affectCommand: LocalCommand = {
   data: new SlashCommandBuilder()
     .setName('affect')
     .setDescription(
-      "Use the 'This won't affect my baby' meme template with a user's avatar"
+      "Use the 'This won't affect my baby' meme template with a user's avatar",
     )
     .addUserOption((option) =>
       option
         .setName('user')
         .setDescription('The user to put in the affect meme')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -32,7 +32,10 @@ const affectCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -62,7 +65,7 @@ const affectCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🍼 **${interaction.user.username}** got affected!`
-            : `🍼 **${interaction.user.username}** shows how **${targetUser.username}** was affected!`
+            : `🍼 **${interaction.user.username}** shows how **${targetUser.username}** was affected!`,
         )
         .addFields({
           name: '👶 Subject',
@@ -89,7 +92,7 @@ const affectCommand: LocalCommand = {
         .setColor('#FF0000') // Red color for errors
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the affect meme. Please try again later.'
+          'Failed to generate the affect meme. Please try again later.',
         )
         .setTimestamp();
 

@@ -58,7 +58,7 @@ class LRUCache<K, V> extends EventEmitter {
     if (options.cleanupIntervalMs) {
       this.cleanupInterval = setInterval(
         () => this.cleanupExpiredItems(),
-        options.cleanupIntervalMs
+        options.cleanupIntervalMs,
       );
     }
   }
@@ -72,7 +72,10 @@ class LRUCache<K, V> extends EventEmitter {
       return undefined;
     }
 
-    const item = this.cache.get(key)!;
+    const item = this.cache.get(key);
+    if (!item) {
+      return undefined;
+    }
 
     if (item.expiry && item.expiry < Date.now()) {
       this.delete(key);
@@ -112,13 +115,15 @@ class LRUCache<K, V> extends EventEmitter {
       }
     }
 
+    const expiry =
+      ttl || this.defaultTTL
+        ? Date.now() + (ttl || this.defaultTTL || 0)
+        : undefined;
+
     const item: CacheItem<V> = {
       value,
       hits: 0,
-      expiry:
-        ttl || this.defaultTTL
-          ? Date.now() + (ttl || this.defaultTTL!)
-          : undefined,
+      expiry,
     };
 
     this.cache.set(key, item);
@@ -168,7 +173,9 @@ class LRUCache<K, V> extends EventEmitter {
   has(key: K): boolean {
     if (!this.cache.has(key)) return false;
 
-    const item = this.cache.get(key)!;
+    const item = this.cache.get(key);
+    if (!item) return false;
+
     if (item.expiry && item.expiry < Date.now()) {
       this.delete(key);
       return false;

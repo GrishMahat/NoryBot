@@ -1,10 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -17,13 +17,13 @@ const bedCommand: LocalCommand = {
       option
         .setName('target')
         .setDescription('The user under the bed')
-        .setRequired(true)
+        .setRequired(true),
     )
     .addUserOption((option) =>
       option
         .setName('scared')
         .setDescription('The scared user (defaults to you)')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -36,7 +36,10 @@ const bedCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       const targetUser = interaction.options.get('target')?.user;
       const scaredUser =
@@ -80,7 +83,7 @@ const bedCommand: LocalCommand = {
           iconURL: client.user.displayAvatarURL(),
         })
         .setDescription(
-          `👻 **${scaredUser.username}** found **${targetUser.username}** under their bed!`
+          `👻 **${scaredUser.username}** found **${targetUser.username}** under their bed!`,
         )
         .addFields(
           {
@@ -92,7 +95,7 @@ const bedCommand: LocalCommand = {
             name: '👹 Monster',
             value: `<@${targetUser.id}>`,
             inline: true,
-          }
+          },
         )
         .setImage('attachment://bed.png')
         .setTimestamp()
@@ -116,7 +119,7 @@ const bedCommand: LocalCommand = {
               .setColor('#FF0000')
               .setTitle('❌ Error')
               .setDescription(
-                'Failed to generate the bed meme. Please make sure all users are valid and try again.'
+                'Failed to generate the bed meme. Please make sure all users are valid and try again.',
               )
               .setTimestamp(),
           ],
@@ -133,7 +136,7 @@ const bedCommand: LocalCommand = {
             .setColor('#FF0000')
             .setTitle('❌ Error')
             .setDescription(
-              'Failed to generate the bed meme. Please make sure all users are valid and try again.'
+              'Failed to generate the bed meme. Please make sure all users are valid and try again.',
             )
             .setTimestamp(),
         ],

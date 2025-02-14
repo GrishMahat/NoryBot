@@ -48,7 +48,7 @@ export class CooldownManager {
    */
   isOnCooldown(userId: string, targetId: string): boolean {
     const cooldownTime = this.cooldowns.get(
-      this.getCooldownKey(userId, targetId)
+      this.getCooldownKey(userId, targetId),
     );
     return Boolean(cooldownTime && Date.now() < cooldownTime);
   }
@@ -60,7 +60,7 @@ export class CooldownManager {
    */
   getRemainingTime(userId: string, targetId: string): number {
     const cooldownTime = this.cooldowns.get(
-      this.getCooldownKey(userId, targetId)
+      this.getCooldownKey(userId, targetId),
     );
     return cooldownTime ? Math.ceil((cooldownTime - Date.now()) / 1000) : 0;
   }

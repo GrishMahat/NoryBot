@@ -42,20 +42,20 @@ const formatLogOutput = (config: LogConfig): void => {
   console.log(header);
   console.log(
     `║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`
-      .cyan
+      .cyan,
   );
   console.log(divider);
   console.log(
     `║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`
-      .cyan
+      .cyan,
   );
   console.log(
     `║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`
-      .cyan
+      .cyan,
   );
   console.log(
     `║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`
-      .cyan
+      .cyan,
   );
   console.log(footer);
 };
@@ -101,7 +101,7 @@ const consoleLog = async (client: Client): Promise<void> => {
     mongoService.on('maxReconnectAttemptsReached', async () => {
       await global.errorHandler.handleError(
         new Error('Max MongoDB reconnection attempts reached'),
-        'MongoDBMaxReconnectError'
+        'MongoDBMaxReconnectError',
       );
     });
   } catch (error) {

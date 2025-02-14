@@ -52,8 +52,8 @@ class ContextMenuManager {
       await Promise.resolve(
         console.log(
           `Context menu ${key} expired from cache. Usage stats:`,
-          metrics
-        )
+          metrics,
+        ),
       );
     }
   }
@@ -62,7 +62,7 @@ class ContextMenuManager {
     interaction: Interaction,
     color: ColorResolvable,
     description: string,
-    options: Partial<InteractionReplyOptions> = {}
+    options: Partial<InteractionReplyOptions> = {},
   ): InteractionReplyOptions {
     const embed = new EmbedBuilder()
       .setColor(color)
@@ -83,7 +83,7 @@ class ContextMenuManager {
   private updateMetrics(
     commandName: string,
     responseTime: number,
-    failed: boolean = false
+    failed: boolean = false,
   ): void {
     const metrics = this.metrics.get(commandName) || {
       uses: 0,
@@ -122,20 +122,20 @@ class ContextMenuManager {
   private checkPermissions(
     interaction: Interaction,
     permissions: PermissionResolvable[],
-    type: 'user' | 'bot'
+    type: 'user' | 'bot',
   ): boolean {
     if (!interaction.guild) return false;
     const member =
       type === 'user' ? interaction.member : interaction.guild.members.me;
     if (!member || !(member instanceof GuildMember)) return false;
     return permissions.every((permission) =>
-      member.permissions.has(permission)
+      member.permissions.has(permission),
     );
   }
 
   private validateContextMenu(
     menu: LocalContextMenu,
-    interaction: Interaction
+    interaction: Interaction,
   ): InteractionReplyOptions | null {
     const { developersId, testServerId } = config;
 
@@ -185,19 +185,19 @@ class ContextMenuManager {
       if (cooldownManager.isOnCooldown(interaction.user.id, menu.data.name)) {
         const remainingTime = cooldownManager.getRemainingTime(
           interaction.user.id,
-          menu.data.name
+          menu.data.name,
         );
         return this.createEmbed(
           interaction,
           'Red',
           `Please wait ${remainingTime} seconds before using this menu again.`,
-          { ephemeral: true }
+          { ephemeral: true },
         );
       }
       cooldownManager.setCooldown(
         interaction.user.id,
         menu.data.name,
-        menu.cooldown
+        menu.cooldown,
       );
     }
 
@@ -206,7 +206,7 @@ class ContextMenuManager {
 
   public async handleInteraction(
     client: Client,
-    interaction: Interaction
+    interaction: Interaction,
   ): Promise<void> {
     if (!interaction.isContextMenuCommand()) return;
     if (!this.isLoaded) {
@@ -223,7 +223,7 @@ class ContextMenuManager {
         await interaction.reply(
           this.createEmbed(interaction, 'Red', 'Context menu not found.', {
             ephemeral: true,
-          })
+          }),
         );
         return;
       }
@@ -237,7 +237,8 @@ class ContextMenuManager {
       await menu.run(client, interaction);
       this.updateMetrics(commandName, Date.now() - startTime);
       console.log(
-        `Context menu executed: ${commandName} by ${interaction.user.tag}`.green
+        `Context menu executed: ${commandName} by ${interaction.user.tag}`
+          .green,
       );
     } catch (error) {
       this.updateMetrics(commandName, Date.now() - startTime, true);
@@ -249,8 +250,8 @@ class ContextMenuManager {
             interaction,
             'Red',
             'An error occurred while processing your request.',
-            { ephemeral: true }
-          )
+            { ephemeral: true },
+          ),
         );
       }
     }
@@ -269,7 +270,7 @@ const contextMenuManager = new ContextMenuManager();
 
 export default async (
   client: Client,
-  interaction: Interaction
+  interaction: Interaction,
 ): Promise<void> => {
   await contextMenuManager.handleInteraction(client, interaction);
 };

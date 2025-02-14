@@ -1,10 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -16,7 +16,7 @@ const admixCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('User whose avatar you want to apply the effect to')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -30,7 +30,10 @@ const admixCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -59,7 +62,7 @@ const admixCommand: LocalCommand = {
         .setDescription(
           userOption.id === interaction.user.id
             ? `🎨 **${interaction.user.username}** got an Admix effect!`
-            : `🎨 **${interaction.user.username}** applied the Admix effect to **${userOption.username}**!`
+            : `🎨 **${interaction.user.username}** applied the Admix effect to **${userOption.username}**!`,
         )
         .addFields(
           {
@@ -71,7 +74,7 @@ const admixCommand: LocalCommand = {
             name: '🖼️ Effect',
             value: 'Admix Effect',
             inline: true,
-          }
+          },
         )
         .setImage('attachment://admix.png')
         .setTimestamp()
@@ -92,7 +95,7 @@ const admixCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the Admix image. Please try again later.'
+          'Failed to generate the Admix image. Please try again later.',
         )
         .setTimestamp();
 

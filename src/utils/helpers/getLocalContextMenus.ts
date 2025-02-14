@@ -32,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 async function importCommandFile(
   commandFile: string,
-  exceptions: string[]
+  exceptions: string[],
 ): Promise<LocalContextMenu | null> {
   try {
     const commandFileURL = pathToFileURL(commandFile).href;
@@ -40,7 +40,7 @@ async function importCommandFile(
 
     if (!commandModule?.default) {
       console.error(
-        `Context menu module at ${commandModule} is missing a default export.`
+        `Context menu module at ${commandModule} is missing a default export.`,
       );
       return null;
     }
@@ -50,14 +50,14 @@ async function importCommandFile(
     // Validate the command file by checking if it exports a default object with a 'name' property.
     if (!commandObject?.data?.name) {
       throw new Error(
-        `Context menu file ${commandFile} is invalid or missing a 'name' property.`
+        `Context menu file ${commandFile} is invalid or missing a 'name' property.`,
       );
     }
 
     // Check if the command name is in the list of exceptions provided.
     if (exceptions.includes(commandObject.data.name)) {
       throw new Error(
-        `Context menu ${commandObject.data.name} is in the exception list.`
+        `Context menu ${commandObject.data.name} is in the exception list.`,
       );
     }
 
@@ -69,11 +69,11 @@ async function importCommandFile(
 }
 
 export default async function loadCommands(
-  exceptions: string[] = []
+  exceptions: string[] = [],
 ): Promise<LocalContextMenu[]> {
   const commandsDir = path.resolve(__dirname, '..', '..', 'contextmenus');
   const allCommandFiles = getAllFiles(commandsDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts') // Filter out files that do not end with '.js' or '.ts'
+    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter out files that do not end with '.js' or '.ts'
   );
 
   const commands: LocalContextMenu[] = [];

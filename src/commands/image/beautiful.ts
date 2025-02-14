@@ -2,6 +2,8 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
   AttachmentBuilder,
+  Client,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -13,7 +15,7 @@ const beautifulCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription("The user who's beautiful")
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -26,7 +28,10 @@ const beautifulCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client, interaction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -55,7 +60,7 @@ const beautifulCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `✨ **${interaction.user.username}** has found their inner beauty!`
-            : `✨ **${interaction.user.username}** thinks **${targetUser.username}** is beautiful!`
+            : `✨ **${interaction.user.username}** thinks **${targetUser.username}** is beautiful!`,
         )
         .addFields(
           {
@@ -67,7 +72,7 @@ const beautifulCommand: LocalCommand = {
             name: '🖼️ Frame',
             value: 'Gravity Falls Style',
             inline: true,
-          }
+          },
         )
         .setImage('attachment://beautiful.png')
         .setTimestamp()
@@ -87,7 +92,7 @@ const beautifulCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the beautiful meme. Please try again later.'
+          'Failed to generate the beautiful meme. Please try again later.',
         )
         .setTimestamp();
 

@@ -8,10 +8,8 @@ import {
   ButtonStyle,
   ButtonInteraction,
   ComponentType,
-  InteractionCollector,
-  Message,
-  Collection,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import axios from 'axios';
 import emojiConfig from '../../config/emoji.js';
@@ -31,8 +29,8 @@ const factCommand: LocalCommand = {
           { name: 'Science', value: 'science' },
           { name: 'History', value: 'history' },
           { name: 'Math', value: 'math' },
-          { name: 'Animal', value: 'animal' }
-        )
+          { name: 'Animal', value: 'animal' },
+        ),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -45,7 +43,7 @@ const factCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
 
     try {
@@ -62,16 +60,14 @@ const factCommand: LocalCommand = {
 
       // Create collector from the interaction directly
       const collector = (
-        interaction as any
+        interaction as CommandInteraction
       ).channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        filter: (i: ButtonInteraction) => {
-          return (
-            (i.customId === 'regenerate_fact' || i.customId === 'share_fact') &&
+        filter: (i: ButtonInteraction) =>
+          i.customId === 'regenerate_fact' ||
+          (i.customId === 'share_fact' &&
             i.user.id === interaction.user.id &&
-            i.message.id === reply.id
-          );
-        },
+            i.message.id === reply.id),
         time: 120000,
       });
 
@@ -87,7 +83,7 @@ const factCommand: LocalCommand = {
             const newEmbed = createFactEmbed(
               newFact,
               category,
-              interaction.client
+              interaction.client,
             );
             await i.update({ embeds: [newEmbed], components: [row] });
           } else if (i.customId === 'share_fact') {
@@ -118,7 +114,7 @@ const factCommand: LocalCommand = {
             .setLabel('Share Fact')
             .setEmoji('📤')
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true)
+            .setDisabled(true),
         );
 
         try {
@@ -163,7 +159,7 @@ async function getFact(category: string): Promise<string> {
   } catch (error) {
     console.error(`Error fetching fact from ${url}:`, error);
     throw new Error(
-      'Unable to fetch a fact at this time. Please try again later.'
+      'Unable to fetch a fact at this time. Please try again later.',
     );
   }
 }
@@ -171,7 +167,7 @@ async function getFact(category: string): Promise<string> {
 function createFactEmbed(
   fact: string,
   category: string,
-  client: Client
+  client: Client,
 ): EmbedBuilder {
   const categoryIcons: Record<string, string> = {
     random: emojiConfig.statistics,
@@ -192,7 +188,7 @@ function createFactEmbed(
     .setTitle(
       `${categoryIcons[category] || emojiConfig.notag} ${
         category.charAt(0).toUpperCase() + category.slice(1)
-      } Fact`
+      } Fact`,
     )
     .setDescription(fact)
     .setTimestamp()
@@ -213,7 +209,7 @@ function createButtonRow(): ActionRowBuilder<ButtonBuilder> {
       .setCustomId('share_fact')
       .setLabel('Share Fact')
       .setEmoji('📤')
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary),
   );
 }
 

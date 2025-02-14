@@ -8,6 +8,8 @@ import {
   TextInputStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  Client,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 
 const testCommand: LocalCommand = {
@@ -15,17 +17,17 @@ const testCommand: LocalCommand = {
     .setName('test')
     .setDescription('Test command')
     .addSubcommand((subcommand) =>
-      subcommand.setName('button').setDescription('Test button')
+      subcommand.setName('button').setDescription('Test button'),
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName('modal').setDescription('Test modal')
+      subcommand.setName('modal').setDescription('Test modal'),
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName('select').setDescription('Test select')
+      subcommand.setName('select').setDescription('Test select'),
     )
     .toJSON(),
   testMode: true,
-  run: async (client, interaction) => {
+  run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     const subcommand = interaction.options.getSubcommand();
     switch (subcommand) {
       case 'button': {
@@ -33,7 +35,7 @@ const testCommand: LocalCommand = {
           new ButtonBuilder()
             .setCustomId('test-button')
             .setLabel('Test Button')
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(ButtonStyle.Primary),
         );
         await interaction.reply({ content: 'Button test', components: [row] });
         break;
@@ -44,7 +46,7 @@ const testCommand: LocalCommand = {
             .setCustomId('test-input')
             .setLabel('Test Input')
             .setStyle(TextInputStyle.Short)
-            .setRequired(true)
+            .setRequired(true),
         );
 
         const modal = new ModalBuilder()
@@ -64,8 +66,8 @@ const testCommand: LocalCommand = {
               .addOptions(
                 new StringSelectMenuOptionBuilder()
                   .setLabel('Test Option')
-                  .setValue('test-option')
-              )
+                  .setValue('test-option'),
+              ),
           );
         await interaction.reply({
           content: 'Select test',

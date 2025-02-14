@@ -42,7 +42,7 @@ export class ErrorMetricsService {
     const metrics = this.metrics.get(dayKey) || this.createNewMetrics();
 
     const existingError = metrics.topErrors.find(
-      (e) => e.message === error.message
+      (e) => e.message === error.message,
     );
     if (existingError) {
       existingError.count++;

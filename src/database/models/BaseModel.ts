@@ -15,7 +15,7 @@ export const baseSchemaOptions: SchemaOptions = {
     transform: (
       doc: Document,
       ret: Record<string, unknown>,
-      options: ToObjectOptions
+      options: ToObjectOptions,
     ) => {
       ret.id = ret._id;
       delete ret._id;

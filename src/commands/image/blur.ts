@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -15,7 +15,7 @@ const trashCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to throw in the trash')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -28,7 +28,10 @@ const trashCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -56,7 +59,7 @@ const trashCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🗑️ **${interaction.user.username}** threw themselves in the trash!`
-            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`
+            : `🗑️ **${interaction.user.username}** threw **${targetUser.username}** in the trash!`,
         )
         .setImage('attachment://trash.png')
         .setTimestamp()
@@ -76,7 +79,7 @@ const trashCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the trash image. Please try again later.'
+          'Failed to generate the trash image. Please try again later.',
         )
         .setTimestamp();
 

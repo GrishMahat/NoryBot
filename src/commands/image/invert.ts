@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import DIG from 'discord-image-generation';
 
@@ -15,7 +15,7 @@ const invertCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user whose avatar to invert')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -28,7 +28,10 @@ const invertCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -50,7 +53,7 @@ const invertCommand: LocalCommand = {
       const embed = new EmbedBuilder()
         .setColor('#FF00FF')
         .setDescription(
-          `${targetUser.toString()}'s avatar with inverted colors`
+          `${targetUser.toString()}'s avatar with inverted colors`,
         )
         .setImage('attachment://invert.png')
         .setTimestamp();

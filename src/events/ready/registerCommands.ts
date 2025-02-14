@@ -60,7 +60,7 @@ export default async (client: Client): Promise<void> => {
     await deleteUnusedCommands(
       applicationCommands,
       localCommands,
-      deletedCommands
+      deletedCommands,
     );
 
     await updateOrCreateCommands(
@@ -68,20 +68,20 @@ export default async (client: Client): Promise<void> => {
       localCommands,
       client,
       updatedCommands,
-      newCommands
+      newCommands,
     );
 
     logCommandChanges(
       localCommands,
       updatedCommands,
       newCommands,
-      deletedCommands
+      deletedCommands,
     );
   } catch (err: unknown) {
     console.error(
       `[${new Date().toISOString()}] Error during command sync: ${
         err instanceof Error ? err.message : 'Unknown error'
-      }`.red
+      }`.red,
     );
   }
 };
@@ -108,16 +108,16 @@ export default async (client: Client): Promise<void> => {
 async function deleteUnusedCommands(
   applicationCommands: ApplicationCommand[],
   localCommands: LocalCommand[],
-  deletedCommands: string[]
+  deletedCommands: string[],
 ): Promise<void> {
   const localCommandNames = new Set(
-    localCommands.map((cmd) => cmd.data?.name).filter(Boolean)
+    localCommands.map((cmd) => cmd.data?.name).filter(Boolean),
   );
   const commandsToDelete = applicationCommands.filter(
     (cmd) =>
       cmd.type === ApplicationCommandType.ChatInput &&
       cmd.name &&
-      !localCommandNames.has(cmd.name)
+      !localCommandNames.has(cmd.name),
   );
 
   await Promise.all(
@@ -126,7 +126,7 @@ async function deleteUnusedCommands(
         await cmd.delete();
         deletedCommands.push(cmd.name);
       }
-    })
+    }),
   );
 }
 
@@ -135,7 +135,7 @@ async function updateOrCreateCommands(
   localCommands: LocalCommand[],
   client: Client,
   updatedCommands: string[],
-  newCommands: string[]
+  newCommands: string[],
 ): Promise<void> {
   for (const [index, localCommand] of localCommands.entries()) {
     try {
@@ -147,13 +147,13 @@ async function updateOrCreateCommands(
       const commandName = data.name;
 
       const existingCommand = applicationCommands.find(
-        (cmd) => cmd.name === commandName
+        (cmd) => cmd.name === commandName,
       );
 
       if (existingCommand) {
         const isUpdated = await handleExistingCommand(
           existingCommand,
-          localCommand
+          localCommand,
         );
         if (isUpdated) updatedCommands.push(commandName);
       } else {
@@ -164,7 +164,7 @@ async function updateOrCreateCommands(
       console.error(
         `[${new Date().toISOString()}] Error processing command ${index + 1}: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`.red
+        }`.red,
       );
     }
   }
@@ -172,7 +172,7 @@ async function updateOrCreateCommands(
 
 async function handleExistingCommand(
   existingCommand: ApplicationCommand,
-  localCommand: LocalCommand
+  localCommand: LocalCommand,
 ): Promise<boolean> {
   const needsUpdate = compareCommands(existingCommand, localCommand);
 
@@ -192,7 +192,7 @@ async function handleExistingCommand(
       console.error(
         `[${new Date().toISOString()}] Error updating command ${
           localCommand.data.name
-        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red
+        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red,
       );
       return false;
     }
@@ -202,7 +202,7 @@ async function handleExistingCommand(
 
 async function createCommand(
   client: Client,
-  data: LocalCommand['data']
+  data: LocalCommand['data'],
 ): Promise<void> {
   if (!data || !data.name) {
     return;
@@ -220,7 +220,7 @@ async function createCommand(
     console.error(
       `[${new Date().toISOString()}] Failed to create command ${data.name}: ${
         err instanceof Error ? err.message : 'Unknown error'
-      }`.red
+      }`.red,
     );
   }
 }
@@ -229,7 +229,7 @@ function logCommandChanges(
   localCommands: LocalCommand[],
   updatedCommands: string[],
   newCommands: string[],
-  deletedCommands: string[]
+  deletedCommands: string[],
 ): void {
   const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
   const footer = '╚══════════════════════════════════════════════════════╝'
@@ -240,7 +240,7 @@ function logCommandChanges(
   console.log(header);
   console.log(
     `║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`
-      .cyan
+      .cyan,
   );
 
   if (updatedCommands.length || newCommands.length || deletedCommands.length) {
@@ -250,7 +250,7 @@ function logCommandChanges(
   if (updatedCommands.length) {
     console.log(`║ Updated Commands:${' '.repeat(34)} ║`.cyan);
     updatedCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan)
+      console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan),
     );
   }
 
@@ -258,7 +258,7 @@ function logCommandChanges(
     if (updatedCommands.length) console.log(divider);
     console.log(`║ New Commands:${' '.repeat(37)} ║`.cyan);
     newCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan)
+      console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan),
     );
   }
 
@@ -266,7 +266,7 @@ function logCommandChanges(
     if (updatedCommands.length || newCommands.length) console.log(divider);
     console.log(`║ Deleted Commands:${' '.repeat(34)} ║`.cyan);
     deletedCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan)
+      console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan),
     );
   }
 

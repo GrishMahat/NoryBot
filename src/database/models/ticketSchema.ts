@@ -40,7 +40,7 @@ const ticketSchema = new Schema<ITicket>(
   {
     strict: false,
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-  }
+  },
 );
 
 export default model<ITicket>('Ticket', ticketSchema);

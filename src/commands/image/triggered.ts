@@ -1,9 +1,9 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -16,7 +16,7 @@ const triggeredCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to trigger')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -29,7 +29,10 @@ const triggeredCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       await interaction.deferReply();
 
@@ -58,7 +61,7 @@ const triggeredCommand: LocalCommand = {
         .setDescription(
           userOption.id === interaction.user.id
             ? `😠 **${interaction.user.username}** got triggered!`
-            : `😠 **${interaction.user.username}** triggered **${userOption.username}**!`
+            : `😠 **${interaction.user.username}** triggered **${userOption.username}**!`,
         )
         .setImage('attachment://triggered.gif')
         .setTimestamp()
@@ -78,7 +81,7 @@ const triggeredCommand: LocalCommand = {
         .setColor('#FF0000')
         .setTitle('❌ Error')
         .setDescription(
-          'Failed to generate the triggered image. Please try again later.'
+          'Failed to generate the triggered image. Please try again later.',
         )
         .setTimestamp();
 

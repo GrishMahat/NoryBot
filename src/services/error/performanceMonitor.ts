@@ -69,19 +69,19 @@ export class PerformanceMonitor {
       metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal;
     if (memoryUsagePercent > this.thresholds.memory) {
       alerts.push(
-        `Critical: Memory usage at ${(memoryUsagePercent * 100).toFixed(2)}% (${this.formatBytes(metrics.memoryUsage.heapUsed)}/${this.formatBytes(metrics.memoryUsage.heapTotal)})`
+        `Critical: Memory usage at ${(memoryUsagePercent * 100).toFixed(2)}% (${this.formatBytes(metrics.memoryUsage.heapUsed)}/${this.formatBytes(metrics.memoryUsage.heapTotal)})`,
       );
     }
 
     if (metrics.cpu.usage > this.thresholds.cpu) {
       alerts.push(
-        `Warning: CPU usage at ${metrics.cpu.usage.toFixed(2)}% across ${os.cpus().length} cores`
+        `Warning: CPU usage at ${metrics.cpu.usage.toFixed(2)}% across ${os.cpus().length} cores`,
       );
     }
 
     if (metrics.responseTime > this.thresholds.responseTime) {
       alerts.push(
-        `Performance: High response time of ${metrics.responseTime.toFixed(2)}ms (threshold: ${this.thresholds.responseTime}ms)`
+        `Performance: High response time of ${metrics.responseTime.toFixed(2)}ms (threshold: ${this.thresholds.responseTime}ms)`,
       );
     }
 

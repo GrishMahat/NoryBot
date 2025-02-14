@@ -1,10 +1,10 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   AttachmentBuilder,
   MessageFlags,
+  ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
@@ -17,7 +17,7 @@ const bobrossCommand: LocalCommand = {
       option
         .setName('user')
         .setDescription('The user to turn into a happy little painting')
-        .setRequired(false)
+        .setRequired(false),
     )
     .setContexts([0, 1, 2])
     .setIntegrationTypes([0, 1])
@@ -30,7 +30,10 @@ const bobrossCommand: LocalCommand = {
   testMode: false,
   devOnly: false,
 
-  run: async (client: Client, interaction: CommandInteraction) => {
+  run: async (
+    client: Client,
+    interaction: ChatInputCommandInteraction,
+  ): Promise<void> => {
     try {
       const targetUser =
         interaction.options.get('user')?.user || interaction.user;
@@ -79,7 +82,7 @@ const bobrossCommand: LocalCommand = {
         .setDescription(
           targetUser.id === interaction.user.id
             ? `🎨 **${interaction.user.username}** became a happy little painting!`
-            : `🎨 **${interaction.user.username}** turned **${targetUser.username}** into a happy little painting!`
+            : `🎨 **${interaction.user.username}** turned **${targetUser.username}** into a happy little painting!`,
         )
         .addFields(
           {
@@ -91,7 +94,7 @@ const bobrossCommand: LocalCommand = {
             name: '🖼️ Masterpiece',
             value: `<@${targetUser.id}>`,
             inline: true,
-          }
+          },
         )
         .setImage('attachment://bobross.png')
         .setTimestamp()
@@ -115,7 +118,7 @@ const bobrossCommand: LocalCommand = {
               .setColor('#FF0000')
               .setTitle('❌ Happy Little Error')
               .setDescription(
-                'Failed to create your masterpiece. Remember, mistakes are just happy accidents! Try again later.'
+                'Failed to create your masterpiece. Remember, mistakes are just happy accidents! Try again later.',
               )
               .setTimestamp(),
           ],
@@ -132,7 +135,7 @@ const bobrossCommand: LocalCommand = {
             .setColor('#FF0000')
             .setTitle('❌ Happy Little Error')
             .setDescription(
-              'Failed to create your masterpiece. Remember, mistakes are just happy accidents! Try again later.'
+              'Failed to create your masterpiece. Remember, mistakes are just happy accidents! Try again later.',
             )
             .setTimestamp(),
         ],
