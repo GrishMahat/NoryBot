@@ -1,25 +1,17 @@
 import 'colors';
 import { Client } from 'discord.js';
-import mongoose from 'mongoose';
+import { MongoService } from '../../database/services/MongoService.js';
 
-const mongoURI = process.env.MONGODB_TOKEN;
-
-/**
- * @fileoverview Console logging utility for Discord bot status and database connection monitoring
- * @module events/ready/consoleLog
- */
-
-/**
- * @constant {Object} SEPARATOR - Configuration for visual separators in console output
- * @property {string} DOUBLE - Double line separator character
- * @property {string} SINGLE - Single line separator character
- * @property {number} LENGTH - Length of separator lines
- */
 const SEPARATOR = {
   DOUBLE: '═',
   SINGLE: '─',
   LENGTH: 60,
 };
+
+/**
+ * @fileoverview Console logging utility for Discord bot status and database connection monitoring
+ * @module events/ready/consoleLog
+ */
 
 /**
  * Configuration interface for logging bot statistics
@@ -76,9 +68,10 @@ const formatLogOutput = (config: LogConfig): void => {
  * @returns {Promise<void>} Resolves when logging is complete
  */
 const consoleLog = async (client: Client): Promise<void> => {
-  const dbStatus: 'connected' | 'disconnected' = 'disconnected';
-
   try {
+    const mongoService = MongoService.getInstance();
+    const dbStatus: 'connected' | 'disconnected' | 'connecting' = 'connecting';
+
     const logConfig: LogConfig = {
       botName: client.user?.username ?? 'Bot',
       serverCount: client.guilds.cache.size,
@@ -87,11 +80,7 @@ const consoleLog = async (client: Client): Promise<void> => {
     };
 
     try {
-      mongoose.set('strictQuery', true);
-
-      await mongoose.connect(mongoURI, {
-        serverSelectionTimeoutMS: 15000,
-      });
+      await mongoService.connect();
       logConfig.dbStatus = 'connected';
     } catch (error) {
       await global.errorHandler.handleError(error, 'DatabaseConnectionError');
@@ -99,17 +88,24 @@ const consoleLog = async (client: Client): Promise<void> => {
     }
 
     formatLogOutput(logConfig);
+
+    // Setup MongoDB event listeners
+    mongoService.on('error', async (error) => {
+      await global.errorHandler.handleError(error, 'MongoDBError');
+    });
+
+    mongoService.on('disconnected', () => {
+      console.log('MongoDB connection lost. Attempting to reconnect...'.yellow);
+    });
+
+    mongoService.on('maxReconnectAttemptsReached', async () => {
+      await global.errorHandler.handleError(
+        new Error('Max MongoDB reconnection attempts reached'),
+        'MongoDBMaxReconnectError'
+      );
+    });
   } catch (error) {
     await global.errorHandler.handleError(error, 'ConsoleLogError');
-  } finally {
-    try {
-      await mongoose.disconnect();
-    } catch (error) {
-      await global.errorHandler.handleError(
-        error,
-        'DatabaseDisconnectionError'
-      );
-    }
   }
 };
 

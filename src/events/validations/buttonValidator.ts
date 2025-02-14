@@ -163,17 +163,7 @@ class ButtonManager {
     try {
       const button =
         this.buttonCache.get(customId) || this.buttons.get(customId);
-      if (!button) {
-        await interaction.reply(
-          this.createEmbed(
-            interaction,
-            'Red',
-            'This button is no longer valid.',
-            { ephemeral: true }
-          )
-        );
-        return;
-      }
+      if (!button) return;
 
       // Validate button usage
       const validationError = await this.validateButtonUse(button, interaction);
