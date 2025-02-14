@@ -41,7 +41,7 @@ export class MongoService extends EventEmitter {
     });
   }
 
-  private handleReconnect(): Promise<void> {
+  private handleReconnect(): void {
     if (this.reconnectAttempts >= this.MAX_RECONNECT_ATTEMPTS) {
       console.error(
         'Max reconnection attempts reached. Please check your MongoDB connection.'
@@ -50,7 +50,6 @@ export class MongoService extends EventEmitter {
       this.emit('maxReconnectAttemptsReached');
       return;
     }
-
     this.reconnectAttempts++;
     console.log(
       `Attempting to reconnect (${this.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS})...`
