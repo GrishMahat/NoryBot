@@ -12,6 +12,7 @@ import {
 } from 'discord.js';
 import axios from 'axios';
 import emojiConfig from '../../config/emoji.js';
+import { LocalCommand } from '../../types/index.js';
 
 const factCommand: LocalCommand = {
   data: new SlashCommandBuilder()
@@ -46,10 +47,13 @@ const factCommand: LocalCommand = {
     await interaction.deferReply();
 
     try {
+      // Get category from options or default to "random"
       const category =
         (interaction.options.get('category')?.value as string) || 'random';
-      const fact = await getFact(category);
-      const embed = createFactEmbed(fact, category, client);
+
+      // Store the current fact to use when sharing
+      let currentFact: string = await getFact(category);
+      const embed = createFactEmbed(currentFact, category, client);
       const row = createButtonRow();
 
       const reply = await interaction.editReply({
@@ -57,16 +61,13 @@ const factCommand: LocalCommand = {
         components: [row],
       });
 
-      // Create collector from the interaction directly
-      const collector = (
-        interaction
-      ).channel?.createMessageComponentCollector({
+      // Only allow the original user to interact with the buttons
+      const collector = interaction.channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
         filter: (i: ButtonInteraction) =>
-          i.customId === 'regenerate_fact' ||
-          (i.customId === 'share_fact' &&
-            i.user.id === interaction.user.id &&
-            i.message.id === reply.id),
+          i.user.id === interaction.user.id &&
+          i.message.id === reply.id &&
+          (i.customId === 'regenerate_fact' || i.customId === 'share_fact'),
         time: 120000,
       });
 
@@ -78,16 +79,15 @@ const factCommand: LocalCommand = {
       collector.on('collect', async (i: ButtonInteraction) => {
         try {
           if (i.customId === 'regenerate_fact') {
+            // Get a new fact and update the embed
             const newFact = await getFact(category);
-            const newEmbed = createFactEmbed(
-              newFact,
-              category,
-              interaction.client,
-            );
+            currentFact = newFact;
+            const newEmbed = createFactEmbed(newFact, category, client);
             await i.update({ embeds: [newEmbed], components: [row] });
           } else if (i.customId === 'share_fact') {
+            // Share the current fact
             await i.reply({
-              content: `${emojiConfig.GIF_Animation} **${interaction.user.tag}** shared a fact:\n\n${fact}`,
+              content: `${emojiConfig.GIF_Animation} **${interaction.user.tag}** shared a fact:\n\n${currentFact}`,
               allowedMentions: { parse: [] },
             });
           }
@@ -101,7 +101,8 @@ const factCommand: LocalCommand = {
       });
 
       collector.on('end', async () => {
-        const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        // Disable buttons after collector expires
+        const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId('regenerate_fact')
             .setLabel('Get New Fact')
@@ -117,7 +118,7 @@ const factCommand: LocalCommand = {
         );
 
         try {
-          await interaction.editReply({ components: [newRow] });
+          await interaction.editReply({ components: [disabledRow] });
         } catch (error) {
           console.error('Error disabling buttons:', error);
         }
@@ -148,6 +149,7 @@ async function getFact(category: string): Promise<string> {
 
   try {
     const response = await axios.get(url, { timeout: 5000 });
+    // Process response based on category
     if (category === 'animal') {
       return response.data.fact;
     } else if (category === 'year' || category === 'math') {

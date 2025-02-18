@@ -17,8 +17,6 @@ import {
   generateQuoteImage,
 } from '../../services/img/generateQuoteImage.js';
 import emojiConfig from '../../config/emoji.js';
-import { writeFileSync, unlinkSync } from 'fs';
-import { join } from 'path';
 
 const quotesCommand: LocalCommand = {
   data: new SlashCommandBuilder()
@@ -34,21 +32,11 @@ const quotesCommand: LocalCommand = {
   botPermissions: [],
 
   run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-    let tempImagePath: string | null = null;
     const buttonCooldowns = new Map<string, number>();
 
     try {
       await interaction.deferReply();
-      const quote = await fetchQuote();
-      const imageBuffer = await generateQuoteImage(quote);
-
-      tempImagePath = join(process.cwd(), `temp_quote_${Date.now()}.png`);
-      writeFileSync(tempImagePath, imageBuffer);
-
-      const attachment = new AttachmentBuilder(tempImagePath, {
-        name: 'quote.png',
-      });
-      const embed = createQuoteEmbed(client, attachment);
+      const { attachment, embed } = await getQuoteAttachmentEmbed(client);
       const row = createButtonRow();
 
       const reply = await interaction.editReply({
@@ -57,16 +45,7 @@ const quotesCommand: LocalCommand = {
         components: [row],
       });
 
-      // Clean up temp file after sending
-      if (tempImagePath) {
-        try {
-          unlinkSync(tempImagePath);
-          tempImagePath = null;
-        } catch (err) {
-          console.error('Failed to delete temp file:', err);
-        }
-      }
-
+      // Set up a button collector to allow requesting a new quote
       const collector = interaction.channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
         filter: (i: ButtonInteraction) =>
@@ -89,35 +68,16 @@ const quotesCommand: LocalCommand = {
           }
 
           buttonCooldowns.set(i.user.id, now + 30000); // 30 second cooldown
-
           await i.deferUpdate();
+
           try {
-            const newQuote = await fetchQuote();
-            const newImageBuffer = await generateQuoteImage(newQuote);
-
-            const newTempPath = join(
-              process.cwd(),
-              `temp_quote_${Date.now()}.png`,
-            );
-            writeFileSync(newTempPath, newImageBuffer);
-
-            const newAttachment = new AttachmentBuilder(newTempPath, {
-              name: 'quote.png',
-            });
-            const newEmbed = createQuoteEmbed(client, newAttachment);
-
+            const { attachment: newAttachment, embed: newEmbed } =
+              await getQuoteAttachmentEmbed(client);
             await i.editReply({
               embeds: [newEmbed],
               files: [newAttachment],
               components: [row],
             });
-
-            // Clean up new temp file after sending
-            try {
-              unlinkSync(newTempPath);
-            } catch (err) {
-              console.error('Failed to delete temp file:', err);
-            }
           } catch {
             await i.editReply({
               content: `${emojiConfig.notag} Failed to fetch new quote. Please try again later.`,
@@ -131,15 +91,6 @@ const quotesCommand: LocalCommand = {
         interaction.editReply({ components: [] }).catch(() => {});
       });
     } catch {
-      // Clean up temp file if it exists
-      if (tempImagePath) {
-        try {
-          unlinkSync(tempImagePath);
-        } catch (err) {
-          console.error('Failed to delete temp file:', err);
-        }
-      }
-
       await interaction.editReply({
         content: `${emojiConfig.notag} Failed to fetch quote. Please try again later.`,
         components: [],
@@ -148,8 +99,18 @@ const quotesCommand: LocalCommand = {
   },
 };
 
+async function getQuoteAttachmentEmbed(
+  client: Client,
+): Promise<{ attachment: AttachmentBuilder; embed: EmbedBuilder }> {
+  const quote = await fetchQuote();
+  const imageBuffer = await generateQuoteImage(quote);
+  const attachment = new AttachmentBuilder(imageBuffer, { name: 'quote.png' });
+  const embed = createQuoteEmbed(client, attachment);
+  return { attachment, embed };
+}
+
 async function fetchQuote(): Promise<QuoteResponse> {
-  const fallbackQuote = {
+  const fallbackQuote: QuoteResponse = {
     quote: "Sometimes it's necessary to do unnecessary things.",
     author: 'Kanade Jinguuji',
   };
@@ -161,12 +122,10 @@ async function fetchQuote(): Promise<QuoteResponse> {
     const response = await fetch('https://quotes-api-self.vercel.app/quote', {
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      return fallbackQuote;
-    }
+    if (!response.ok) return fallbackQuote;
+
     const data = await response.json();
     return {
       quote: data.quote,
