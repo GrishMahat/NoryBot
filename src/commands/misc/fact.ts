@@ -1,7 +1,6 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   ActionRowBuilder,
   ButtonBuilder,
