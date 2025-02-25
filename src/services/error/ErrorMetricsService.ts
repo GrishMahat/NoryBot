@@ -1,4 +1,8 @@
-import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types';
+import {
+  ErrorMetrics,
+  ErrorDetails,
+  ErrorSeverity,
+} from '../../types/index.js';
 
 export class ErrorMetricsService {
   private metrics: Map<string, ErrorMetrics>;

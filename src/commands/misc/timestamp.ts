@@ -4,7 +4,7 @@ import {
   Client,
   ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
+import { LocalCommand } from '../../types/index.js';
 import emojiConfig from '../../config/emoji.js';
 
 const timestampCommand: LocalCommand = {

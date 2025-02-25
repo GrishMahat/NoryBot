@@ -15,12 +15,12 @@ import {
   PerformanceMetrics,
   ErrorMetrics,
   ErrorContext,
-} from '../types';
-import determineErrorCategory from '../services/error/determineErrorCategory';
-import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
-import { PerformanceMonitor } from '../services/error/performanceMonitor'
-import { MetricsFormatter } from '../services/error/metricsFormatter';
-import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
+} from '../types/index.js';
+import determineErrorCategory from '../services/error/determineErrorCategory.js';
+import getRecoverySuggestions from '../services/error/getRecoverySuggestions.js';
+import { PerformanceMonitor } from '../services/error/performanceMonitor.js';
+import { MetricsFormatter } from '../services/error/metricsFormatter.js';
+import { ErrorMetricsService } from '../services/error/ErrorMetricsService.js';
 import os from 'os';
 
 class ErrorHandler {

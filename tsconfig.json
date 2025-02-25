@@ -2,8 +2,9 @@
   "compilerOptions": {
     // Module settings for Node.js ESM
     "target": "ES2022",
-    "module": "es2020",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
 
     // "allowJs": true,
 

@@ -12,12 +12,9 @@ import path from 'path';
 import emojiConfig from '../../config/emoji.js';
 import {
   Currency,
-  CommonCurrency,
-  CurrencyConversion,
-  ExchangeRate,
   commonCurrencies,
   allCurrencies,
-} from '../../types';
+} from '../../types/index.js';
 
 const apiUrl =
   'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';

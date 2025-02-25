@@ -5,7 +5,7 @@ import {
   AttachmentBuilder,
   ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
+import { LocalCommand } from '../../types/index.js';
 import DIG from 'discord-image-generation';
 
 const hitlerCommand: LocalCommand = {

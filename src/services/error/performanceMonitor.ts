@@ -6,7 +6,7 @@ import {
   PerformanceThresholds,
   ShardStats,
   ShardStatus,
-} from '../../types';
+} from '../../types/index.js';
 
 export class PerformanceMonitor {
   private client: Client;

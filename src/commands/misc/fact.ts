@@ -1,7 +1,6 @@
 import {
   EmbedBuilder,
   SlashCommandBuilder,
-  CommandInteraction,
   Client,
   ActionRowBuilder,
   ButtonBuilder,
@@ -59,9 +58,7 @@ const factCommand: LocalCommand = {
       });
 
       // Create collector from the interaction directly
-      const collector = (
-        interaction
-      ).channel?.createMessageComponentCollector({
+      const collector = interaction.channel?.createMessageComponentCollector({
         componentType: ComponentType.Button,
         filter: (i: ButtonInteraction) =>
           i.customId === 'regenerate_fact' ||

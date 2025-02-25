@@ -4,18 +4,17 @@
  */
 
 // Discord-related types
-export * from './discord/commands';
-export * from './discord/events';
+export * from './discord/commands.js';
+export * from './discord/events.js';
 
 // Feature-specific types
-export * from './features/currency';
+export * from './features/currency.js';
 
 // API-related types
-export * from './api/reddit';
+export * from './api/reddit.js';
 
 // Error handling types
-export * from './error';
+export * from './error/index.js';
 
 // Utility types
-export * from './utils';
-
+export * from './utils/index.js';

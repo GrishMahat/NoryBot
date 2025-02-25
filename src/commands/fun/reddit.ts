@@ -6,11 +6,10 @@ import {
 } from 'discord.js';
 import axios from 'axios';
 import {
-  RedditPost,
   RedditListing,
   RedditSortOption,
   RedditTimeOption,
-} from '../../types';
+} from '../../types/index.js';
 
 const redditCommand: LocalCommand = {
   data: new SlashCommandBuilder()
