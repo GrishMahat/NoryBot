@@ -1,8 +1,4 @@
-import {
-  ErrorMetrics,
-  ErrorDetails,
-  ErrorSeverity,
-} from '../../types/error.js';
+import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types';
 
 export class ErrorMetricsService {
   private metrics: Map<string, ErrorMetrics>;
@@ -25,6 +21,8 @@ export class ErrorMetricsService {
     this.updateRateMetrics(dayKey, error);
     // Update top errors
     this.updateTopErrors(error);
+    // Track by severity
+    this.updateSeverityMetrics(dayKey, error);
   }
 
   private updateRateMetrics(timeKey: string, error: ErrorDetails): void {
@@ -62,6 +60,13 @@ export class ErrorMetricsService {
     this.metrics.set(dayKey, metrics);
   }
 
+  private updateSeverityMetrics(timeKey: string, error: ErrorDetails): void {
+    const metrics = this.metrics.get(timeKey) || this.createNewMetrics();
+    // Increment the count for this severity level
+    metrics.bySeverity[error.severity]++;
+    this.metrics.set(timeKey, metrics);
+  }
+
   public generateReport(): ErrorMetrics {
     const dayKey = this.getDayKey();
     const currentMetrics = this.metrics.get(dayKey) || this.createNewMetrics();
@@ -70,10 +75,14 @@ export class ErrorMetricsService {
     const hourlyRate = this.calculateHourlyRate();
     const dailyRate = this.calculateDailyRate();
 
+    // Get severity stats
+    const severityStats = this.calculateSeverityStats();
+
     return {
       ...currentMetrics,
       hourlyRate,
       dailyRate,
+      bySeverity: severityStats,
     };
   }
 
@@ -87,6 +96,20 @@ export class ErrorMetricsService {
     const dayKey = this.getDayKey();
     const metrics = this.metrics.get(dayKey);
     return metrics?.dailyRate || 0;
+  }
+
+  private calculateSeverityStats(): Record<ErrorSeverity, number> {
+    const dayKey = this.getDayKey();
+    const metrics = this.metrics.get(dayKey);
+    if (!metrics)
+      return {
+        [ErrorSeverity.LOW]: 0,
+        [ErrorSeverity.MEDIUM]: 0,
+        [ErrorSeverity.HIGH]: 0,
+        [ErrorSeverity.CRITICAL]: 0,
+      };
+
+    return metrics.bySeverity;
   }
 
   private cleanupOldMetrics(): void {

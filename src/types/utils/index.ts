@@ -1,4 +1,9 @@
 /**
+ * @file Utility types
+ * @description Generic utility types for TypeScript type safety and manipulation
+ */
+
+/**
  * Makes all properties in T required and non-nullable
  */
 export type Required<T> = {

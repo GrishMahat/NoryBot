@@ -1,4 +1,9 @@
 /**
+ * @file Types related to currency operations
+ * @description Defines types for currency codes, exchange rates, and conversions
+ */
+
+/**
  * Represents a valid ISO 4217 currency code
  */
 export type Currency = (typeof allCurrencies)[number];
@@ -203,9 +208,13 @@ export type CommonCurrency = (typeof commonCurrencies)[number];
  * Interface for currency exchange rate data
  */
 export interface ExchangeRate {
+  /** Base currency code */
   base: Currency;
+  /** Target currency code */
   target: Currency;
+  /** Exchange rate value */
   rate: number;
+  /** Timestamp of when the rate was retrieved */
   timestamp: number;
 }
 
@@ -213,10 +222,16 @@ export interface ExchangeRate {
  * Interface for currency conversion result
  */
 export interface CurrencyConversion {
+  /** Source currency code */
   from: Currency;
+  /** Target currency code */
   to: Currency;
+  /** Original amount */
   amount: number;
+  /** Converted amount */
   convertedAmount: number;
+  /** Exchange rate used */
   rate: number;
+  /** Timestamp of when the conversion was performed */
   timestamp: number;
 }

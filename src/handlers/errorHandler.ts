@@ -7,20 +7,21 @@ import {
 } from 'discord.js';
 import { createHash } from 'crypto';
 import {
-  ErrorInfo,
-  ErrorHandlerConfig,
   ErrorSeverity,
+  ErrorHandlerConfig,
   ErrorDetails,
+  ErrorInfo,
   ErrorGroup,
-  ErrorContext,
-  ErrorMetrics,
   PerformanceMetrics,
-} from '../types/error.js';
-import determineErrorCategory from '../services/error/determineErrorCategory.js';
-import getRecoverySuggestions from '../services/error/getRecoverySuggestions.js';
-import { PerformanceMonitor } from '../services/error/performanceMonitor.js';
-import { MetricsFormatter } from '../services/error/metricsFormatter.js';
-import { ErrorMetricsService } from '../services/error/ErrorMetricsService.js';
+  ErrorMetrics,
+  ErrorContext,
+} from '../types';
+import determineErrorCategory from '../services/error/determineErrorCategory';
+import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
+import { PerformanceMonitor } from '../services/error/performanceMonitor'
+import { MetricsFormatter } from '../services/error/metricsFormatter';
+import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
+import os from 'os';
 
 class ErrorHandler {
   private webhook: WebhookClient | null = null;
@@ -141,6 +142,11 @@ class ErrorHandler {
           inline: true,
         },
         {
+          name: 'By Severity',
+          value: `Critical: ${report.bySeverity[ErrorSeverity.CRITICAL]}\nHigh: ${report.bySeverity[ErrorSeverity.HIGH]}\nMedium: ${report.bySeverity[ErrorSeverity.MEDIUM]}\nLow: ${report.bySeverity[ErrorSeverity.LOW]}`,
+          inline: true,
+        },
+        {
           name: 'Top Errors',
           value:
             report.topErrors
@@ -192,14 +198,7 @@ class ErrorHandler {
       isDiscordError ? (error as DiscordAPIError) : undefined,
     );
     const recoverySuggestions = await getRecoverySuggestions(err);
-    const performance = this.performanceMonitor
-      ? await this.performanceMonitor.captureMetrics()
-      : {
-          memoryUsage: { heapUsed: 0, heapTotal: 0, external: 0 },
-          cpu: { usage: 0, load: [0, 0, 0] },
-          uptime: 0,
-          responseTime: 0,
-        };
+    const performance = await this.capturePerformanceMetrics();
 
     const groupHash = this.generateErrorHash(err, context || {});
     const errorId = createHash('md5')
@@ -341,250 +340,279 @@ class ErrorHandler {
 
     try {
       const performanceMetrics = await this.capturePerformanceMetrics();
+      const formattedMetrics =
+        MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
+
       const embed = new EmbedBuilder()
         .setColor(this.getSeverityColor(errorDetails.severity))
         .setTitle(`Error: ${errorDetails.type}`)
-        .setDescription(`\`\`\`diff\n- ${errorDetails.message}\`\`\``);
+        .setDescription(`\`\`\`diff\n- ${errorDetails.message}\`\`\``)
+        .addFields(
+          {
+            name: 'Error ID',
+            value: errorDetails.errorId || 'Unknown',
+            inline: true,
+          },
+          {
+            name: 'Category',
+            value: errorDetails.category || 'Unknown',
+            inline: true,
+          },
+          {
+            name: 'Severity',
+            value: errorDetails.severity.toString(),
+            inline: true,
+          },
+          {
+            name: 'Stack Trace',
+            value: `\`\`\`\n${errorDetails.stack.substring(0, 1000)}${errorDetails.stack.length > 1000 ? '...' : ''}\`\`\``,
+          },
+        );
 
-      // Add error category and recovery suggestions
-      if (errorDetails.category) {
-        embed.addFields({
-          name: 'Category',
-          value: `\`${errorDetails.category}\``,
-          inline: true,
-        });
-      }
-
-      if (errorDetails.recoverySuggestions) {
+      // Add recovery suggestions if available
+      if (
+        errorDetails.recoverySuggestions &&
+        Array.isArray(errorDetails.recoverySuggestions) &&
+        errorDetails.recoverySuggestions.length > 0
+      ) {
         embed.addFields({
           name: 'Recovery Suggestions',
-          value: `\`\`\`yaml\n${errorDetails.recoverySuggestions}\`\`\``,
+          value: errorDetails.recoverySuggestions
+            .map((s) => `• ${s}`)
+            .join('\n'),
         });
       }
 
       // Add performance metrics
-      const performanceStr =
-        MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
-      if (performanceStr) {
-        embed.addFields({
-          name: 'Performance Metrics',
-          value: `\`\`\`ml\n${performanceStr}\`\`\``,
-          inline: false,
-        });
-      }
-
-      // Add error context
-      const contextStr = this.formatContext(errorDetails.context);
-      if (contextStr && contextStr !== 'No context available') {
-        embed.addFields({
-          name: 'Context',
-          value: `\`\`\`json\n${contextStr}\`\`\``,
-          inline: false,
-        });
-      }
-
-      // Add stack trace with better formatting
-      if (errorDetails.stack) {
-        const formattedStack = this.formatStackTrace(errorDetails.stack);
-        embed.addFields({
-          name: 'Stack Trace',
-          value: `\`\`\`js\n${formattedStack}\`\`\``,
-        });
-      }
-
-      // Add severity indicator
-      if (errorDetails.severity) {
-        const severityEmojis: Record<string, string> = {
-          LOW: '🟢',
-          MEDIUM: '🟡',
-          HIGH: '🔴',
-          CRITICAL: '⛔',
-        };
-        embed.addFields({
-          name: 'Severity',
-          value: `${severityEmojis[errorDetails.severity]} **${errorDetails.severity}**`,
-          inline: true,
-        });
-      }
-
-      // Add timestamp
-      embed.setTimestamp(new Date(errorDetails.timestamp));
-
-      await this.webhook.send({
-        embeds: [embed],
-        username: 'Error Handler',
-        avatarURL: this.client?.user?.displayAvatarURL() ?? '',
+      embed.addFields({
+        name: 'Performance Metrics',
+        value: `\`\`\`\n${formattedMetrics.substring(0, 1024)}\`\`\``,
       });
-    } catch (error: unknown) {
-      console.error('ErrorHandler: Detailed webhook error:', error);
-      if (
-        error instanceof Error &&
-        error.message.includes('Invalid Webhook Token')
-      ) {
-        console.warn(
-          'ErrorHandler: Invalid webhook token detected, reinitializing webhook...',
-        );
-        this.setupWebhook();
-      }
-      throw error;
-    }
-  }
 
-  private formatStackTrace(stack: string): string {
-    return stack
-      .split('\n')
-      .map((line) => {
-        if (line.includes('at ')) {
-          const parts = line.split('at ');
-          return `→ ${parts[1].trim()}`;
-        }
-        return line;
-      })
-      .slice(0, this.config.development.stackTraceLimit)
-      .join('\n');
+      await this.webhook.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('ErrorHandler: Error in sendErrorToWebhook:', error);
+    }
   }
 
   private getSeverityColor(severity: ErrorSeverity): number {
-    const colors = {
-      [ErrorSeverity.LOW]: 0x00ff00,
-      [ErrorSeverity.MEDIUM]: 0xffff00,
-      [ErrorSeverity.HIGH]: 0xff9900,
-      [ErrorSeverity.CRITICAL]: 0xff0000,
-    };
-    return colors[severity] || 0xff0000;
-  }
-
-  private capturePerformanceMetrics(): Promise<PerformanceMetrics> {
-    if (!this.performanceMonitor) {
-      return Promise.resolve({
-        memoryUsage: { heapUsed: 0, heapTotal: 0, external: 0 },
-        cpu: { usage: 0, load: [0, 0, 0] },
-        uptime: 0,
-        responseTime: 0,
-      });
+    switch (severity) {
+      case ErrorSeverity.CRITICAL:
+        return 0xff0000;
+      case ErrorSeverity.HIGH:
+        return 0xffa500;
+      case ErrorSeverity.MEDIUM:
+        return 0xffff00;
+      case ErrorSeverity.LOW:
+        return 0x00ff00;
+      default:
+        return 0x0000ff;
     }
-    return this.performanceMonitor.captureMetrics();
-  }
-
-  private async checkPerformance(): Promise<void> {
-    const alerts = await this.performanceMonitor.checkThresholds();
-    if (alerts.length > 0) {
-      await this.handleError(
-        new Error(`Performance alerts: ${alerts.join(', ')}`),
-        'PerformanceAlert',
-      );
-    }
-  }
-
-  private generateErrorHash(error: Error, context: ErrorContext): string {
-    const stackLines = error.stack?.split('\n').slice(0, 3) || [];
-    const hashContent = `${error.message}:${stackLines.join()}:${JSON.stringify(
-      context,
-    )}`;
-    return createHash('sha256').update(hashContent).digest('hex').slice(0, 10);
   }
 
   private determineSeverity(
     error: Error,
     performance: PerformanceMetrics,
   ): ErrorSeverity {
+    // Determine severity based on error type
+    if (error instanceof DiscordAPIError) {
+      const code = (error as DiscordAPIError).code;
+      // Critical Discord API errors
+      if (
+        [50001, 50013, 50007, 40007, 10003, 10008, 10011, 10026].includes(
+          code as number,
+        )
+      ) {
+        return ErrorSeverity.CRITICAL;
+      }
+      // High severity Discord API errors
+      if (
+        [50035, 50036, 40001, 40002, 50003, 50004, 50006].includes(
+          code as number,
+        )
+      ) {
+        return ErrorSeverity.HIGH;
+      }
+      // Medium severity Discord API errors
+      if (
+        [50007, 50008, 50009, 50010, 50014, 50021, 50025, 50034].includes(
+          code as number,
+        )
+      ) {
+        return ErrorSeverity.MEDIUM;
+      }
+      // Default to LOW for other API errors
+      return ErrorSeverity.LOW;
+    }
+
+    // Check for critical performance issues
+    const memoryUsagePercent =
+      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal;
     if (
-      performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal >
-        0.95 ||
-      performance.cpu.usage > 0.95
+      memoryUsagePercent > 0.95 || // Memory usage over 95%
+      performance.cpu.usage > 95 || // CPU usage over 95%
+      performance.cpu.load[0] > 10 // High load average
     ) {
       return ErrorSeverity.CRITICAL;
     }
 
-    if (error instanceof DiscordAPIError) {
-      const code = Number(error.code);
-      if (isNaN(code)) return ErrorSeverity.LOW;
-      if ([50001, 50013, 50014, 40001, 40002].includes(code)) {
-        return ErrorSeverity.CRITICAL;
-      }
-      if ([50007, 50008, 50033, 50035].includes(code)) {
-        return ErrorSeverity.HIGH;
-      }
-      if ([50016, 50019, 50034].includes(code)) {
-        return ErrorSeverity.MEDIUM;
-      }
-    }
-
-    const errorKey = `${error.name}:${error.message}`;
-    const cached = this.errorCache.get(errorKey);
-    if (cached && cached.occurrences > 10) {
+    // Check for high performance issues
+    if (
+      memoryUsagePercent > 0.85 ||
+      performance.cpu.usage > 80 ||
+      performance.cpu.load[0] > 5
+    ) {
       return ErrorSeverity.HIGH;
     }
-    if (cached && cached.occurrences > 5) {
+
+    // Check error message for keywords suggesting severity
+    const errorMsg = error.message.toLowerCase();
+    if (
+      errorMsg.includes('critical') ||
+      errorMsg.includes('fatal') ||
+      errorMsg.includes('crash') ||
+      errorMsg.includes('corruption') ||
+      errorMsg.includes('permission denied') ||
+      errorMsg.includes('access violation')
+    ) {
+      return ErrorSeverity.CRITICAL;
+    }
+
+    if (
+      errorMsg.includes('failed') ||
+      errorMsg.includes('timeout') ||
+      errorMsg.includes('exception') ||
+      errorMsg.includes('invalid') ||
+      errorMsg.includes('unauthorized')
+    ) {
+      return ErrorSeverity.HIGH;
+    }
+
+    if (
+      errorMsg.includes('warning') ||
+      errorMsg.includes('deprecated') ||
+      errorMsg.includes('retry')
+    ) {
       return ErrorSeverity.MEDIUM;
     }
-    return ErrorSeverity.LOW;
+
+    // Default to MEDIUM severity for unknown errors
+    return ErrorSeverity.MEDIUM;
   }
 
-  private formatContext(context: ErrorContext): string {
-    if (!context) return 'No context available';
-    const sections: string[] = [];
-    if (context.command) {
-      sections.push(
-        `Command: ${context.command.name}${
-          context.command.args
-            ? ` (Args: ${context.command.args.join(', ')})`
-            : ''
-        }`,
-      );
-    }
-    if (context.user) {
-      sections.push(`User: ${context.user.tag} (${context.user.id})`);
-    }
-    if (context.guild) {
-      sections.push(`Guild: ${context.guild.name} (${context.guild.id})`);
-    }
-    if (context.channel) {
-      sections.push(
-        `Channel: ${context.channel.name} (${context.channel.id}, Type: ${context.channel.type})`,
-      );
-    }
-    return sections.length ? sections.join('\n') : 'No context available';
+  private generateErrorHash(error: Error, context: ErrorContext): string {
+    // Extract key components from the error for grouping
+    const errorName = error.name || 'Unknown';
+    const errorMessage = error.message || 'No message';
+
+    // Extract the most relevant part of the stack trace for grouping
+    // We'll use the first frame which likely points to our code
+    const stackLines = (error.stack || '').split('\n').slice(1, 3);
+    const stackSignature = stackLines
+      .map((line: string) => {
+        // Extract just the file path and line number, removing variable parts
+        const match = line.match(
+          /at\s+(?:\w+\.)?(\w+)\s+\(([^:]+):(\d+):(\d+)\)/,
+        );
+        if (match) {
+          const [, funcName, filePath, lineNum] = match;
+          // Use function name, file path, and approximate line number range (within 5 lines)
+          const lineRange = Math.floor(parseInt(lineNum, 10) / 5) * 5;
+          return `${funcName}@${filePath}#${lineRange}`;
+        }
+        return line.trim();
+      })
+      .join('|');
+
+    // Filter to include only relevant context keys
+    const relevantContextKeys = [
+      'command',
+      'channel',
+      'guild',
+      'interaction',
+      'module',
+    ];
+
+    // Include relevant context in the hash if available
+    const contextSignature = Object.entries(context)
+      .filter(([key]) => relevantContextKeys.includes(key))
+      .map(([key, value]) => {
+        // For objects, just use type/id, not the full object
+        if (typeof value === 'object' && value !== null) {
+          const objValue = value as { id?: string | number; name?: string };
+          return `${key}:${objValue.id || objValue.name || typeof value}`;
+        }
+        return `${key}:${String(value)}`;
+      })
+      .sort() // Sort for consistency
+      .join('&');
+
+    // If it's a Discord API error, include the code in the hash
+    const apiErrorCode =
+      error instanceof DiscordAPIError
+        ? `DiscordAPI:${(error as DiscordAPIError).code}:`
+        : '';
+
+    // Combine all components and create a hash
+    const hashInput = `${apiErrorCode}${errorName}:${errorMessage.substring(0, 100)}|${stackSignature}|${contextSignature}`;
+    return createHash('md5').update(hashInput).digest('hex');
   }
 
-  public destroy(): void {
-    if (this.webhook) {
-      this.webhook.destroy();
-      this.webhook = null;
-    }
-    if (this.metricsService) {
-      this.metricsService.destroy();
-      this.metricsService = null;
-    }
+  private capturePerformanceMetrics(): Promise<PerformanceMetrics> {
     if (this.performanceMonitor) {
-      this.performanceMonitor = null;
+      return this.performanceMonitor.captureMetrics();
     }
+
+    // Fallback if performance monitor is not available
+    return Promise.resolve({
+      memoryUsage: {
+        heapUsed: process.memoryUsage().heapUsed,
+        heapTotal: process.memoryUsage().heapTotal,
+        external: process.memoryUsage().external,
+      },
+      cpu: {
+        usage: 0, // Not available without the monitor
+        load: os.loadavg(),
+      },
+      uptime: process.uptime(),
+      responseTime: 0,
+    });
   }
 
-  public getErrorStats(): {
-    total: number;
-    byCategory: Record<string, number>;
-    bySeverity: Record<keyof typeof ErrorSeverity, number>;
-  } {
-    const stats = {
-      total: 0,
-      byCategory: {} as Record<string, number>,
-      bySeverity: {
-        [ErrorSeverity.LOW]: 0,
-        [ErrorSeverity.MEDIUM]: 0,
-        [ErrorSeverity.HIGH]: 0,
-        [ErrorSeverity.CRITICAL]: 0,
-      },
-    };
+  private async checkPerformance(): Promise<void> {
+    if (!this.performanceMonitor || !this.webhook) return;
 
-    for (const error of this.errorCache.values()) {
-      stats.total++;
-      const category = error.details.category;
-      const severity = error.details.severity;
-      stats.byCategory[category] = (stats.byCategory[category] || 0) + 1;
-      stats.bySeverity[severity]++;
+    try {
+      // Check for performance issues
+      const alerts = await this.performanceMonitor.checkThresholds();
+
+      if (alerts.length > 0) {
+        // Create a performance alert embed
+        const embed = new EmbedBuilder()
+          .setColor(0xff9900) // Orange for warnings
+          .setTitle('⚠️ Performance Alert')
+          .setDescription('The following performance issues were detected:')
+          .addFields({
+            name: 'Alerts',
+            value: alerts.map((alert) => `• ${alert}`).join('\n'),
+          });
+
+        // Add metrics data
+        const metrics = await this.performanceMonitor.captureMetrics();
+        const formattedMetrics =
+          MetricsFormatter.formatPerformanceMetrics(metrics);
+
+        embed.addFields({
+          name: 'Current Metrics',
+          value: `\`\`\`\n${formattedMetrics.substring(0, 1024)}\`\`\``,
+        });
+
+        // Send the performance alert
+        await this.webhook.send({ embeds: [embed] });
+      }
+    } catch (error) {
+      console.error('ErrorHandler: Error in checkPerformance:', error);
     }
-    return stats;
   }
 }
 

@@ -1,8 +1,9 @@
 import { ErrorHandler } from '../handlers/errorHandler';
 
 declare global {
-  type LocalCommand = import('./index').LocalCommand;
-  type LocalContextMenu = import('./index').LocalContextMenu;
+  // Import command types from our organized structure
+  type LocalCommand = import('./discord/commands').LocalCommand;
+  type LocalContextMenu = import('./discord/commands').LocalContextMenu;
 
   interface Window {
     errorHandler: ErrorHandler;

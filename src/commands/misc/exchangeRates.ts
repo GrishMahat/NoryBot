@@ -11,10 +11,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import emojiConfig from '../../config/emoji.js';
 import {
+  Currency,
+  CommonCurrency,
+  CurrencyConversion,
+  ExchangeRate,
   commonCurrencies,
   allCurrencies,
-  Currency,
-} from '../../types/currency.js';
+} from '../../types';
 
 const apiUrl =
   'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
@@ -44,7 +47,6 @@ const currencyCommand: LocalCommand = {
     )
     .addStringOption((option) =>
       option
-
         .setName('target_currency')
         .setDescription(
           'The currency you want to convert to (e.g., EUR,GBP,JPY)',
@@ -339,7 +341,7 @@ function getFlag(currency: string): string {
     JOD: '🇯🇴',
     KES: '🇰🇪',
     KGS: '🇰🇬',
-    KHR: '🇰🇭',
+    KHR: '🇰��',
     KMF: '🇰🇲',
     KPW: '🇰🇵',
     KWD: '🇰🇼',

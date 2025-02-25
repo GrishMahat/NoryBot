@@ -1,3 +1,8 @@
+/**
+ * @file Types related to Discord events
+ * @description Defines types for Discord event handlers and event registry
+ */
+
 import { Client, ClientEvents } from 'discord.js';
 
 /**

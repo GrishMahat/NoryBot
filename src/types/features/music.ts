@@ -1,3 +1,8 @@
+/**
+ * @file Types related to music playback
+ * @description Defines types for music player, tracks, and playback state
+ */
+
 import { VoiceChannel, Guild, GuildMember } from 'discord.js';
 
 /**
@@ -126,36 +131,34 @@ export interface MusicVisualizerOptions {
 }
 
 /**
- * Available music commands and their required permissions
+ * Available music commands
  */
-export const enum MusicCommand {
-  PLAY = 'play',
-  PAUSE = 'pause',
-  RESUME = 'resume',
-  SKIP = 'skip',
-  STOP = 'stop',
-  QUEUE = 'queue',
-  CLEAR = 'clear',
-  SHUFFLE = 'shuffle',
-  LOOP = 'loop',
-  VOLUME = 'volume',
-  NOW_PLAYING = 'nowplaying',
-  REMOVE = 'remove',
-  MOVE = 'move',
-  SEEK = 'seek',
-  LYRICS = 'lyrics',
-}
+export type MusicCommand =
+  | 'play'
+  | 'pause'
+  | 'resume'
+  | 'skip'
+  | 'stop'
+  | 'queue'
+  | 'clear'
+  | 'shuffle'
+  | 'loop'
+  | 'volume'
+  | 'nowplaying'
+  | 'remove'
+  | 'move'
+  | 'seek'
+  | 'lyrics';
 
 /**
  * Music command error types
  */
-export const enum MusicErrorType {
-  NO_VOICE_CHANNEL = 'NO_VOICE_CHANNEL',
-  NO_PERMISSIONS = 'NO_PERMISSIONS',
-  NOT_IN_SAME_CHANNEL = 'NOT_IN_SAME_CHANNEL',
-  NO_TRACK_PLAYING = 'NO_TRACK_PLAYING',
-  QUEUE_EMPTY = 'QUEUE_EMPTY',
-  TRACK_NOT_FOUND = 'TRACK_NOT_FOUND',
-  PLAYBACK_ERROR = 'PLAYBACK_ERROR',
-  INVALID_ARGUMENT = 'INVALID_ARGUMENT',
-}
+export type MusicErrorType =
+  | 'NO_VOICE_CHANNEL'
+  | 'NO_PERMISSIONS'
+  | 'NOT_IN_SAME_CHANNEL'
+  | 'NO_TRACK_PLAYING'
+  | 'QUEUE_EMPTY'
+  | 'TRACK_NOT_FOUND'
+  | 'PLAYBACK_ERROR'
+  | 'INVALID_ARGUMENT';

@@ -1,4 +1,4 @@
-import { PerformanceMetrics } from '../../types/error.js';
+import { PerformanceMetrics } from '../../types';
 
 export class MetricsFormatter {
   public static formatPerformanceMetrics(metrics: PerformanceMetrics): string {

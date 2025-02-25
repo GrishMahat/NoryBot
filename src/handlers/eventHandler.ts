@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import getAllFiles from '../utils/helpers/getAllFiles.js';
 import fs from 'fs/promises';
 import { Client, ClientEvents } from 'discord.js';
-import { EventInfo, EventRegistry, EventError } from '../types/events.js';
+import { EventInfo, EventRegistry, EventError } from '../types';
 import LRUCache from '../services/manager/LRUCache.js';
 import { isValidEventName } from '../utils/validators/isValidEventName.js';
 
