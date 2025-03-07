@@ -11,9 +11,8 @@ import {
 	AttachmentBuilder,
 	MessageFlags,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index.js';
+import { LocalCommand, QuoteResponse } from '../../types/index.js';
 import {
-	QuoteResponse,
 	generateQuoteImage,
 } from '../../services/image/generateQuoteImage.js';
 import emojiConfig from '../../config/emoji.js';

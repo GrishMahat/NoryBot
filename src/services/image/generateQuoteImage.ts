@@ -1,7 +1,7 @@
 import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from 'canvas';
 import { QuoteResponse } from '../../types/index.js';
 
-function validateInput(data: QuoteResponse): void {
+export function validateInput(data: QuoteResponse): void {
 	if (!data.quote || typeof data.quote !== 'string') {
 		throw new Error('Quote must be a non-empty string');
 	}
