@@ -3,26 +3,8 @@ import {
   createCanvas,
   CanvasRenderingContext2D as NodeCanvasRenderingContext2D,
 } from 'canvas';
+import { MusicImageOptions } from '../../types/index.js';
 
-interface ProgressBarOptions {
-  color?: string;
-  backgroundColor?: string;
-  borderColor?: string;
-  borderWidth?: number;
-  height?: number;
-}
-
-interface MusicImageOptions {
-  title: string | undefined;
-  artist: string | undefined;
-  album?: string;
-  image: string | undefined;
-  time: {
-    currentTime: number;
-    totalTime: number;
-  };
-  progressBar?: ProgressBarOptions;
-}
 
 /**
  * Validates that the time values are in an acceptable range.

@@ -3,13 +3,12 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   Client,
-  MessageFlags,
 } from 'discord.js';
 import axios from 'axios';
-import Pagination from '../../utils/helpers/Pagination.js';
+// import Pagination from '../../utils/helpers/Pagination.js';
 import {
   RedditListing,
-  RedditPostData,
+  // RedditPostData,
   RedditSortOption,
   RedditTimeOption,
 } from '../../types/index.js';
@@ -145,7 +144,7 @@ const redditCommand: LocalCommand = {
         embed.setDescription(truncatedText);
       }
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed]});
     } catch (error) {
       console.error('Error fetching from Reddit:', error);
       await interaction.editReply(

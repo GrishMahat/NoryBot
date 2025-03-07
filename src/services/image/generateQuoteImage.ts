@@ -1,18 +1,5 @@
 import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from 'canvas';
-
-export interface QuoteResponse {
-  quote: string;
-  author: string;
-  gradient?: {
-    type: 'linear' | 'radial';
-    colors?: string[];
-  };
-  pattern?: {
-    type: 'dots' | 'lines' | 'grid' | 'waves' | 'chevron';
-    opacity?: number;
-    scale?: number;
-  };
-}
+import { QuoteResponse } from '../../types/index.js'; 
 
 function validateInput(data: QuoteResponse): void {
   if (!data.quote || typeof data.quote !== 'string') {

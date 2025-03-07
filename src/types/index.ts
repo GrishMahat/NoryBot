@@ -9,6 +9,7 @@ export * from './discord/events.js';
 
 // Feature-specific types
 export * from './features/currency.js';
+export * from './features/image.js'
 
 // API-related types
 export * from './api/reddit.js';

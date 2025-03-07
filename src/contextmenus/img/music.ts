@@ -6,7 +6,7 @@ import {
   AttachmentBuilder,
   // MessageFlags,
 } from 'discord.js';
-import { generateMusicImage } from '../../services/img/musicImge.js';
+import { generateMusicImage } from '../../services/image/musicImge.js';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
   data: new ContextMenuCommandBuilder()
