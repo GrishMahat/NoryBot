@@ -21,49 +21,49 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * });
  */
 const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
-  const modals: Modal[] = [];
-  const modalDir = path.resolve(__dirname, '..', '..', 'modals');
+	const modals: Modal[] = [];
+	const modalDir = path.resolve(__dirname, '..', '..', 'modals');
 
-  // Retrieve all files in the 'modals' directory
-  const modalFiles = getAllFiles(modalDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
-  );
+	// Retrieve all files in the 'modals' directory
+	const modalFiles = getAllFiles(modalDir, false).filter(
+		(file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
+	);
 
-  // Iterate through each modal file
-  for (const modalFile of modalFiles) {
-    const modalFileURL = pathToFileURL(modalFile).href;
+	// Iterate through each modal file
+	for (const modalFile of modalFiles) {
+		const modalFileURL = pathToFileURL(modalFile).href;
 
-    try {
-      // Dynamically import the modal file
-      const importedModule = await import(modalFileURL);
-      const modalObject: Modal = importedModule.default;
+		try {
+			// Dynamically import the modal file
+			const importedModule = await import(modalFileURL);
+			const modalObject: Modal = importedModule.default;
 
-      // Validate the imported object
-      if (
-        !modalObject ||
-        typeof modalObject !== 'object' ||
-        !modalObject.customId ||
-        typeof modalObject.run !== 'function'
-      ) {
-        console.warn(
-          `Skipped importing ${modalFileURL} as it does not export a valid modal object.`,
-        );
-        continue;
-      }
+			// Validate the imported object
+			if (
+				!modalObject ||
+				typeof modalObject !== 'object' ||
+				!modalObject.customId ||
+				typeof modalObject.run !== 'function'
+			) {
+				console.warn(
+					`Skipped importing ${modalFileURL} as it does not export a valid modal object.`,
+				);
+				continue;
+			}
 
-      // Skip the modal if its customId is in the exceptions array
-      if (exceptions.includes(modalObject.customId)) continue;
+			// Skip the modal if its customId is in the exceptions array
+			if (exceptions.includes(modalObject.customId)) continue;
 
-      // Add the valid modal object to the modals array
-      modals.push(modalObject);
-    } catch (error) {
-      console.error(
-        `Failed to import ${modalFileURL}: ${(error as Error).message}`,
-      );
-    }
-  }
+			// Add the valid modal object to the modals array
+			modals.push(modalObject);
+		} catch (error) {
+			console.error(
+				`Failed to import ${modalFileURL}: ${(error as Error).message}`,
+			);
+		}
+	}
 
-  return modals;
+	return modals;
 };
 
 export default getModals;

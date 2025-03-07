@@ -4,6 +4,8 @@ dist
 *.min.js
 .vscode
 my
+package.json
+pnpm-lock.yaml
 docs
 .github
 *.md

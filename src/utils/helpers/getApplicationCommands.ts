@@ -1,8 +1,8 @@
 import {
-  Client,
-  GuildApplicationCommandManager,
-  ApplicationCommandManager,
-  ApplicationCommand,
+	Client,
+	GuildApplicationCommandManager,
+	ApplicationCommandManager,
+	ApplicationCommand,
 } from 'discord.js';
 
 /**
@@ -33,32 +33,32 @@ import {
  * Ensure that the client application is initialized before calling this function.
  */
 const fetchApplicationCommands = async (
-  client: Client,
-  guildId?: string,
+	client: Client,
+	guildId?: string,
 ): Promise<Array<ApplicationCommand>> => {
-  let applicationCommands:
-    | GuildApplicationCommandManager
-    | ApplicationCommandManager;
+	let applicationCommands:
+		| GuildApplicationCommandManager
+		| ApplicationCommandManager;
 
-  // Determine whether to fetch guild-specific or global commands
-  if (guildId) {
-    // Fetch the guild instance for the given guild ID
-    const guild = await client.guilds.fetch(guildId);
-    // Get the commands manager for the guild
-    applicationCommands = guild.commands;
-  } else {
-    // Ensure client.application is defined
-    if (!client.application) {
-      throw new Error('Client application is not initialized.');
-    }
-    // Fetch the global commands for the client's application
-    applicationCommands = client.application.commands;
-  }
+	// Determine whether to fetch guild-specific or global commands
+	if (guildId) {
+		// Fetch the guild instance for the given guild ID
+		const guild = await client.guilds.fetch(guildId);
+		// Get the commands manager for the guild
+		applicationCommands = guild.commands;
+	} else {
+		// Ensure client.application is defined
+		if (!client.application) {
+			throw new Error('Client application is not initialized.');
+		}
+		// Fetch the global commands for the client's application
+		applicationCommands = client.application.commands;
+	}
 
-  // Fetch the commands from the API and cache them
-  const fetchedCommands = await applicationCommands.fetch({});
-  // Return the fetched and cached commands as an array
-  return Array.from(fetchedCommands.values());
+	// Fetch the commands from the API and cache them
+	const fetchedCommands = await applicationCommands.fetch({});
+	// Return the fetched and cached commands as an array
+	return Array.from(fetchedCommands.values());
 };
 
 export default fetchApplicationCommands;

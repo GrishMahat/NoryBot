@@ -10,44 +10,44 @@ import path from 'path';
  * @returns {string[]} - An array of file paths.
  */
 const getAllFiles = (
-  directory: string,
-  foldersOnly: boolean = false,
+	directory: string,
+	foldersOnly: boolean = false,
 ): string[] => {
-  const stack: string[] = [directory];
-  const result: string[] = [];
+	const stack: string[] = [directory];
+	const result: string[] = [];
 
-  while (stack.length > 0) {
-    const currentPath = stack.pop();
-    if (!currentPath) continue;
+	while (stack.length > 0) {
+		const currentPath = stack.pop();
+		if (!currentPath) continue;
 
-    try {
-      const items = fs.readdirSync(currentPath, { withFileTypes: true });
+		try {
+			const items = fs.readdirSync(currentPath, { withFileTypes: true });
 
-      for (const item of items) {
-        const fullPath = path.join(currentPath, item.name);
+			for (const item of items) {
+				const fullPath = path.join(currentPath, item.name);
 
-        if (item.isDirectory()) {
-          stack.push(fullPath);
-          if (foldersOnly) {
-            result.push(fullPath);
-          }
-        } else if (!foldersOnly) {
-          // Only include .js and .ts files, but exclude .d.ts and .js.map files
-          if (
-            (item.name.endsWith('.js') || item.name.endsWith('.ts')) &&
-            !item.name.endsWith('.d.ts') &&
-            !item.name.endsWith('.js.map')
-          ) {
-            result.push(fullPath);
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`Error reading directory ${currentPath}:`.red, error);
-    }
-  }
+				if (item.isDirectory()) {
+					stack.push(fullPath);
+					if (foldersOnly) {
+						result.push(fullPath);
+					}
+				} else if (!foldersOnly) {
+					// Only include .js and .ts files, but exclude .d.ts and .js.map files
+					if (
+						(item.name.endsWith('.js') || item.name.endsWith('.ts')) &&
+						!item.name.endsWith('.d.ts') &&
+						!item.name.endsWith('.js.map')
+					) {
+						result.push(fullPath);
+					}
+				}
+			}
+		} catch (error) {
+			console.error(`Error reading directory ${currentPath}:`.red, error);
+		}
+	}
 
-  return result;
+	return result;
 };
 
 export default getAllFiles;

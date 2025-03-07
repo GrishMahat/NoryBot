@@ -1,9 +1,9 @@
 import 'colors';
 import {
-  ApplicationCommand,
-  Client,
-  ApplicationCommandType,
-  ApplicationCommandOptionData,
+	ApplicationCommand,
+	Client,
+	ApplicationCommandType,
+	ApplicationCommandOptionData,
 } from 'discord.js';
 import getLocalCommands from '../../utils/helpers/getLocalCommands.js';
 import getApplicationCommands from '../../utils/helpers/getApplicationCommands.js';
@@ -43,47 +43,47 @@ import { LocalCommand } from '../../types/index.js';
  */
 
 export default async (client: Client): Promise<void> => {
-  try {
-    const [localCommands, applicationCommands] = await Promise.all([
-      getLocalCommands(),
-      getApplicationCommands(client),
-    ]);
+	try {
+		const [localCommands, applicationCommands] = await Promise.all([
+			getLocalCommands(),
+			getApplicationCommands(client),
+		]);
 
-    if (!localCommands || !applicationCommands) {
-      throw new Error('Failed to fetch commands');
-    }
+		if (!localCommands || !applicationCommands) {
+			throw new Error('Failed to fetch commands');
+		}
 
-    const deletedCommands: string[] = [];
-    const updatedCommands: string[] = [];
-    const newCommands: string[] = [];
+		const deletedCommands: string[] = [];
+		const updatedCommands: string[] = [];
+		const newCommands: string[] = [];
 
-    await deleteUnusedCommands(
-      applicationCommands,
-      localCommands,
-      deletedCommands,
-    );
+		await deleteUnusedCommands(
+			applicationCommands,
+			localCommands,
+			deletedCommands,
+		);
 
-    await updateOrCreateCommands(
-      applicationCommands,
-      localCommands,
-      client,
-      updatedCommands,
-      newCommands,
-    );
+		await updateOrCreateCommands(
+			applicationCommands,
+			localCommands,
+			client,
+			updatedCommands,
+			newCommands,
+		);
 
-    logCommandChanges(
-      localCommands,
-      updatedCommands,
-      newCommands,
-      deletedCommands,
-    );
-  } catch (err: unknown) {
-    console.error(
-      `[${new Date().toISOString()}] Error during command sync: ${
-        err instanceof Error ? err.message : 'Unknown error'
-      }`.red,
-    );
-  }
+		logCommandChanges(
+			localCommands,
+			updatedCommands,
+			newCommands,
+			deletedCommands,
+		);
+	} catch (err: unknown) {
+		console.error(
+			`[${new Date().toISOString()}] Error during command sync: ${
+				err instanceof Error ? err.message : 'Unknown error'
+			}`.red,
+		);
+	}
 };
 
 /**
@@ -106,169 +106,169 @@ export default async (client: Client): Promise<void> => {
  */
 
 async function deleteUnusedCommands(
-  applicationCommands: ApplicationCommand[],
-  localCommands: LocalCommand[],
-  deletedCommands: string[],
+	applicationCommands: ApplicationCommand[],
+	localCommands: LocalCommand[],
+	deletedCommands: string[],
 ): Promise<void> {
-  const localCommandNames = new Set(
-    localCommands.map((cmd) => cmd.data?.name).filter(Boolean),
-  );
-  const commandsToDelete = applicationCommands.filter(
-    (cmd) =>
-      cmd.type === ApplicationCommandType.ChatInput &&
-      cmd.name &&
-      !localCommandNames.has(cmd.name),
-  );
+	const localCommandNames = new Set(
+		localCommands.map((cmd) => cmd.data?.name).filter(Boolean),
+	);
+	const commandsToDelete = applicationCommands.filter(
+		(cmd) =>
+			cmd.type === ApplicationCommandType.ChatInput &&
+			cmd.name &&
+			!localCommandNames.has(cmd.name),
+	);
 
-  await Promise.all(
-    commandsToDelete.map(async (cmd) => {
-      if (cmd.name) {
-        await cmd.delete();
-        deletedCommands.push(cmd.name);
-      }
-    }),
-  );
+	await Promise.all(
+		commandsToDelete.map(async (cmd) => {
+			if (cmd.name) {
+				await cmd.delete();
+				deletedCommands.push(cmd.name);
+			}
+		}),
+	);
 }
 
 async function updateOrCreateCommands(
-  applicationCommands: ApplicationCommand[],
-  localCommands: LocalCommand[],
-  client: Client,
-  updatedCommands: string[],
-  newCommands: string[],
+	applicationCommands: ApplicationCommand[],
+	localCommands: LocalCommand[],
+	client: Client,
+	updatedCommands: string[],
+	newCommands: string[],
 ): Promise<void> {
-  for (const [index, localCommand] of localCommands.entries()) {
-    try {
-      if (!localCommand || !localCommand.data || !localCommand.data.name) {
-        continue;
-      }
+	for (const [index, localCommand] of localCommands.entries()) {
+		try {
+			if (!localCommand || !localCommand.data || !localCommand.data.name) {
+				continue;
+			}
 
-      const { data } = localCommand;
-      const commandName = data.name;
+			const { data } = localCommand;
+			const commandName = data.name;
 
-      const existingCommand = applicationCommands.find(
-        (cmd) => cmd.name === commandName,
-      );
+			const existingCommand = applicationCommands.find(
+				(cmd) => cmd.name === commandName,
+			);
 
-      if (existingCommand) {
-        const isUpdated = await handleExistingCommand(
-          existingCommand,
-          localCommand,
-        );
-        if (isUpdated) updatedCommands.push(commandName);
-      } else {
-        await createCommand(client, data);
-        newCommands.push(commandName);
-      }
-    } catch (error: unknown) {
-      console.error(
-        `[${new Date().toISOString()}] Error processing command ${index + 1}: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`.red,
-      );
-    }
-  }
+			if (existingCommand) {
+				const isUpdated = await handleExistingCommand(
+					existingCommand,
+					localCommand,
+				);
+				if (isUpdated) updatedCommands.push(commandName);
+			} else {
+				await createCommand(client, data);
+				newCommands.push(commandName);
+			}
+		} catch (error: unknown) {
+			console.error(
+				`[${new Date().toISOString()}] Error processing command ${index + 1}: ${
+					error instanceof Error ? error.message : 'Unknown error'
+				}`.red,
+			);
+		}
+	}
 }
 
 async function handleExistingCommand(
-  existingCommand: ApplicationCommand,
-  localCommand: LocalCommand,
+	existingCommand: ApplicationCommand,
+	localCommand: LocalCommand,
 ): Promise<boolean> {
-  const needsUpdate = compareCommands(existingCommand, localCommand);
+	const needsUpdate = compareCommands(existingCommand, localCommand);
 
-  if (needsUpdate) {
-    try {
-      await existingCommand.edit({
-        name: localCommand.data.name,
-        description: localCommand.data.description ?? '',
-        contexts: localCommand.data.contexts ?? [0, 1],
-        integrationTypes: localCommand.data.integration_types ?? [0, 1],
-        options:
-          (localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
-      });
+	if (needsUpdate) {
+		try {
+			await existingCommand.edit({
+				name: localCommand.data.name,
+				description: localCommand.data.description ?? '',
+				contexts: localCommand.data.contexts ?? [0, 1],
+				integrationTypes: localCommand.data.integration_types ?? [0, 1],
+				options:
+					(localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
+			});
 
-      return true;
-    } catch (error: unknown) {
-      console.error(
-        `[${new Date().toISOString()}] Error updating command ${
-          localCommand.data.name
-        }: ${error instanceof Error ? error.message : 'Unknown error'}`.red,
-      );
-      return false;
-    }
-  }
-  return false;
+			return true;
+		} catch (error: unknown) {
+			console.error(
+				`[${new Date().toISOString()}] Error updating command ${
+					localCommand.data.name
+				}: ${error instanceof Error ? error.message : 'Unknown error'}`.red,
+			);
+			return false;
+		}
+	}
+	return false;
 }
 
 async function createCommand(
-  client: Client,
-  data: LocalCommand['data'],
+	client: Client,
+	data: LocalCommand['data'],
 ): Promise<void> {
-  if (!data || !data.name) {
-    return;
-  }
+	if (!data || !data.name) {
+		return;
+	}
 
-  try {
-    await client.application?.commands.create({
-      name: data.name,
-      description: data.description ?? '',
-      contexts: data.contexts ?? [0, 1],
-      integrationTypes: data.integration_types ?? [0, 1],
-      options: (data.options as ApplicationCommandOptionData[]) ?? [],
-    });
-  } catch (err: unknown) {
-    console.error(
-      `[${new Date().toISOString()}] Failed to create command ${data.name}: ${
-        err instanceof Error ? err.message : 'Unknown error'
-      }`.red,
-    );
-  }
+	try {
+		await client.application?.commands.create({
+			name: data.name,
+			description: data.description ?? '',
+			contexts: data.contexts ?? [0, 1],
+			integrationTypes: data.integration_types ?? [0, 1],
+			options: (data.options as ApplicationCommandOptionData[]) ?? [],
+		});
+	} catch (err: unknown) {
+		console.error(
+			`[${new Date().toISOString()}] Failed to create command ${data.name}: ${
+				err instanceof Error ? err.message : 'Unknown error'
+			}`.red,
+		);
+	}
 }
 
 function logCommandChanges(
-  localCommands: LocalCommand[],
-  updatedCommands: string[],
-  newCommands: string[],
-  deletedCommands: string[],
+	localCommands: LocalCommand[],
+	updatedCommands: string[],
+	newCommands: string[],
+	deletedCommands: string[],
 ): void {
-  const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
-  const footer = '╚══════════════════════════════════════════════════════╝'
-    .cyan;
-  const divider = '╟──────────────────────────────────────────────────────╢'
-    .cyan;
+	const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
+	const footer = '╚══════════════════════════════════════════════════════╝'
+		.cyan;
+	const divider = '╟──────────────────────────────────────────────────────╢'
+		.cyan;
 
-  console.log(header);
-  console.log(
-    `║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`
-      .cyan,
-  );
+	console.log(header);
+	console.log(
+		`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`
+			.cyan,
+	);
 
-  if (updatedCommands.length || newCommands.length || deletedCommands.length) {
-    console.log(divider);
-  }
+	if (updatedCommands.length || newCommands.length || deletedCommands.length) {
+		console.log(divider);
+	}
 
-  if (updatedCommands.length) {
-    console.log(`║ Updated Commands:${' '.repeat(34)} ║`.cyan);
-    updatedCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan),
-    );
-  }
+	if (updatedCommands.length) {
+		console.log(`║ Updated Commands:${' '.repeat(34)} ║`.cyan);
+		updatedCommands.forEach((cmd) =>
+			console.log(`║   • ${cmd.yellow}${' '.repeat(45 - cmd.length)} ║`.cyan),
+		);
+	}
 
-  if (newCommands.length) {
-    if (updatedCommands.length) console.log(divider);
-    console.log(`║ New Commands:${' '.repeat(37)} ║`.cyan);
-    newCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan),
-    );
-  }
+	if (newCommands.length) {
+		if (updatedCommands.length) console.log(divider);
+		console.log(`║ New Commands:${' '.repeat(37)} ║`.cyan);
+		newCommands.forEach((cmd) =>
+			console.log(`║   • ${cmd.green}${' '.repeat(45 - cmd.length)} ║`.cyan),
+		);
+	}
 
-  if (deletedCommands.length) {
-    if (updatedCommands.length || newCommands.length) console.log(divider);
-    console.log(`║ Deleted Commands:${' '.repeat(34)} ║`.cyan);
-    deletedCommands.forEach((cmd) =>
-      console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan),
-    );
-  }
+	if (deletedCommands.length) {
+		if (updatedCommands.length || newCommands.length) console.log(divider);
+		console.log(`║ Deleted Commands:${' '.repeat(34)} ║`.cyan);
+		deletedCommands.forEach((cmd) =>
+			console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan),
+		);
+	}
 
-  console.log(footer);
+	console.log(footer);
 }

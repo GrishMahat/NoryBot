@@ -31,63 +31,63 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * Ensure that the command file exports a default object with a 'name' property.
  */
 async function importCommandFile(
-  commandFile: string,
-  exceptions: string[],
+	commandFile: string,
+	exceptions: string[],
 ): Promise<LocalCommand | null> {
-  try {
-    const commandFileURL = pathToFileURL(commandFile).href;
-    const commandModule = await import(commandFileURL);
+	try {
+		const commandFileURL = pathToFileURL(commandFile).href;
+		const commandModule = await import(commandFileURL);
 
-    if (!commandModule?.default) {
-      console.error(
-        `Command module at ${commandFile} is missing a default export.`,
-      );
-      return null;
-    }
+		if (!commandModule?.default) {
+			console.error(
+				`Command module at ${commandFile} is missing a default export.`,
+			);
+			return null;
+		}
 
-    const commandObject: LocalCommand = commandModule.default;
+		const commandObject: LocalCommand = commandModule.default;
 
-    // Validate the command file by checking if it exports a default object with a 'name' property.
-    if (!commandObject?.data?.name) {
-      throw new Error(
-        `Command file ${commandFile} is invalid or missing a 'name' property.`,
-      );
-    }
+		// Validate the command file by checking if it exports a default object with a 'name' property.
+		if (!commandObject?.data?.name) {
+			throw new Error(
+				`Command file ${commandFile} is invalid or missing a 'name' property.`,
+			);
+		}
 
-    // Check if the command name is in the list of exceptions provided.
-    if (exceptions.includes(commandObject.data.name)) {
-      throw new Error(
-        `Command ${commandObject.data.name} is in the exception list.`,
-      );
-    }
+		// Check if the command name is in the list of exceptions provided.
+		if (exceptions.includes(commandObject.data.name)) {
+			throw new Error(
+				`Command ${commandObject.data.name} is in the exception list.`,
+			);
+		}
 
-    return commandObject;
-  } catch (error) {
-    console.error(`Failed to import command file ${commandFile}:`, error);
-    return null;
-  }
+		return commandObject;
+	} catch (error) {
+		console.error(`Failed to import command file ${commandFile}:`, error);
+		return null;
+	}
 }
 
 export default async function loadCommands(
-  exceptions: string[] = [],
+	exceptions: string[] = [],
 ): Promise<LocalCommand[]> {
-  const commands: LocalCommand[] = [];
+	const commands: LocalCommand[] = [];
 
-  // Update path to point to the src/commands directory
-  const commandsPath = path.join(__dirname, '..', '..', 'commands');
+	// Update path to point to the src/commands directory
+	const commandsPath = path.join(__dirname, '..', '..', 'commands');
 
-  try {
-    const commandFiles = getAllFiles(commandsPath);
+	try {
+		const commandFiles = getAllFiles(commandsPath);
 
-    for (const commandFile of commandFiles) {
-      const command = await importCommandFile(commandFile, exceptions);
-      if (command) {
-        commands.push(command);
-      }
-    }
-  } catch (error) {
-    console.error('Error loading commands:'.red, error);
-  }
+		for (const commandFile of commandFiles) {
+			const command = await importCommandFile(commandFile, exceptions);
+			if (command) {
+				commands.push(command);
+			}
+		}
+	} catch (error) {
+		console.error('Error loading commands:'.red, error);
+	}
 
-  return commands;
+	return commands;
 }

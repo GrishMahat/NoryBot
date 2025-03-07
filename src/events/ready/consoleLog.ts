@@ -3,9 +3,9 @@ import { Client } from 'discord.js';
 import { MongoService } from '../../database/services/MongoService.js';
 
 const SEPARATOR = {
-  DOUBLE: '═',
-  SINGLE: '─',
-  LENGTH: 60,
+	DOUBLE: '═',
+	SINGLE: '─',
+	LENGTH: 60,
 };
 
 /**
@@ -22,10 +22,10 @@ const SEPARATOR = {
  * @property {'connected' | 'disconnected'} dbStatus - Current database connection status
  */
 interface LogConfig {
-  botName: string;
-  serverCount: number;
-  userCount: number;
-  dbStatus: 'connected' | 'disconnected' | 'connecting';
+	botName: string;
+	serverCount: number;
+	userCount: number;
+	dbStatus: 'connected' | 'disconnected' | 'connecting';
 }
 
 /**
@@ -35,29 +35,29 @@ interface LogConfig {
  * @throws {Error} May throw if console output fails
  */
 const formatLogOutput = (config: LogConfig): void => {
-  const header = `╔${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╗`.cyan;
-  const footer = `╚${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╝`.cyan;
-  const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
+	const header = `╔${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╗`.cyan;
+	const footer = `╚${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╝`.cyan;
+	const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
 
-  console.log(header);
-  console.log(
-    `║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`
-      .cyan,
-  );
-  console.log(divider);
-  console.log(
-    `║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`
-      .cyan,
-  );
-  console.log(
-    `║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`
-      .cyan,
-  );
-  console.log(
-    `║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`
-      .cyan,
-  );
-  console.log(footer);
+	console.log(header);
+	console.log(
+		`║ ${config.botName} is now ${'ONLINE'.green.bold}${' '.repeat(SEPARATOR.LENGTH - config.botName.length - 11)} ║`
+			.cyan,
+	);
+	console.log(divider);
+	console.log(
+		`║ Servers  : ${config.serverCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.serverCount.toString().length)} ║`
+			.cyan,
+	);
+	console.log(
+		`║ Users    : ${config.userCount.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 12 - config.userCount.toString().length)} ║`
+			.cyan,
+	);
+	console.log(
+		`║ Database : ${config.dbStatus === 'connected' ? 'Connected'.green : 'Connection failed'.red}${' '.repeat(SEPARATOR.LENGTH - (config.dbStatus === 'connected' ? 21 : 29))} ║`
+			.cyan,
+	);
+	console.log(footer);
 };
 
 /**
@@ -68,45 +68,45 @@ const formatLogOutput = (config: LogConfig): void => {
  * @returns {Promise<void>} Resolves when logging is complete
  */
 const consoleLog = async (client: Client): Promise<void> => {
-  try {
-    const mongoService = MongoService.getInstance();
-    const dbStatus: 'connected' | 'disconnected' | 'connecting' = 'connecting';
+	try {
+		const mongoService = MongoService.getInstance();
+		const dbStatus: 'connected' | 'disconnected' | 'connecting' = 'connecting';
 
-    const logConfig: LogConfig = {
-      botName: client.user?.username ?? 'Bot',
-      serverCount: client.guilds.cache.size,
-      userCount: client.users.cache.size,
-      dbStatus,
-    };
+		const logConfig: LogConfig = {
+			botName: client.user?.username ?? 'Bot',
+			serverCount: client.guilds.cache.size,
+			userCount: client.users.cache.size,
+			dbStatus,
+		};
 
-    try {
-      await mongoService.connect();
-      logConfig.dbStatus = 'connected';
-    } catch (error) {
-      await global.errorHandler.handleError(error, 'DatabaseConnectionError');
-      logConfig.dbStatus = 'disconnected';
-    }
+		try {
+			await mongoService.connect();
+			logConfig.dbStatus = 'connected';
+		} catch (error) {
+			await global.errorHandler.handleError(error, 'DatabaseConnectionError');
+			logConfig.dbStatus = 'disconnected';
+		}
 
-    formatLogOutput(logConfig);
+		formatLogOutput(logConfig);
 
-    // Setup MongoDB event listeners
-    mongoService.on('error', async (error) => {
-      await global.errorHandler.handleError(error, 'MongoDBError');
-    });
+		// Setup MongoDB event listeners
+		mongoService.on('error', async (error) => {
+			await global.errorHandler.handleError(error, 'MongoDBError');
+		});
 
-    mongoService.on('disconnected', () => {
-      console.log('MongoDB connection lost. Attempting to reconnect...'.yellow);
-    });
+		mongoService.on('disconnected', () => {
+			console.log('MongoDB connection lost. Attempting to reconnect...'.yellow);
+		});
 
-    mongoService.on('maxReconnectAttemptsReached', async () => {
-      await global.errorHandler.handleError(
-        new Error('Max MongoDB reconnection attempts reached'),
-        'MongoDBMaxReconnectError',
-      );
-    });
-  } catch (error) {
-    await global.errorHandler.handleError(error, 'ConsoleLogError');
-  }
+		mongoService.on('maxReconnectAttemptsReached', async () => {
+			await global.errorHandler.handleError(
+				new Error('Max MongoDB reconnection attempts reached'),
+				'MongoDBMaxReconnectError',
+			);
+		});
+	} catch (error) {
+		await global.errorHandler.handleError(error, 'ConsoleLogError');
+	}
 };
 
 export default consoleLog;

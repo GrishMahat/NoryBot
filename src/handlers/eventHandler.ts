@@ -21,13 +21,13 @@ const __dirname: string = path.dirname(__filename);
  * @type {LRUCache<string, EventInfo>}
  */
 const eventModuleCache = new LRUCache<string, EventInfo>({
-  capacity: 500,
-  defaultTTL: 3600000, // 1 hour
-  cleanupIntervalMs: 300000, // 5 minutes
-  evictionPolicy: 'LRU',
-  onExpiry: (key): void => {
-    console.log(`Event module cache expired: ${key} `.yellow);
-  },
+	capacity: 500,
+	defaultTTL: 3600000, // 1 hour
+	cleanupIntervalMs: 300000, // 5 minutes
+	evictionPolicy: 'LRU',
+	onExpiry: (key): void => {
+		console.log(`Event module cache expired: ${key} `.yellow);
+	},
 });
 
 /**
@@ -37,13 +37,13 @@ const eventModuleCache = new LRUCache<string, EventInfo>({
  * @param {EventInfo} eventInfo - Information about the event handler
  */
 const registerEvent = (
-  eventRegistry: EventRegistry,
-  eventName: keyof ClientEvents,
-  eventInfo: EventInfo,
+	eventRegistry: EventRegistry,
+	eventName: keyof ClientEvents,
+	eventInfo: EventInfo,
 ): void => {
-  const events = eventRegistry.get(eventName) ?? [];
-  events.push(eventInfo);
-  eventRegistry.set(eventName, events);
+	const events = eventRegistry.get(eventName) ?? [];
+	events.push(eventInfo);
+	eventRegistry.set(eventName, events);
 };
 
 /**
@@ -54,35 +54,35 @@ const registerEvent = (
  * @throws {EventError} When the event file cannot be loaded or is invalid
  */
 const loadEventFile = async (
-  eventFile: string,
-  eventName: keyof ClientEvents,
-  eventRegistry: EventRegistry,
+	eventFile: string,
+	eventName: keyof ClientEvents,
+	eventRegistry: EventRegistry,
 ): Promise<void> => {
-  try {
-    const cachedEvent = eventModuleCache.get(eventFile);
-    if (cachedEvent) {
-      registerEvent(eventRegistry, eventName, cachedEvent);
-      return;
-    }
+	try {
+		const cachedEvent = eventModuleCache.get(eventFile);
+		if (cachedEvent) {
+			registerEvent(eventRegistry, eventName, cachedEvent);
+			return;
+		}
 
-    const fileUrl = pathToFileURL(eventFile).href;
-    const { default: eventFunction } = await import(fileUrl);
+		const fileUrl = pathToFileURL(eventFile).href;
+		const { default: eventFunction } = await import(fileUrl);
 
-    if (typeof eventFunction !== 'function') {
-      throw new EventError('Invalid event handler', { eventFile });
-    }
+		if (typeof eventFunction !== 'function') {
+			throw new EventError('Invalid event handler', { eventFile });
+		}
 
-    const eventInfo: EventInfo = {
-      function: eventFunction,
-      fileName: path.basename(eventFile),
-      priority: eventFunction.priority ?? 0,
-    };
+		const eventInfo: EventInfo = {
+			function: eventFunction,
+			fileName: path.basename(eventFile),
+			priority: eventFunction.priority ?? 0,
+		};
 
-    eventModuleCache.set(eventFile, eventInfo);
-    registerEvent(eventRegistry, eventName, eventInfo);
-  } catch (error) {
-    await global.errorHandler.handleError(error, 'EventFileLoadError');
-  }
+		eventModuleCache.set(eventFile, eventInfo);
+		registerEvent(eventRegistry, eventName, eventInfo);
+	} catch (error) {
+		await global.errorHandler.handleError(error, 'EventFileLoadError');
+	}
 };
 
 /**
@@ -92,43 +92,43 @@ const loadEventFile = async (
  * @throws {EventError} When the folder cannot be processed
  */
 const processEventFolder = async (
-  eventFolder: string,
-  eventRegistry: EventRegistry,
+	eventFolder: string,
+	eventRegistry: EventRegistry,
 ): Promise<void> => {
-  try {
-    const files = await fs.readdir(eventFolder);
-    const folderName = path.basename(eventFolder);
-    const eventName =
-      folderName === 'validations' ? 'interactionCreate' : folderName;
+	try {
+		const files = await fs.readdir(eventFolder);
+		const folderName = path.basename(eventFolder);
+		const eventName =
+			folderName === 'validations' ? 'interactionCreate' : folderName;
 
-    // Validate event name is a valid Discord.js event
-    if (!isValidEventName(eventName)) {
-      throw new EventError(`Invalid event name: ${eventName}`, {
-        eventFolder,
-      });
-    }
+		// Validate event name is a valid Discord.js event
+		if (!isValidEventName(eventName)) {
+			throw new EventError(`Invalid event name: ${eventName}`, {
+				eventFolder,
+			});
+		}
 
-    const eventFiles = files.filter(
-      (file) =>
-        /\.(js|ts)$/.test(file) &&
-        !file.endsWith('.d.ts') &&
-        !file.endsWith('.js.map'),
-    );
+		const eventFiles = files.filter(
+			(file) =>
+				/\.(js|ts)$/.test(file) &&
+				!file.endsWith('.d.ts') &&
+				!file.endsWith('.js.map'),
+		);
 
-    await Promise.all(
-      eventFiles.map((file) =>
-        loadEventFile(
-          path.join(eventFolder, file),
-          eventName as keyof ClientEvents,
-          eventRegistry,
-        ).catch(async (error) => {
-          await global.errorHandler.handleError(error, 'EventFileProcessError');
-        }),
-      ),
-    );
-  } catch (error) {
-    await global.errorHandler.handleError(error, 'EventFolderProcessError');
-  }
+		await Promise.all(
+			eventFiles.map((file) =>
+				loadEventFile(
+					path.join(eventFolder, file),
+					eventName as keyof ClientEvents,
+					eventRegistry,
+				).catch(async (error) => {
+					await global.errorHandler.handleError(error, 'EventFileProcessError');
+				}),
+			),
+		);
+	} catch (error) {
+		await global.errorHandler.handleError(error, 'EventFolderProcessError');
+	}
 };
 
 /**
@@ -144,52 +144,52 @@ const processEventFolder = async (
  * 4. Sets up error handling for each event handler
  */
 const loadEventHandlers = async (client: Client): Promise<void> => {
-  const eventRegistry: EventRegistry = new Map();
-  const loadedEvents = new Set<keyof ClientEvents>();
+	const eventRegistry: EventRegistry = new Map();
+	const loadedEvents = new Set<keyof ClientEvents>();
 
-  try {
-    const eventFolders = getAllFiles(
-      path.join(__dirname, '..', 'events'),
-      true,
-    );
+	try {
+		const eventFolders = getAllFiles(
+			path.join(__dirname, '..', 'events'),
+			true,
+		);
 
-    await Promise.all(
-      eventFolders.map((folder) => processEventFolder(folder, eventRegistry)),
-    );
+		await Promise.all(
+			eventFolders.map((folder) => processEventFolder(folder, eventRegistry)),
+		);
 
-    for (const [eventName, handlers] of eventRegistry.entries()) {
-      const typedEventName = eventName as keyof ClientEvents;
-      if (loadedEvents.has(typedEventName)) continue;
+		for (const [eventName, handlers] of eventRegistry.entries()) {
+			const typedEventName = eventName as keyof ClientEvents;
+			if (loadedEvents.has(typedEventName)) continue;
 
-      handlers.sort((a, b) => b.priority - a.priority);
+			handlers.sort((a, b) => b.priority - a.priority);
 
-      client.on(typedEventName, async (...args) => {
-        for (const { function: handler, fileName } of handlers) {
-          try {
-            await Promise.resolve(handler(client, ...args));
-          } catch (error) {
-            await global.errorHandler.handleError(
-              error,
-              'EventHandlerExecutionError',
-              {
-                eventName: typedEventName,
-                fileName,
-                handler: handler.name,
-              },
-            );
-          }
-        }
-      });
+			client.on(typedEventName, async (...args) => {
+				for (const { function: handler, fileName } of handlers) {
+					try {
+						await Promise.resolve(handler(client, ...args));
+					} catch (error) {
+						await global.errorHandler.handleError(
+							error,
+							'EventHandlerExecutionError',
+							{
+								eventName: typedEventName,
+								fileName,
+								handler: handler.name,
+							},
+						);
+					}
+				}
+			});
 
-      loadedEvents.add(typedEventName);
-    }
-  } catch (error) {
-    await global.errorHandler.handleError(error, 'EventHandlerSetupError');
-  }
+			loadedEvents.add(typedEventName);
+		}
+	} catch (error) {
+		await global.errorHandler.handleError(error, 'EventHandlerSetupError');
+	}
 };
 
 export const cleanup = (): void => {
-  eventModuleCache.close();
+	eventModuleCache.close();
 };
 
 export default loadEventHandlers;

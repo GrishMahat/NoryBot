@@ -31,62 +31,62 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * Ensure that the command file exports a default object with a 'name' property.
  */
 async function importCommandFile(
-  commandFile: string,
-  exceptions: string[],
+	commandFile: string,
+	exceptions: string[],
 ): Promise<LocalContextMenu | null> {
-  try {
-    const commandFileURL = pathToFileURL(commandFile).href;
-    const commandModule = await import(commandFileURL);
+	try {
+		const commandFileURL = pathToFileURL(commandFile).href;
+		const commandModule = await import(commandFileURL);
 
-    if (!commandModule?.default) {
-      console.error(
-        `Context menu module at ${commandModule} is missing a default export.`,
-      );
-      return null;
-    }
+		if (!commandModule?.default) {
+			console.error(
+				`Context menu module at ${commandModule} is missing a default export.`,
+			);
+			return null;
+		}
 
-    const commandObject: LocalContextMenu = commandModule.default;
+		const commandObject: LocalContextMenu = commandModule.default;
 
-    // Validate the command file by checking if it exports a default object with a 'name' property.
-    if (!commandObject?.data?.name) {
-      throw new Error(
-        `Context menu file ${commandFile} is invalid or missing a 'name' property.`,
-      );
-    }
+		// Validate the command file by checking if it exports a default object with a 'name' property.
+		if (!commandObject?.data?.name) {
+			throw new Error(
+				`Context menu file ${commandFile} is invalid or missing a 'name' property.`,
+			);
+		}
 
-    // Check if the command name is in the list of exceptions provided.
-    if (exceptions.includes(commandObject.data.name)) {
-      throw new Error(
-        `Context menu ${commandObject.data.name} is in the exception list.`,
-      );
-    }
+		// Check if the command name is in the list of exceptions provided.
+		if (exceptions.includes(commandObject.data.name)) {
+			throw new Error(
+				`Context menu ${commandObject.data.name} is in the exception list.`,
+			);
+		}
 
-    return commandObject;
-  } catch (error) {
-    console.error(`Failed to import Context menu file ${commandFile}:`, error);
-    return null;
-  }
+		return commandObject;
+	} catch (error) {
+		console.error(`Failed to import Context menu file ${commandFile}:`, error);
+		return null;
+	}
 }
 
 export default async function loadCommands(
-  exceptions: string[] = [],
+	exceptions: string[] = [],
 ): Promise<LocalContextMenu[]> {
-  const commandsDir = path.resolve(__dirname, '..', '..', 'contextmenus');
-  const allCommandFiles = getAllFiles(commandsDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter out files that do not end with '.js' or '.ts'
-  );
+	const commandsDir = path.resolve(__dirname, '..', '..', 'contextmenus');
+	const allCommandFiles = getAllFiles(commandsDir, false).filter(
+		(file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter out files that do not end with '.js' or '.ts'
+	);
 
-  const commands: LocalContextMenu[] = [];
-  for (const file of allCommandFiles) {
-    try {
-      const command = await importCommandFile(file, exceptions);
-      if (command) {
-        commands.push(command);
-      }
-    } catch (error) {
-      console.error(`Error processing command file ${file}:`, error);
-    }
-  }
+	const commands: LocalContextMenu[] = [];
+	for (const file of allCommandFiles) {
+		try {
+			const command = await importCommandFile(file, exceptions);
+			if (command) {
+				commands.push(command);
+			}
+		} catch (error) {
+			console.error(`Error processing command file ${file}:`, error);
+		}
+	}
 
-  return commands;
+	return commands;
 }

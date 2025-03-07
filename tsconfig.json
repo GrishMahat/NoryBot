@@ -1,46 +1,46 @@
 {
-  "compilerOptions": {
-    // Module settings for Node.js ESM
-    "target": "ES2022",
-    "module": "node16",
-    "moduleResolution": "NodeNext",
-    "moduleDetection": "force",
+	"compilerOptions": {
+		// Module settings for Node.js ESM
+		"target": "ES2022",
+		"module": "node16",
+		"moduleResolution": "NodeNext",
+		"moduleDetection": "force",
 
-    // "allowJs": true,
+		// "allowJs": true,
 
-    // Output configuration
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "declaration": true,
-    "sourceMap": true,
-    "removeComments": true,
-    "incremental": true,
+		// Output configuration
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"declaration": true,
+		"sourceMap": true,
+		"removeComments": true,
+		"incremental": true,
 
-    // Decorator support
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+		// Decorator support
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
 
-    // Type checking and safety
-    "strict": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
+		// Type checking and safety
+		"strict": true,
+		"strictNullChecks": false,
+		"noImplicitAny": false,
+		"strictBindCallApply": false,
+		"noFallthroughCasesInSwitch": false,
 
-    // Module resolution and imports
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
+		// Module resolution and imports
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
 
-    // Type definitions
-    "typeRoots": ["./node_modules/@types"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
+		// Type definitions
+		"typeRoots": ["./node_modules/@types"],
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
 
-  "include": ["src/**/*.ts", "src/types/global.d.ts", "src/**/*.json"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+	"include": ["src/**/*.ts", "src/types/global.d.ts", "src/**/*.json"],
+	"exclude": ["node_modules", "**/*.spec.ts"]
 }

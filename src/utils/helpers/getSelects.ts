@@ -21,51 +21,51 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * });
  */
 const importSelectMenus = async (
-  exceptions: string[] = [],
+	exceptions: string[] = [],
 ): Promise<SelectMenu[]> => {
-  const selectMenus: SelectMenu[] = [];
-  const selectMenuDir = path.resolve(__dirname, '..', '..', 'selects');
+	const selectMenus: SelectMenu[] = [];
+	const selectMenuDir = path.resolve(__dirname, '..', '..', 'selects');
 
-  // Retrieve all files in the 'selects' directory
-  const selectMenuFiles = getAllFiles(selectMenuDir, false).filter(
-    (file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
-  );
+	// Retrieve all files in the 'selects' directory
+	const selectMenuFiles = getAllFiles(selectMenuDir, false).filter(
+		(file) => file.endsWith('.js') || file.endsWith('.ts'), // Filter by JS or TS files
+	);
 
-  // Iterate through each select menu file
-  for (const selectMenuFile of selectMenuFiles) {
-    const selectMenuFileURL = pathToFileURL(selectMenuFile).href;
+	// Iterate through each select menu file
+	for (const selectMenuFile of selectMenuFiles) {
+		const selectMenuFileURL = pathToFileURL(selectMenuFile).href;
 
-    try {
-      // Dynamically import the select menu file
-      const importedModule = await import(selectMenuFileURL);
-      const selectMenuObject: SelectMenu = importedModule.default;
+		try {
+			// Dynamically import the select menu file
+			const importedModule = await import(selectMenuFileURL);
+			const selectMenuObject: SelectMenu = importedModule.default;
 
-      // Validate the imported object
-      if (
-        !selectMenuObject ||
-        typeof selectMenuObject !== 'object' ||
-        !selectMenuObject.customId ||
-        typeof selectMenuObject.run !== 'function'
-      ) {
-        console.warn(
-          `Skipped importing ${selectMenuFileURL} as it does not export a valid select menu object.`,
-        );
-        continue;
-      }
+			// Validate the imported object
+			if (
+				!selectMenuObject ||
+				typeof selectMenuObject !== 'object' ||
+				!selectMenuObject.customId ||
+				typeof selectMenuObject.run !== 'function'
+			) {
+				console.warn(
+					`Skipped importing ${selectMenuFileURL} as it does not export a valid select menu object.`,
+				);
+				continue;
+			}
 
-      // Skip the select menu if its customId is in the exceptions array
-      if (exceptions.includes(selectMenuObject.customId)) continue;
+			// Skip the select menu if its customId is in the exceptions array
+			if (exceptions.includes(selectMenuObject.customId)) continue;
 
-      // Add the valid select menu object to the selectMenus array
-      selectMenus.push(selectMenuObject);
-    } catch (error) {
-      console.error(
-        `Failed to import ${selectMenuFileURL}: ${(error as Error).message}`,
-      );
-    }
-  }
+			// Add the valid select menu object to the selectMenus array
+			selectMenus.push(selectMenuObject);
+		} catch (error) {
+			console.error(
+				`Failed to import ${selectMenuFileURL}: ${(error as Error).message}`,
+			);
+		}
+	}
 
-  return selectMenus;
+	return selectMenus;
 };
 
 export default importSelectMenus;
