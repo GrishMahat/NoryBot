@@ -49,7 +49,9 @@ const facepalmCommand: LocalCommand = {
       const img = await new DIG.Facepalm().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'facepalm.png' });
+      const attachment = new AttachmentBuilder(img, {
+        name: 'facepalm.png',
+      });
 
       const embed = new EmbedBuilder()
         .setColor('#FFA500')

@@ -1,8 +1,14 @@
 {
   "name": "nory-bot",
+  "description": "bot made for fun",
   "version": "0.1.0",
   "main": "dist/index.js",
   "type": "module",
+  "keywords": [
+    "discord",
+    "bot",
+    "discord.js"
+  ],
   "scripts": {
     "start": "node dist/index.js",
     "test": "tsx src/test.ts",

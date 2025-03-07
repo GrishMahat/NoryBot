@@ -3,9 +3,10 @@ import { DiscordAPIError } from 'discord.js';
 /**
  * Determines the category of an error
  * @param error The error to determine the category of
- * @returns The category of the error
+ * @returns String  category of the error
  */
-export default function determineErrorCategory(error: DiscordAPIError): string {
+export default function determineErrorCategory(error:Error): string {
+  // const message = error.message.toLowerCase() || '';
   if (error instanceof DiscordAPIError) {
     switch (error.code) {
       case 10001:
@@ -272,10 +273,9 @@ export default function determineErrorCategory(error: DiscordAPIError): string {
         return 'Unknown Discord API Error';
     }
   }
-  /* !fix this later
+
   const message = error.message.toLowerCase()|| '';
-  if (message.includes('api')) return 'Discord API Error';
-  if (message.includes('permission')) return 'Permission Error';
+
   if (message.includes('rate limit')) return 'Rate Limit Error';
   if (message.includes('network')) return 'Network Error';
   if (message.includes('validation')) return 'Validation Error';
@@ -294,6 +294,7 @@ export default function determineErrorCategory(error: DiscordAPIError): string {
   if (message.includes('timeout')) return 'Timeout Error';
   if (message.includes('format')) return 'Format Error';
   if (message.includes('range')) return 'Range Error';
+  if (message.includes('premisson')) return "Permission Error"
+  if (message.includes('api')) return'Discord API Error';
   return 'Unknown Error';
-  */
 }

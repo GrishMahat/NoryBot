@@ -48,7 +48,9 @@ const beautifulCommand: LocalCommand = {
       const img = await new DIG.Beautiful().getImage(avatarUrl);
 
       // Create an attachment using AttachmentBuilder
-      const attachment = new AttachmentBuilder(img, { name: 'beautiful.png' });
+      const attachment = new AttachmentBuilder(img, {
+        name: 'beautiful.png',
+      });
 
       // Create an informative and attractive embed
       const embed = new EmbedBuilder()

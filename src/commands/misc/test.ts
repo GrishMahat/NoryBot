@@ -27,6 +27,7 @@ const testCommand: LocalCommand = {
     )
     .toJSON(),
   testMode: true,
+  delete: true,
   run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     const subcommand = interaction.options.getSubcommand();
     switch (subcommand) {
@@ -37,7 +38,10 @@ const testCommand: LocalCommand = {
             .setLabel('Test Button')
             .setStyle(ButtonStyle.Primary),
         );
-        await interaction.reply({ content: 'Button test', components: [row] });
+        await interaction.reply({
+          content: 'Button test',
+          components: [row],
+        });
         break;
       }
       case 'modal': {

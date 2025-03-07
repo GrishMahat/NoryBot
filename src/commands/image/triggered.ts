@@ -49,7 +49,9 @@ const triggeredCommand: LocalCommand = {
       const img = await new DIG.Triggered().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'triggered.gif' });
+      const attachment = new AttachmentBuilder(img, {
+        name: 'triggered.gif',
+      });
 
       // Create embed
       const embed = new EmbedBuilder()

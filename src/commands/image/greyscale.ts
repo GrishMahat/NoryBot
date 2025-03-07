@@ -48,7 +48,9 @@ const greyscaleCommand: LocalCommand = {
       const img = await new DIG.Greyscale().getImage(avatarUrl);
 
       // Create an attachment
-      const attachment = new AttachmentBuilder(img, { name: 'greyscale.png' });
+      const attachment = new AttachmentBuilder(img, {
+        name: 'greyscale.png',
+      });
 
       const embed = new EmbedBuilder()
         .setColor('#808080')

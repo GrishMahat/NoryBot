@@ -66,7 +66,9 @@ class CommandValidator {
           .setDescription(description)
           .setAuthor({
             name: interaction.user.username,
-            iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
+            iconURL: interaction.user.displayAvatarURL({
+              forceStatic: false,
+            }),
           })
           .setTimestamp(),
       ],

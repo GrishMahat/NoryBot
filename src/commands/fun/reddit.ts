@@ -3,10 +3,13 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   Client,
+  MessageFlags,
 } from 'discord.js';
 import axios from 'axios';
+import Pagination from '../../utils/helpers/Pagination.js';
 import {
   RedditListing,
+  RedditPostData,
   RedditSortOption,
   RedditTimeOption,
 } from '../../types/index.js';
@@ -66,15 +69,14 @@ const redditCommand: LocalCommand = {
 
     try {
       // Construct the Reddit URL
-      let url = `https://www.reddit.com/r/${subreddit}/${sort}.json?limit=25`;
+      let url = `https://www.reddit.com/r/${subreddit}/${sort}.json?limit=30`;
       if (sort === 'top') {
         url += `&t=${time}`;
       }
 
       const response = await axios.get<RedditListing>(url, {
         headers: {
-          'User-Agent':
-            'discord-bot:nory-bot:v0.1.0 (by /u/YourRedditUsername)',
+          'User-Agent': 'discord-bot:nory-bot:v0.1.0 (by /u/norybot)',
         },
       });
 
@@ -86,28 +88,13 @@ const redditCommand: LocalCommand = {
         return;
       }
 
-      // Find suitable posts (filter out stickied and NSFW content)
       const posts = response.data.data.children;
-      const safePosts = posts.filter(
-        (post) =>
-          !post.data.stickied &&
-          (!post.data.over_18 ||
-            (post.data.over_18 &&
-              post.data.subreddit_name_prefixed === 'r/aww')),
-      );
-
-      if (safePosts.length === 0) {
-        await interaction.editReply(
-          `No suitable posts found in r/${subreddit}.`,
-        );
-        return;
-      }
 
       // Select a random post from the filtered list
       const randomIndex = Math.floor(
-        Math.random() * Math.min(safePosts.length, 10),
+        Math.random() * Math.min(posts.length, 10),
       );
-      const post = safePosts[randomIndex].data;
+      const post = posts[randomIndex].data;
 
       // Format the post timestamp
       const createdDate = new Date(post.created_utc * 1000);
@@ -167,5 +154,16 @@ const redditCommand: LocalCommand = {
     }
   },
 };
+// function createRedditLIstEmbeds(
+//   client: Client,
+//   interaction: ChatInputCommandInteraction,
+//   RedditPostData: RedditPostData[],
+// ): EmbedBuilder[] {
+//   const embeds: EmbedBuilder[] = [];
+//    for (RedditPostData in ){
+//       const embed = new EmbedBuilder()
+//          .setURL(url)
+//    }
+// }
 
 export default redditCommand;

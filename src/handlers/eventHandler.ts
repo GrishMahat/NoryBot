@@ -103,7 +103,9 @@ const processEventFolder = async (
 
     // Validate event name is a valid Discord.js event
     if (!isValidEventName(eventName)) {
-      throw new EventError(`Invalid event name: ${eventName}`, { eventFolder });
+      throw new EventError(`Invalid event name: ${eventName}`, {
+        eventFolder,
+      });
     }
 
     const eventFiles = files.filter(
