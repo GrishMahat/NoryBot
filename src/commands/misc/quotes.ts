@@ -12,9 +12,7 @@ import {
 	MessageFlags,
 } from 'discord.js';
 import { LocalCommand, QuoteResponse } from '../../types/index.js';
-import {
-	generateQuoteImage,
-} from '../../services/image/generateQuoteImage.js';
+import { generateQuoteImage } from '../../services/image/generateQuoteImage.js';
 import emojiConfig from '../../config/emoji.js';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';

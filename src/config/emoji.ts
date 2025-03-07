@@ -1,7 +1,7 @@
 type EmojiConfig = {
 	[key: string]: string;
 };
-
+// This pain :cry:
 const emojiConfig: EmojiConfig = {
 	test: '<:Screenshot20240731124433:1268183471717613699>',
 	brakenc: '<:duol:1171433345478053978>',

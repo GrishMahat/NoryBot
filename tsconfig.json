@@ -37,7 +37,8 @@
 		// Type definitions
 		"typeRoots": ["./node_modules/@types"],
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@/types": ["./src/types/index.js"]
 		}
 	},
 

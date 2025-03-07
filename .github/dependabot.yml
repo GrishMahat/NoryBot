@@ -28,6 +28,8 @@ updates:
           - "discord.js"
           - "mongoose"
           - "axios"
+          - "dotenv"
+          - "canvas"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
