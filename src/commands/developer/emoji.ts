@@ -1,39 +1,52 @@
-import { ChatInputCommandInteraction, Client, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-// import path from "path"
-// import fs from "fs/promises"
-// const configfile = path.join(
-//   process.cwd(),
-//   "src/config/emoji.ts",
-// )
+import { ChatInputCommandInteraction, Client, SlashCommandBuilder } from "discord.js";
+// import path from "path";
+// import fs from "fs/promises";
+
+// const configFile = path.join(process.cwd(), "src/config/emoji.ts");
+
 const emojiCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('emoji')
-		.setDescription('this is for set command')
-		.addSubcommand((subcommand) =>
-			subcommand.setName('upload').setDescription('uplode the al the emoji'),
+		.setDescription('Manage server emojis and emoji configuration')
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('upload')
+				.setDescription('Upload emojis to the server')
 		)
-		.addSubcommand((subcommade) =>
-			subcommade
+		.addSubcommand(subcommand =>
+			subcommand
 				.setName('updateconfig')
-				.setDescription('update all the  emoji comfig'),
-		).toJSON,
+				.setDescription('Update the emoji configuration file')
+		).toJSON(),
 	cooldown: 10,
 	nsfwMode: false,
 	testMode: true,
 	devOnly: true,
-  category: 'Developer',
-  run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> =>{
-    
-  }
+	category: 'Developer',
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+		const subcommand = interaction.options.getSubcommand();
+
+		switch (subcommand) {
+			case 'upload':
+				await handleUpload(client, interaction);
+				break;
+			case 'updateconfig':
+				await handleUpdateConfig(client, interaction);
+				break;
+		}
+	}
 };
 
-// function upload(client) {
-  
-// }
+async function handleUpload(client: Client, interaction: ChatInputCommandInteraction): Promise<void> {
+	await interaction.deferReply();
+	// TODO: Implement emoji upload logic
+	await interaction.editReply('Emoji upload functionality coming soon');
+}
 
-// function updateconfig(client) {
+async function handleUpdateConfig(client: Client, interaction: ChatInputCommandInteraction): Promise<void> {
+	await interaction.deferReply();
+	// TODO: Implement config update logic  
+	await interaction.editReply('Config update functionality coming soon');
+}
 
-  
-// }
-
-export default emojiCommand
+export default emojiCommand;

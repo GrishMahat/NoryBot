@@ -6,7 +6,8 @@ import { DiscordAPIError } from 'discord.js';
  * @returns String  category of the error
  */
 export default function determineErrorCategory(error: Error): string {
-	// const message = error.message.toLowerCase() || '';
+	if (!error) return 'Unknown Error';
+
 	if (error instanceof DiscordAPIError) {
 		switch (error.code) {
 			case 10001:
@@ -274,7 +275,8 @@ export default function determineErrorCategory(error: Error): string {
 		}
 	}
 
-	const message = error.message.toLowerCase() || '';
+	if (!error.message) return 'Unknown Error';
+	const message = error.message.toLowerCase();
 
 	if (message.includes('rate limit')) return 'Rate Limit Error';
 	if (message.includes('network')) return 'Network Error';

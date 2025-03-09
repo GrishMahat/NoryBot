@@ -61,6 +61,14 @@ async function importCommandFile(
 			);
 		}
 
+		// Make sure we're not returning the toJSON function as a command
+		if (commandObject.data.name === 'toJSON') {
+			console.warn(
+				`Skipping toJSON method that was incorrectly treated as a ${commandObject.data}command.`,
+			);
+			return null;
+		}
+
 		return commandObject;
 	} catch (error) {
 		console.error(`Failed to import command file ${commandFile}:`, error);

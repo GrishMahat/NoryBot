@@ -213,7 +213,5 @@ export default function getRecoverySuggestions(error): string {
 			return 'Deployment error: Check deployment logs and ensure all dependencies are correctly installed.';
 		}
 	}
-
-	//  fallback message
 	return 'An unexpected error occurred. Review your code for potential issues. Consider adding more error handling and logging to identify the root cause.';
 }
