@@ -2,12 +2,12 @@ import {
 	ApplicationCommand,
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
-} from "discord.js";
+} from 'discord.js';
 import {
 	LocalCommand,
 	ApplicationCommandOption,
 	ApplicationCommandOptionChoice,
-} from "../../types/index";
+} from '../../types/index';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.

@@ -4,11 +4,11 @@ import {
 	Client,
 	ApplicationCommandType,
 	ApplicationCommandOptionData,
-} from "discord.js";
-import getLocalCommands from "../../utils/helpers/getLocalCommands";
-import getApplicationCommands from "../../utils/helpers/getApplicationCommands";
-import compareCommands from "../../utils/validators/commandComparing";
-import { LocalCommand } from "../../types/index";
+} from 'discord.js';
+import getLocalCommands from '../../utils/helpers/getLocalCommands';
+import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
+import compareCommands from '../../utils/validators/commandComparing';
+import { LocalCommand } from '../../types/index';
 
 /**
  * Synchronizes local command definitions with the Discord application's registered commands.

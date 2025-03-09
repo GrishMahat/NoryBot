@@ -7,7 +7,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { Client, ClientEvents } from 'discord.js';
-import { EventInfo, EventRegistry, EventError } from '../types/index';
+import { EventInfo, EventRegistry, EventError } from '@/types';
 import LRUCache from '../services/manager/LRUCache';
 import { isValidEventName } from '../utils/validators/isValidEventName';
 import getAllFiles from '../utils/helpers/getAllFiles';
@@ -61,10 +61,16 @@ const loadEventFile = async (
 			return;
 		}
 
-		const eventFunction = require(eventFile).default;
+		const eventObject = await import(eventFile);
+
+		if (!eventObject?.default) {
+			console.error(`Error module at ${eventFile} is missing a default expoer`);
+			return null;
+		}
+		const eventFunction = eventObject.default;
 
 		if (typeof eventFunction !== 'function') {
-			throw new EventError('Invalid event handler', { eventFile });
+			console.error('Invalid event handler', { eventFile });
 		}
 
 		const eventInfo: EventInfo = {

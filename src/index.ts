@@ -37,7 +37,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 	});
 
 	// Initialize error handling if enabled
-	if (config.errorHandler) {
+	if (!config.errorHandler) {
 		errorHandler.initialize(client);
 	}
 

@@ -3,7 +3,7 @@
  * @description Defines types for Discord event handlers and event registry
  */
 
-import { Client, ClientEvents } from "discord.js";
+import { Client, ClientEvents } from 'discord.js';
 
 /**
  * Represents information about a Discord event handler

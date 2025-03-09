@@ -2,7 +2,6 @@ import path from 'path';
 import getAllFiles from './getAllFiles';
 import { Modal } from '../../types/index';
 
-
 /**
  * Dynamically imports and returns an array of modal objects from files in the 'modals' directory.
  * Filters out files that do not export a valid modal object or are explicitly excluded.

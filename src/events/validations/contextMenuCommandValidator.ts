@@ -9,13 +9,13 @@ import {
 	PermissionResolvable,
 	InteractionReplyOptions,
 	GuildMember,
-} from "discord.js";
-import { config } from "../../config/config";
-import mConfig from "../../config/messageConfig";
-import getLocalContextMenus from "../../utils/helpers/getLocalContextMenus";
-import LRUCache from "../../services/manager/LRUCache";
-import cooldownManager from "../../services/manager/CooldownManager";
-import { LocalContextMenu } from "../../types/index";
+} from 'discord.js';
+import { config } from '../../config/config';
+import mConfig from '../../config/messageConfig';
+import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus';
+import LRUCache from '../../services/manager/LRUCache';
+import cooldownManager from '../../services/manager/CooldownManager';
+import { LocalContextMenu } from '../../types/index';
 
 interface ContextMenuMetrics {
 	uses: number;

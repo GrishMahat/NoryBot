@@ -10,7 +10,7 @@ import {
 	StringSelectMenuOptionBuilder,
 	Client,
 	ChatInputCommandInteraction,
-} from "discord.js";
+} from 'discord.js';
 
 const testCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -28,7 +28,10 @@ const testCommand: Command = {
 		.toJSON(),
 	testMode: false,
 	deleted: false,
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (
+		client: Client,
+		interaction: ChatInputCommandInteraction,
+	): Promise<void> => {
 		const subcommand = interaction.options.getSubcommand();
 		switch (subcommand) {
 			case 'button': {

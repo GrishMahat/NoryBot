@@ -1,5 +1,5 @@
 import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from 'canvas';
-import { QuoteResponse } from "../../types/index";
+import { QuoteResponse } from '../../types/index';
 
 export function validateInput(data: QuoteResponse): void {
 	if (!data.quote || typeof data.quote !== 'string') {

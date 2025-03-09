@@ -7,10 +7,10 @@ import {
 	ColorResolvable,
 	PermissionResolvable,
 	MessageFlags,
-} from "discord.js";
-import { config } from "../../config/config";
-import mConfig from "../../config/messageConfig";
-import getModals from "../../utils/helpers/getModals";
+} from 'discord.js';
+import { config } from '../../config/config';
+import mConfig from '../../config/messageConfig';
+import getModals from '../../utils/helpers/getModals';
 
 export interface Modal {
 	customId: string;

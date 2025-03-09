@@ -4,7 +4,7 @@ import {
 	Events,
 	Client,
 	DiscordAPIError,
-} from "discord.js";
+} from 'discord.js';
 import { createHash } from 'crypto';
 import {
 	ErrorSeverity,
@@ -15,13 +15,13 @@ import {
 	PerformanceMetrics,
 	ErrorMetrics,
 	ErrorContext,
-} from "../types/index";
-import determineSeverity from "../services/error/determineSeverity";
-import determineErrorCategory from "../services/error/determineErrorCategory";
-import getRecoverySuggestions from "../services/error/getRecoverySuggestions";
-import { PerformanceMonitor } from "../services/error/performanceMonitor";
-import { MetricsFormatter } from "../services/error/metricsFormatter";
-import { ErrorMetricsService } from "../services/error/ErrorMetricsService";
+} from '../types/index';
+import determineSeverity from '../services/error/determineSeverity';
+import determineErrorCategory from '../services/error/determineErrorCategory';
+import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
+import { PerformanceMonitor } from '../services/error/performanceMonitor';
+import { MetricsFormatter } from '../services/error/metricsFormatter';
+import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
 import os from 'os';
 
 class ErrorHandler {

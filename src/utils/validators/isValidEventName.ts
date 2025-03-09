@@ -1,4 +1,4 @@
-import { ClientEvents } from "discord.js";
+import { ClientEvents } from 'discord.js';
 
 /**
  * Type guard to check if a string is a valid Discord.js event name

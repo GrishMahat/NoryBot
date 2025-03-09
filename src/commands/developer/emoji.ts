@@ -1,4 +1,8 @@
-import { ChatInputCommandInteraction, Client, SlashCommandBuilder } from "discord.js";
+import {
+	ChatInputCommandInteraction,
+	Client,
+	SlashCommandBuilder,
+} from 'discord.js';
 // import path from "path";
 // import fs from "fs/promises";
 
@@ -8,22 +12,26 @@ const emojiCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('emoji')
 		.setDescription('Manage server emojis and emoji configuration')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('upload')
-				.setDescription('Upload emojis to the server')
+				.setDescription('Upload emojis to the server'),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('updateconfig')
-				.setDescription('Update the emoji configuration file')
-		).toJSON(),
+				.setDescription('Update the emoji configuration file'),
+		)
+		.toJSON(),
 	cooldown: 10,
 	nsfwMode: false,
 	testMode: true,
 	devOnly: true,
 	category: 'Developer',
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (
+		client: Client,
+		interaction: ChatInputCommandInteraction,
+	): Promise<void> => {
 		const subcommand = interaction.options.getSubcommand();
 
 		switch (subcommand) {
@@ -34,18 +42,24 @@ const emojiCommand: Command = {
 				await handleUpdateConfig(client, interaction);
 				break;
 		}
-	}
+	},
 };
 
-async function handleUpload(client: Client, interaction: ChatInputCommandInteraction): Promise<void> {
+async function handleUpload(
+	client: Client,
+	interaction: ChatInputCommandInteraction,
+): Promise<void> {
 	await interaction.deferReply();
 	// TODO: Implement emoji upload logic
 	await interaction.editReply('Emoji upload functionality coming soon');
 }
 
-async function handleUpdateConfig(client: Client, interaction: ChatInputCommandInteraction): Promise<void> {
+async function handleUpdateConfig(
+	client: Client,
+	interaction: ChatInputCommandInteraction,
+): Promise<void> {
 	await interaction.deferReply();
-	// TODO: Implement config update logic  
+	// TODO: Implement config update logic
 	await interaction.editReply('Config update functionality coming soon');
 }
 

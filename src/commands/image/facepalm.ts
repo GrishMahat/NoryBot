@@ -4,8 +4,8 @@ import {
 	Client,
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
-} from "discord.js";
-import { LocalCommand } from "../../types/index";
+} from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const facepalmCommand: LocalCommand = {

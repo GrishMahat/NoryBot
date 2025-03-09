@@ -8,7 +8,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	MessageFlags,
-} from "discord.js";
+} from 'discord.js';
 
 const UserAvatarContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()

@@ -4,10 +4,10 @@ import {
 	Client,
 	version as discordVersion,
 	ChatInputCommandInteraction,
-} from "discord.js";
-import { LocalCommand } from "../../types/index";
+} from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import os from 'os';
-import emojiConfig from "../../config/emoji";
+import emojiConfig from '../../config/emoji';
 
 const pingCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

@@ -117,7 +117,7 @@ const redditCommand: Command = {
 				// Format timestamp
 				const createdDate = new Date(post.created_utc * 1000);
 				const timeAgo = Math.floor((Date.now() - createdDate.getTime()) / 1000);
-				
+
 				let timeString;
 				if (timeAgo < 60) {
 					timeString = `${timeAgo} second${timeAgo === 1 ? '' : 's'} ago`;
@@ -133,7 +133,9 @@ const redditCommand: Command = {
 				}
 
 				const embed = new EmbedBuilder()
-					.setColor((post.link_flair_background_color || '#FF4500') as ColorResolvable)
+					.setColor(
+						(post.link_flair_background_color || '#FF4500') as ColorResolvable,
+					)
 					.setTitle(
 						post.title.length > 256
 							? post.title.substring(0, 253) + '...'
@@ -143,7 +145,8 @@ const redditCommand: Command = {
 					.setAuthor({
 						name: post.subreddit_name_prefixed,
 						url: `https://reddit.com/${post.subreddit_name_prefixed}`,
-						iconURL: 'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png',
+						iconURL:
+							'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png',
 					})
 					.setFooter({
 						text: `${post.over_18 ? '🔞 NSFW | ' : ''}${post.spoiler ? '⚠️ Spoiler | ' : ''}👍 ${post.ups.toLocaleString()} (${Math.round(post.upvote_ratio * 100)}%) | 💬 ${post.num_comments.toLocaleString()} | Posted ${timeString} by u/${post.author}`,
@@ -151,21 +154,27 @@ const redditCommand: Command = {
 
 				// Handle media content
 				if (post.is_video && post.media?.reddit_video) {
-					embed.setDescription(`🎥 [Video Link](${post.media.reddit_video.fallback_url})`);
+					embed.setDescription(
+						`🎥 [Video Link](${post.media.reddit_video.fallback_url})`,
+					);
 					if (post.thumbnail && post.thumbnail !== 'default') {
 						embed.setImage(post.thumbnail);
 					}
 				} else if (post.url.match(/\.(jpeg|jpg|gif|png)$/i)) {
 					embed.setImage(post.url);
-				} else if (post.thumbnail && !['self', 'default', 'nsfw'].includes(post.thumbnail)) {
+				} else if (
+					post.thumbnail &&
+					!['self', 'default', 'nsfw'].includes(post.thumbnail)
+				) {
 					embed.setImage(post.thumbnail);
 				}
 
 				// Handle text content
 				if (post.selftext) {
-					const truncatedText = post.selftext.length > 4000
-						? post.selftext.substring(0, 3997) + '...'
-						: post.selftext;
+					const truncatedText =
+						post.selftext.length > 4000
+							? post.selftext.substring(0, 3997) + '...'
+							: post.selftext;
 					embed.setDescription(truncatedText);
 				}
 
@@ -202,8 +211,12 @@ const redditCommand: Command = {
 			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}.`;
 
 			if (axios.isAxiosError(error)) {
-				if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-					errorMessage = '⏱️ The request timed out. Reddit might be experiencing high load. Please try again.';
+				if (
+					error.code === 'ECONNABORTED' ||
+					error.message.includes('timeout')
+				) {
+					errorMessage =
+						'⏱️ The request timed out. Reddit might be experiencing high load. Please try again.';
 				} else if (error.response) {
 					switch (error.response.status) {
 						case 404:
@@ -213,16 +226,22 @@ const redditCommand: Command = {
 							errorMessage = `🔒 Subreddit r/${subreddit} is private or quarantined.`;
 							break;
 						case 429:
-							errorMessage = '⚠️ Rate limited by Reddit. Please wait a few minutes and try again.';
+							errorMessage =
+								'⚠️ Rate limited by Reddit. Please wait a few minutes and try again.';
 							break;
 						case 500:
 						case 502:
 						case 503:
-							errorMessage = '🛠️ Reddit is having technical difficulties. Please try again later.';
+							errorMessage =
+								'🛠️ Reddit is having technical difficulties. Please try again later.';
 							break;
 					}
-				} else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
-					errorMessage = '🌐 Unable to connect to Reddit. The service might be down or experiencing issues.';
+				} else if (
+					error.code === 'ETIMEDOUT' ||
+					error.code === 'ECONNREFUSED'
+				) {
+					errorMessage =
+						'🌐 Unable to connect to Reddit. The service might be down or experiencing issues.';
 				}
 			}
 

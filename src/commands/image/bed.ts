@@ -5,8 +5,8 @@ import {
 	AttachmentBuilder,
 	MessageFlags,
 	ChatInputCommandInteraction,
-} from "discord.js";
-import { LocalCommand } from "../../types/index";
+} from 'discord.js';
+import { LocalCommand } from '../../types/index';
 import DIG from 'discord-image-generation';
 
 const bedCommand: LocalCommand = {

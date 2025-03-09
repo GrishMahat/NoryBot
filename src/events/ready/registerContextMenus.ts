@@ -4,11 +4,11 @@ import {
 	Client,
 	ApplicationCommandType,
 	ContextMenuCommandBuilder,
-} from "discord.js";
-import getLocalContextMenus from "../../utils/helpers/getLocalContextMenus";
-import getApplicationCommands from "../../utils/helpers/getApplicationCommands";
-import compareContextMenus from "../../utils/validators/contextmenusComparing";
-import { LocalContextMenu } from "../../types/index";
+} from 'discord.js';
+import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus';
+import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
+import compareContextMenus from '../../utils/validators/contextmenusComparing';
+import { LocalContextMenu } from '../../types/index';
 
 export default async (client: Client): Promise<void> => {
 	try {

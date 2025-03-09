@@ -6,7 +6,7 @@ import {
 	Client,
 	GuildMember,
 	MessageFlags,
-} from "discord.js";
+} from 'discord.js';
 
 /**
  * Get the user's status with emojis

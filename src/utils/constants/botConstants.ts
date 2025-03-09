@@ -44,6 +44,6 @@ export const MESSAGE_TYPES = {
 	MODERATION: 'MODERATION',
 } as const;
 
-import { ButtonStyle } from "discord.js";
+import { ButtonStyle } from 'discord.js';
 
 export const BUTTON_STYLES = ButtonStyle;

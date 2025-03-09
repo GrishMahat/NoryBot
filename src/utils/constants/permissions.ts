@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, PermissionResolvable } from "discord.js";
+import { PermissionFlagsBits, PermissionResolvable } from 'discord.js';
 
 export const PERMISSION_FLAGS = {
 	// Text Channel Permissions

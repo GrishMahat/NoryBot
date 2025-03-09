@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	MessageFlags,
 	ChatInputCommandInteraction,
-} from "discord.js";
+} from 'discord.js';
 import DIG from 'discord-image-generation';
 
 const admixCommand: LocalCommand = {

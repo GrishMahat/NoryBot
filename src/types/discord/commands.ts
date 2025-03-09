@@ -16,7 +16,7 @@ import {
 	ChatInputCommandInteraction,
 	AutocompleteInteraction,
 	CommandInteraction,
-} from "discord.js";
+} from 'discord.js';
 
 /**
  * Represents a command option choice for application commands

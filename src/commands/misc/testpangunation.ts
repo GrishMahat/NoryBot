@@ -3,8 +3,8 @@ import {
 	EmbedBuilder,
 	ChatInputCommandInteraction,
 	Client,
-} from "discord.js";
-import pangunation from "../../utils/helpers/Pagination";
+} from 'discord.js';
+import pangunation from '../../utils/helpers/Pagination';
 
 const testPangunation: LocalCommand = {
 	data: new SlashCommandBuilder()

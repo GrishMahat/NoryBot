@@ -1,4 +1,4 @@
-import { Client } from "discord.js";
+import { Client } from 'discord.js';
 import os from 'os';
 import { performance } from 'perf_hooks';
 import {
@@ -6,7 +6,7 @@ import {
 	PerformanceThresholds,
 	ShardStats,
 	ShardStatus,
-} from "../../types/index";
+} from '../../types/index';
 
 export class PerformanceMonitor {
 	private client: Client;
