@@ -3,9 +3,9 @@ import {
 	EmbedBuilder,
 	Client,
 	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index.js';
-import emojiConfig from '../../config/emoji.js';
+} from "discord.js";
+import { LocalCommand } from "../../types/index";
+import emojiConfig from "../../config/emoji";
 
 const timestampCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

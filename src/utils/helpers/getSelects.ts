@@ -1,10 +1,6 @@
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from './getAllFiles.js';
-import { SelectMenu } from '../../types/index.js';
-
-// Helper to get the current directory path in ES modules
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import getAllFiles from './getAllFiles';
+import { SelectMenu } from '../../types/index';
 
 /**
  * Dynamically imports and returns an array of select menu objects from files in the 'selects' directory.
@@ -33,11 +29,17 @@ const importSelectMenus = async (
 
 	// Iterate through each select menu file
 	for (const selectMenuFile of selectMenuFiles) {
-		const selectMenuFileURL = pathToFileURL(selectMenuFile).href;
-
 		try {
-			// Dynamically import the select menu file
-			const importedModule = await import(selectMenuFileURL);
+			// Dynamically import the select menu file directly
+			const importedModule = await import(selectMenuFile);
+
+			if (!importedModule?.default) {
+				console.error(
+					`select module at ${importedModule} is missing a default export.`,
+				);
+				return null;
+			}
+
 			const selectMenuObject: SelectMenu = importedModule.default;
 
 			// Validate the imported object
@@ -48,7 +50,7 @@ const importSelectMenus = async (
 				typeof selectMenuObject.run !== 'function'
 			) {
 				console.warn(
-					`Skipped importing ${selectMenuFileURL} as it does not export a valid select menu object.`,
+					`Skipped importing ${selectMenuFile} as it does not export a valid select menu object.`,
 				);
 				continue;
 			}
@@ -60,7 +62,7 @@ const importSelectMenus = async (
 			selectMenus.push(selectMenuObject);
 		} catch (error) {
 			console.error(
-				`Failed to import ${selectMenuFileURL}: ${(error as Error).message}`,
+				`Failed to import ${selectMenuFile}: ${(error as Error).message}`,
 			);
 		}
 	}

@@ -22,26 +22,53 @@ export interface RedditPostData {
 	name: string;
 	permalink: string;
 	url: string;
+	created: number;
 	created_utc: number;
+	distinguished?: string;
+	subreddit_id: string;
+	link_flair_background_color: string;
+	is_robot_indexable: boolean;
 
 	/** Post content */
 	title: string;
 	selftext: string;
+	selftext_html: string | null;
 	thumbnail: string;
+	thumbnail_height: number | null;
+	thumbnail_width: number | null;
 
 	/** Subreddit information */
 	subreddit: string;
 	subreddit_name_prefixed: string;
+	subreddit_type: string;
+	subreddit_subscribers: number;
 
 	/** Author information */
 	author: string;
 	author_fullname: string;
+	author_premium: boolean;
+	author_patreon_flair: boolean;
+	author_is_blocked: boolean;
+	author_flair_text: string | null;
+	author_flair_text_color: string | null;
+	author_flair_background_color: string | null;
+	author_flair_type: string;
+	author_flair_css_class: string | null;
+	author_flair_richtext: unknown[];
+	author_flair_template_id: string | null;
 
 	/** Post statistics */
 	score: number;
 	ups: number;
 	downs: number;
+	upvote_ratio: number;
 	num_comments: number;
+	num_crossposts: number;
+	total_awards_received: number;
+	gilded: number;
+	gildings: Record<string, unknown>;
+	all_awardings: unknown[];
+	awarders: unknown[];
 
 	/** Post flags */
 	stickied: boolean;
@@ -49,21 +76,63 @@ export interface RedditPostData {
 	over_18: boolean;
 	is_video: boolean;
 	is_self: boolean;
+	is_original_content: boolean;
+	is_meta: boolean;
+	is_crosspostable: boolean;
 	spoiler: boolean;
 	pinned: boolean;
 	locked: boolean;
 	archived: boolean;
+	no_follow: boolean;
+	send_replies: boolean;
+	contest_mode: boolean;
+	hidden: boolean;
+	quarantine: boolean;
+	can_gild: boolean;
+	can_mod_post: boolean;
 	approved_at_utc: number | null;
 
 	/** Media content */
 	media?: RedditMedia | null;
-	media_metadata?: Record<string, RedditMediaMetadata>;
-	gallery_data?: {
-		items: Array<{
-			media_id: string;
-			id: number;
-		}>;
-	};
+	media_embed: Record<string, unknown>;
+	secure_media: RedditMedia | null;
+	secure_media_embed: Record<string, unknown>;
+	media_only: boolean;
+	domain: string;
+
+	/** Moderation fields */
+	mod_reason_title: string | null;
+	mod_reason_by: string | null;
+	mod_note: string | null;
+	removed_by: string | null;
+	removed_by_category: string | null;
+	banned_by: string | null;
+	banned_at_utc: string | null;
+	approved_by: string | null;
+	num_reports: number | null;
+	mod_reports: unknown[];
+	user_reports: unknown[];
+	treatment_tags: string[];
+	report_reasons: string[] | null;
+
+	/** Additional fields */
+	pwls: number;
+	wls: number;
+	category: string | null;
+	content_categories: string[] | null;
+	discussion_type: string | null;
+	view_count: number | null;
+	suggested_sort: string | null;
+	visited: boolean;
+	clicked: boolean;
+	likes: boolean | null;
+	link_flair_text: string | null;
+	link_flair_text_color: string;
+	link_flair_type: string;
+	link_flair_css_class: string | null;
+	link_flair_richtext: unknown[];
+	is_created_from_ads_ui: boolean;
+	allow_live_comments: boolean;
 }
 
 /**

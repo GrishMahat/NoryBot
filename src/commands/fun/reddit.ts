@@ -3,19 +3,21 @@ import {
 	SlashCommandBuilder,
 	EmbedBuilder,
 	Client,
+	ColorResolvable,
+	CacheType,
 } from 'discord.js';
 import axios from 'axios';
 import {
 	RedditListing,
 	RedditSortOption,
 	RedditTimeOption,
-} from '../../types/index.js';
-import createPagination from '../../utils/helpers/Pagination.js';
+} from '../../types/index';
+import createPagination from '../../utils/helpers/Pagination';
 
 const redditCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('reddit')
-		.setDescription('Fetch posts from a subreddit')
+		.setDescription('Browse posts from any subreddit')
 		.addStringOption((option) =>
 			option
 				.setName('subreddit')
@@ -25,13 +27,13 @@ const redditCommand: Command = {
 		.addStringOption((option) =>
 			option
 				.setName('sort')
-				.setDescription('Sort posts by')
+				.setDescription('How to sort the posts')
 				.setRequired(false)
 				.addChoices(
-					{ name: 'Hot', value: 'hot' },
-					{ name: 'New', value: 'new' },
-					{ name: 'Top', value: 'top' },
-					{ name: 'Rising', value: 'rising' },
+					{ name: '🔥 Hot', value: 'hot' },
+					{ name: '⭐ New', value: 'new' },
+					{ name: '📈 Top', value: 'top' },
+					{ name: '📊 Rising', value: 'rising' },
 				),
 		)
 		.addStringOption((option) =>
@@ -40,69 +42,98 @@ const redditCommand: Command = {
 				.setDescription('Time period for top posts')
 				.setRequired(false)
 				.addChoices(
-					{ name: 'Today', value: 'day' },
-					{ name: 'This Week', value: 'week' },
-					{ name: 'This Month', value: 'month' },
-					{ name: 'This Year', value: 'year' },
+					{ name: '24 Hours', value: 'day' },
+					{ name: '7 Days', value: 'week' },
+					{ name: '30 Days', value: 'month' },
+					{ name: '365 Days', value: 'year' },
 					{ name: 'All Time', value: 'all' },
 				),
-		).toJSON(),
+		)
+		.toJSON(),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Fun',
-	cooldown: 15,
+	cooldown: 10, // Reduced cooldown
 	nsfwMode: false,
-	delete: true,
+	deleted: false, // Command should be enabled
 	testMode: false,
 	devOnly: false,
 
-	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+	run: async (
+		client: Client<boolean>,
+		interaction: ChatInputCommandInteraction<CacheType>,
+	): Promise<void> => {
+		// Immediately defer the reply to prevent interaction expiration
+		try {
+			// Only defer if not already deferred or replied
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply();
+			}
+		} catch (error) {
+			console.error('Failed to defer interaction:', error);
+			// If we can't defer, the interaction might be invalid or expired
+			// We'll just return and not attempt further operations
+			return;
+		}
+
 		const subreddit = interaction.options.getString('subreddit', true);
 		const sort =
 			(interaction.options.getString('sort') as RedditSortOption) || 'hot';
 		const time =
 			(interaction.options.getString('time') as RedditTimeOption) || 'day';
 
-		await interaction.deferReply();
-
 		try {
-			// Construct the Reddit URL
-			let url = `https://www.reddit.com/r/${subreddit}/${sort}.json?limit=30`;
-			if (sort === 'top') {
-				url += `&t=${time}`;
-			}
-
-			const response = await axios.get<RedditListing>(url, {
-				headers: {
-					'User-Agent': 'discord-bot:nory-bot:v0.1.0 (by /u/norybot)',
-				},
-				timeout: 10000, // 10 second timeout
-				maxRedirects: 5,
+			// Construct the Reddit URL with proper encoding
+			const baseUrl = `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/${encodeURIComponent(sort)}.json`;
+			const params = new URLSearchParams({
+				limit: '50', // Increased post limit
+				raw_json: '1',
+				...(sort === 'top' && { t: time }),
 			});
 
-			// Check if subreddit exists and has posts
-			if (response.data.data.children.length === 0) {
-				await interaction.editReply(
-					`No posts found in r/${subreddit} or subreddit doesn't exist.`,
-				);
+			const response = await axios.get<RedditListing>(`${baseUrl}?${params}`, {
+				headers: {
+					'User-Agent': 'NoryBot/1.0 (Discord Bot)',
+				},
+				timeout: 10000, // Increased timeout to handle potential slow responses
+				maxRedirects: 3,
+				validateStatus: (status) => status < 500, // Handle 4xx errors explicitly
+			});
+
+			const posts = response.data.data.children;
+
+			if (posts.length === 0) {
+				try {
+					await interaction.editReply({
+						content: `📭 No posts found in r/${subreddit}. The subreddit might be empty or doesn't exist.`,
+					});
+				} catch (replyError) {
+					console.error('Failed to edit reply for empty posts:', replyError);
+				}
 				return;
 			}
 
-			const posts = response.data.data.children;
 			const embeds = posts.map(({ data: post }) => {
-				// Format the post timestamp
+				// Format timestamp
 				const createdDate = new Date(post.created_utc * 1000);
-				const timeAgo = Math.floor(
-					(Date.now() - createdDate.getTime()) / 3600000,
-				);
-				const timeString =
-					timeAgo < 24
-						? `${timeAgo} hour${timeAgo === 1 ? '' : 's'} ago`
-						: `${Math.floor(timeAgo / 24)} day${Math.floor(timeAgo / 24) === 1 ? '' : 's'} ago`;
+				const timeAgo = Math.floor((Date.now() - createdDate.getTime()) / 1000);
+				
+				let timeString;
+				if (timeAgo < 60) {
+					timeString = `${timeAgo} second${timeAgo === 1 ? '' : 's'} ago`;
+				} else if (timeAgo < 3600) {
+					const minutes = Math.floor(timeAgo / 60);
+					timeString = `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+				} else if (timeAgo < 86400) {
+					const hours = Math.floor(timeAgo / 3600);
+					timeString = `${hours} hour${hours === 1 ? '' : 's'} ago`;
+				} else {
+					const days = Math.floor(timeAgo / 86400);
+					timeString = `${days} day${days === 1 ? '' : 's'} ago`;
+				}
 
-				// Create embed for the post
 				const embed = new EmbedBuilder()
-					.setColor('#FF5700') // Reddit's orange color
+					.setColor((post.link_flair_background_color || '#FF4500') as ColorResolvable)
 					.setTitle(
 						post.title.length > 256
 							? post.title.substring(0, 253) + '...'
@@ -110,64 +141,101 @@ const redditCommand: Command = {
 					)
 					.setURL(`https://reddit.com${post.permalink}`)
 					.setAuthor({
-						name: `r/${post.subreddit}`,
-						url: `https://reddit.com/r/${post.subreddit}`,
-						iconURL:
-							'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png',
+						name: post.subreddit_name_prefixed,
+						url: `https://reddit.com/${post.subreddit_name_prefixed}`,
+						iconURL: 'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png',
 					})
 					.setFooter({
-						text: `👍 ${post.ups.toLocaleString()} | 💬 ${post.num_comments.toLocaleString()} | Posted ${timeString} by u/${post.author}`,
+						text: `${post.over_18 ? '🔞 NSFW | ' : ''}${post.spoiler ? '⚠️ Spoiler | ' : ''}👍 ${post.ups.toLocaleString()} (${Math.round(post.upvote_ratio * 100)}%) | 💬 ${post.num_comments.toLocaleString()} | Posted ${timeString} by u/${post.author}`,
 					});
 
-				// Add image or video if available
-				if (post.url.match(/\.(jpeg|jpg|gif|png)$/) !== null) {
+				// Handle media content
+				if (post.is_video && post.media?.reddit_video) {
+					embed.setDescription(`🎥 [Video Link](${post.media.reddit_video.fallback_url})`);
+					if (post.thumbnail && post.thumbnail !== 'default') {
+						embed.setImage(post.thumbnail);
+					}
+				} else if (post.url.match(/\.(jpeg|jpg|gif|png)$/i)) {
 					embed.setImage(post.url);
-				} else if (
-					post.thumbnail &&
-					post.thumbnail !== 'self' &&
-					post.thumbnail !== 'default'
-				) {
-					embed.setThumbnail(post.thumbnail);
+				} else if (post.thumbnail && !['self', 'default', 'nsfw'].includes(post.thumbnail)) {
+					embed.setImage(post.thumbnail);
 				}
 
-				// Add text content if it's a self post
+				// Handle text content
 				if (post.selftext) {
-					const truncatedText =
-						post.selftext.length > 1000
-							? post.selftext.substring(0, 997) + '...'
-							: post.selftext;
+					const truncatedText = post.selftext.length > 4000
+						? post.selftext.substring(0, 3997) + '...'
+						: post.selftext;
 					embed.setDescription(truncatedText);
 				}
 
 				return embed;
 			});
 
-			await createPagination(interaction, embeds, {
-				type: 'button',
-				time: 300000, // 5 minutes
-				buttonEmojis: {
-					prev: '⬅️',
-					next: '➡️',
-				},
-				showPageNumbers: true,
-			});
+			try {
+				// Use the pagination utility with the interaction
+				await createPagination(interaction, embeds, {
+					type: 'button',
+					time: 300000, // 5 minutes
+					buttonEmojis: {
+						prev: '◀️',
+						next: '▶️',
+					},
+					showPageNumbers: true,
+				});
+			} catch (paginationError) {
+				console.error('Pagination error:', paginationError);
+				// If pagination fails, try to send a simple response
+				try {
+					if (!interaction.replied) {
+						await interaction.editReply({
+							content: `Found ${embeds.length} posts in r/${subreddit}, but couldn't create pagination. Try again later.`,
+							embeds: embeds.length > 0 ? [embeds[0]] : [],
+						});
+					}
+				} catch (fallbackError) {
+					console.error('Failed to send fallback response:', fallbackError);
+				}
+			}
 		} catch (error) {
-			console.error('Error fetching from Reddit:', error);
-			let errorMessage = `Failed to fetch posts from r/${subreddit}.`;
+			console.error('Reddit API Error:', error);
+			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}.`;
 
-			if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
-				errorMessage = `Connection to Reddit timed out. Please try again later.`;
-			} else if (axios.isAxiosError(error) && error.response) {
-				if (error.response.status === 404) {
-					errorMessage = `Subreddit r/${subreddit} doesn't exist.`;
-				} else if (error.response.status === 403) {
-					errorMessage = `Subreddit r/${subreddit} is private or quarantined.`;
-				} else if (error.response.status === 429) {
-					errorMessage = `Rate limited by Reddit. Please try again later.`;
+			if (axios.isAxiosError(error)) {
+				if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+					errorMessage = '⏱️ The request timed out. Reddit might be experiencing high load. Please try again.';
+				} else if (error.response) {
+					switch (error.response.status) {
+						case 404:
+							errorMessage = `❌ Subreddit r/${subreddit} doesn't exist.`;
+							break;
+						case 403:
+							errorMessage = `🔒 Subreddit r/${subreddit} is private or quarantined.`;
+							break;
+						case 429:
+							errorMessage = '⚠️ Rate limited by Reddit. Please wait a few minutes and try again.';
+							break;
+						case 500:
+						case 502:
+						case 503:
+							errorMessage = '🛠️ Reddit is having technical difficulties. Please try again later.';
+							break;
+					}
+				} else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
+					errorMessage = '🌐 Unable to connect to Reddit. The service might be down or experiencing issues.';
 				}
 			}
 
-			await interaction.editReply(errorMessage);
+			// Handle the reply based on the interaction state
+			try {
+				if (interaction.deferred) {
+					await interaction.editReply({ content: errorMessage });
+				} else if (!interaction.replied) {
+					await interaction.reply({ content: errorMessage, ephemeral: true });
+				}
+			} catch (replyError) {
+				console.error('Failed to send error response:', replyError);
+			}
 		}
 	},
 };

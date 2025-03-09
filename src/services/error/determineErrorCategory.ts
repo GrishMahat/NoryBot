@@ -1,4 +1,4 @@
-import { DiscordAPIError } from 'discord.js';
+import { DiscordAPIError } from "discord.js";
 
 /**
  * Determines the category of an error

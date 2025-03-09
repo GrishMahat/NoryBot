@@ -5,8 +5,8 @@ import {
 	AttachmentBuilder,
 	MessageFlags,
 	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index.js';
+} from "discord.js";
+import { LocalCommand } from "../../types/index";
 import DIG from 'discord-image-generation';
 
 const ripCommand: LocalCommand = {

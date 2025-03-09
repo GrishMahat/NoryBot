@@ -10,10 +10,10 @@ import {
 	ButtonInteraction,
 	AttachmentBuilder,
 	MessageFlags,
-} from 'discord.js';
-import { LocalCommand, QuoteResponse } from '../../types/index.js';
-import { generateQuoteImage } from '../../services/image/generateQuoteImage.js';
-import emojiConfig from '../../config/emoji.js';
+} from "discord.js";
+import { LocalCommand, QuoteResponse } from "../../types/index";
+import { generateQuoteImage } from "../../services/image/generateQuoteImage";
+import emojiConfig from "../../config/emoji";
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 

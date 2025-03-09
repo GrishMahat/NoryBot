@@ -8,13 +8,13 @@ import {
 	PermissionResolvable,
 	MessageFlags,
 	InteractionReplyOptions,
-} from 'discord.js';
-import { config } from '../../config/config.js';
-import mConfig from '../../config/messageConfig.js';
-import getButtons from '../../utils/helpers/getButtons.js';
-import { Button } from '../../types/index.js';
-import LRUCache from '../../services/manager/LRUCache.js';
-import cooldownManager from '../../services/manager/CooldownManager.js';
+} from "discord.js";
+import { config } from "../../config/config";
+import mConfig from "../../config/messageConfig";
+import getButtons from "../../utils/helpers/getButtons";
+import { Button } from "../../types/index";
+import LRUCache from "../../services/manager/LRUCache";
+import cooldownManager from "../../services/manager/CooldownManager";
 
 // Enhanced button interface
 interface ButtonMetrics {

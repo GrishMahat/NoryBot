@@ -1,10 +1,6 @@
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from './getAllFiles.js';
-import { LocalContextMenu } from '../../types/index.js';
-
-// Helper to get the current directory path in ES modules
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import getAllFiles from './getAllFiles';
+import { LocalContextMenu } from '../../types/index';
 
 /**
  * Dynamically imports a single command file and returns the command object if it is valid.
@@ -35,12 +31,11 @@ async function importCommandFile(
 	exceptions: string[],
 ): Promise<LocalContextMenu | null> {
 	try {
-		const commandFileURL = pathToFileURL(commandFile).href;
-		const commandModule = await import(commandFileURL);
+		const commandModule = await import(commandFile);
 
 		if (!commandModule?.default) {
 			console.error(
-				`Context menu module at ${commandModule} is missing a default export.`,
+				`Context menu module at ${commandFile} is missing a default export.`,
 			);
 			return null;
 		}

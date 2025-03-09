@@ -3,7 +3,6 @@
   "description": "bot made for fun",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "type": "module",
   "license": "MIT",
   "keywords": [
     "discord",

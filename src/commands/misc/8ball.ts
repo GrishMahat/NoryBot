@@ -4,8 +4,8 @@ import {
 	EmbedBuilder,
 	MessageFlags,
 	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index.js';
+} from "discord.js";
+import { LocalCommand } from "../../types/index";
 
 const responses = [
 	'It is certain.',

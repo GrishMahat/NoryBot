@@ -4,7 +4,7 @@ import {
 	AttachmentBuilder,
 	Client,
 	ChatInputCommandInteraction,
-} from 'discord.js';
+} from "discord.js";
 import DIG from 'discord-image-generation';
 
 const beautifulCommand: LocalCommand = {

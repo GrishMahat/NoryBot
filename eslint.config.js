@@ -40,6 +40,6 @@ export default [
 			'object-shorthand': 'error',
 			'arrow-body-style': ['error', 'as-needed'],
 		},
-		ignores: ['src/config/*', 'src/types/*'],
+		ignores: ['src/config/*', 'src/types/*', "dist/**"],
 	},
 ];

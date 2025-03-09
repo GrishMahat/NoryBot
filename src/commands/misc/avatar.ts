@@ -5,9 +5,9 @@ import {
 	Client,
 	GuildMember,
 	User,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index.js';
-import emojiConfig from '../../config/emoji.js';
+} from "discord.js";
+import { LocalCommand } from "../../types/index";
+import emojiConfig from "../../config/emoji";
 
 const avatarCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

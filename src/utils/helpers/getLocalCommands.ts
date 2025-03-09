@@ -1,10 +1,6 @@
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from './getAllFiles.js';
-import { LocalCommand } from '../../types/index.js';
-
-// Helper to get the current directory path in ES modules
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import getAllFiles from './getAllFiles';
+import { LocalCommand } from '../../types/index';
 
 /**
  * Dynamically imports a single command file and returns the command object if it is valid.
@@ -35,8 +31,8 @@ async function importCommandFile(
 	exceptions: string[],
 ): Promise<LocalCommand | null> {
 	try {
-		const commandFileURL = pathToFileURL(commandFile).href;
-		const commandModule = await import(commandFileURL);
+		// Use dynamic import instead of pathToFileURL and require
+		const commandModule = await import(commandFile);
 
 		if (!commandModule?.default) {
 			console.error(

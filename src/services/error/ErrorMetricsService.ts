@@ -2,7 +2,7 @@ import {
 	ErrorMetrics,
 	ErrorDetails,
 	ErrorSeverity,
-} from '../../types/index.js';
+} from "../../types/index";
 
 export class ErrorMetricsService {
 	private metrics: Map<string, ErrorMetrics>;

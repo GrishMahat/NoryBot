@@ -1,10 +1,7 @@
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from './getAllFiles.js';
-import { Modal } from '../../types/index.js';
+import getAllFiles from './getAllFiles';
+import { Modal } from '../../types/index';
 
-// Helper to get the current directory path in ES modules
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Dynamically imports and returns an array of modal objects from files in the 'modals' directory.
@@ -31,11 +28,9 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
 
 	// Iterate through each modal file
 	for (const modalFile of modalFiles) {
-		const modalFileURL = pathToFileURL(modalFile).href;
-
 		try {
-			// Dynamically import the modal file
-			const importedModule = await import(modalFileURL);
+			// Dynamically import the modal file directly
+			const importedModule = await import(modalFile);
 			const modalObject: Modal = importedModule.default;
 
 			// Validate the imported object
@@ -46,7 +41,7 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
 				typeof modalObject.run !== 'function'
 			) {
 				console.warn(
-					`Skipped importing ${modalFileURL} as it does not export a valid modal object.`,
+					`Skipped importing ${modalFile} as it does not export a valid modal object.`,
 				);
 				continue;
 			}
@@ -58,7 +53,7 @@ const getModals = async (exceptions: string[] = []): Promise<Modal[]> => {
 			modals.push(modalObject);
 		} catch (error) {
 			console.error(
-				`Failed to import ${modalFileURL}: ${(error as Error).message}`,
+				`Failed to import ${modalFile}: ${(error as Error).message}`,
 			);
 		}
 	}

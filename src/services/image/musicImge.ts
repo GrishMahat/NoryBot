@@ -3,7 +3,7 @@ import {
 	createCanvas,
 	CanvasRenderingContext2D as NodeCanvasRenderingContext2D,
 } from 'canvas';
-import { MusicImageOptions } from '../../types/index.js';
+import { MusicImageOptions } from "../../types/index";
 
 /**
  * Validates that the time values are in an acceptable range.

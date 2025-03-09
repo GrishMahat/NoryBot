@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
-		// Module settings for Node.js ESM
+		// Module settings for Node.js CommonJS output
 		"target": "ES2022",
-		"module": "node16",
-		"moduleResolution": "NodeNext",
+		"module": "CommonJS",
+		"moduleResolution": "node",
 		"moduleDetection": "force",
 
 		// "allowJs": true,
@@ -38,7 +38,7 @@
 		"typeRoots": ["./node_modules/@types"],
 		"paths": {
 			"@/*": ["./src/*"],
-			"@/types": ["./src/types/index.js"]
+			"@/types": ["./src/types/index.ts"]
 		}
 	},
 

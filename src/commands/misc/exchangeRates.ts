@@ -5,16 +5,16 @@ import {
 	ChatInputCommandInteraction,
 	CacheType,
 	time,
-} from 'discord.js';
+} from "discord.js";
 import axios from 'axios';
 import fs from 'fs/promises';
 import path from 'path';
-import emojiConfig from '../../config/emoji.js';
+import emojiConfig from "../../config/emoji";
 import {
 	Currency,
 	commonCurrencies,
 	allCurrencies,
-} from '../../types/index.js';
+} from "../../types/index";
 
 const apiUrl =
 	'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';

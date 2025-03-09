@@ -5,16 +5,12 @@
  */
 
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from '../utils/helpers/getAllFiles.js';
 import fs from 'fs/promises';
 import { Client, ClientEvents } from 'discord.js';
-import { EventInfo, EventRegistry, EventError } from '../types/index.js';
-import LRUCache from '../services/manager/LRUCache.js';
-import { isValidEventName } from '../utils/validators/isValidEventName.js';
-
-const __filename: string = fileURLToPath(import.meta.url);
-const __dirname: string = path.dirname(__filename);
+import { EventInfo, EventRegistry, EventError } from '../types/index';
+import LRUCache from '../services/manager/LRUCache';
+import { isValidEventName } from '../utils/validators/isValidEventName';
+import getAllFiles from '../utils/helpers/getAllFiles';
 
 /**
  * Cache to store loaded event modules to prevent redundant imports
@@ -65,8 +61,7 @@ const loadEventFile = async (
 			return;
 		}
 
-		const fileUrl = pathToFileURL(eventFile).href;
-		const { default: eventFunction } = await import(fileUrl);
+		const eventFunction = require(eventFile).default;
 
 		if (typeof eventFunction !== 'function') {
 			throw new EventError('Invalid event handler', { eventFile });

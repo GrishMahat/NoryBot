@@ -8,11 +8,11 @@ import {
 	ColorResolvable,
 	PermissionResolvable,
 	MessageFlags,
-} from 'discord.js';
-import { config } from '../../config/config.js';
-import mConfig from '../../config/messageConfig.js';
-import getSelects from '../../utils/helpers/getSelects.js';
-import { SelectMenu } from '../../types/index.js';
+} from "discord.js";
+import { config } from "../../config/config";
+import mConfig from "../../config/messageConfig";
+import getSelects from "../../utils/helpers/getSelects";
+import { SelectMenu } from "../../types/index";
 
 class LRUCache<K, V> {
 	private capacity: number;

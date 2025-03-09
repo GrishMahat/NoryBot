@@ -1,4 +1,4 @@
-import { DiscordAPIError } from 'discord.js';
+import { DiscordAPIError } from "discord.js";
 
 export default function getRecoverySuggestions(error): string {
 	if (error instanceof DiscordAPIError) {

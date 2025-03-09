@@ -14,9 +14,9 @@ import {
 	ComponentType,
 	ChatInputCommandInteraction,
 	TextChannel,
-} from 'discord.js';
-import paginateEmbeds from '../../utils/helpers/Pagination.js';
-import { LocalCommand } from '../../types/index.js';
+} from "discord.js";
+import paginateEmbeds from "../../utils/helpers/Pagination";
+import { LocalCommand } from "../../types/index";
 
 interface GuildInfo {
 	name: string;

@@ -9,9 +9,9 @@ import {
 	ComponentType,
 	MessageFlags,
 	ChatInputCommandInteraction,
-} from 'discord.js';
+} from "discord.js";
 import axios from 'axios';
-import emojiConfig from '../../config/emoji.js';
+import emojiConfig from "../../config/emoji";
 
 const factCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

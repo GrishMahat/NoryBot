@@ -11,13 +11,13 @@ import {
 	PermissionResolvable,
 	InteractionReplyOptions,
 	Colors,
-} from 'discord.js';
-import { config } from '../../config/config.js';
-import mConfig from '../../config/messageConfig.js';
-import getLocalCommands from '../../utils/helpers/getLocalCommands.js';
-import LRUCache from '../../services/manager/LRUCache.js';
-import { LocalCommand } from '../../types/index.js';
-import cooldownManager from '../../services/manager/CooldownManager.js';
+} from "discord.js";
+import { config } from "../../config/config";
+import mConfig from "../../config/messageConfig";
+import getLocalCommands from "../../utils/helpers/getLocalCommands";
+import LRUCache from "../../services/manager/LRUCache";
+import { LocalCommand } from "../../types/index";
+import cooldownManager from "../../services/manager/CooldownManager";
 
 interface CommandMetrics {
 	uses: number;

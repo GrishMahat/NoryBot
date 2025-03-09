@@ -27,13 +27,6 @@ interface PaginationSettings {
 	disableOnTimeout?: boolean;
 }
 
-class PaginationError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'PaginationError';
-	}
-}
-
 const createButtonRow = (
 	currentPage: number,
 	totalPages: number,
@@ -83,48 +76,85 @@ export default async function createPagination(
 	pages: EmbedBuilder[],
 	settings: PaginationSettings,
 ): Promise<void> {
+	if (!interaction) {
+		console.error('Invalid interaction provided to pagination');
+		return;
+	}
+
+	if (!Array.isArray(pages) || pages.length === 0) {
+		console.error('Pages array is invalid or empty');
+		try {
+			if (interaction.deferred) {
+				await interaction.editReply({ content: 'No content to display.' });
+			} else if (!interaction.replied) {
+				await interaction.reply({
+					content: 'No content to display.',
+					ephemeral: true,
+				});
+			}
+		} catch (error) {
+			console.error('Failed to reply with empty pages error:', error);
+		}
+		return;
+	}
+
+	const defaultSettings: PaginationSettings = {
+		type: 'button',
+		time: 5 * 60 * 1000,
+		buttonStyle: ButtonStyle.Primary,
+		maxSelectOptions: 25,
+		showPageNumbers: true,
+		disableOnTimeout: true,
+		...settings,
+	};
+
+	let currentPage = 0;
+	const components =
+		defaultSettings.type === 'button'
+			? [createButtonRow(currentPage, pages.length, defaultSettings)]
+			: [createSelectMenu(pages, currentPage, defaultSettings)];
+
+	// Handle the initial reply based on interaction state
+	let initialMessage;
 	try {
-		if (!interaction) {
-			throw new PaginationError('Invalid interaction provided');
-		}
-
-		if (!Array.isArray(pages) || pages.length === 0) {
-			throw new PaginationError('Pages array is invalid or empty');
-		}
-
-		const defaultSettings: PaginationSettings = {
-			type: 'button',
-			time: 5 * 60 * 1000,
-			buttonStyle: ButtonStyle.Primary,
-			maxSelectOptions: 25,
-			showPageNumbers: true,
-			disableOnTimeout: true,
-			...settings,
-		};
-
-		let currentPage = 0;
-		const components =
-			defaultSettings.type === 'button'
-				? [createButtonRow(currentPage, pages.length, defaultSettings)]
-				: [createSelectMenu(pages, currentPage, defaultSettings)];
-
-		const initialMessage = await interaction
-			.reply({
+		// Check if the interaction is still valid
+		if (!interaction.deferred && !interaction.replied) {
+			// This should rarely happen as we defer in the command
+			initialMessage = await interaction.reply({
 				embeds: [pages[currentPage]],
 				components,
-			})
-			.then((response) => response);
+				fetchReply: true,
+			});
+		} else {
+			// Most common path - edit the deferred reply
+			initialMessage = await interaction.editReply({
+				embeds: [pages[currentPage]],
+				components,
+			});
+		}
+	} catch (error) {
+		console.error('Failed to send initial pagination message:', error);
+		// If we can't send the initial message, we can't continue with pagination
+		return;
+	}
 
+	// Create a collector for button/select interactions
+	try {
 		const collector = initialMessage.createMessageComponentCollector({
 			time: defaultSettings.time,
 		});
 
 		collector.on('collect', async (i: MessageComponentInteraction) => {
+			// Verify the user is the one who initiated the command
 			if (i.user.id !== interaction.user.id) {
-				await i.reply({
-					content: 'This pagination is not for you!',
-					flags: MessageFlags.Ephemeral,
-				});
+				try {
+					await i.reply({
+						content: 'This pagination is not for you!',
+						flags: MessageFlags.Ephemeral,
+					});
+				} catch (error) {
+					console.error('Failed to reply to non-owner interaction:', error);
+				}
 				return;
 			}
 
@@ -161,10 +191,19 @@ export default async function createPagination(
 
 				currentPage = newPage;
 			} catch (err) {
-				await i.reply({
-					content: err instanceof Error ? err.message : 'An error occurred',
-					flags: MessageFlags.Ephemeral,
-				});
+				console.error('Error handling pagination interaction:', err);
+				try {
+					// Only reply if we haven't already
+					if (!i.replied && !i.deferred) {
+						await i.reply({
+							content:
+								'An error occurred while changing pages. Please try again.',
+							flags: MessageFlags.Ephemeral,
+						});
+					}
+				} catch (replyError) {
+					console.error('Failed to send error response:', replyError);
+				}
 			}
 		});
 
@@ -184,22 +223,18 @@ export default async function createPagination(
 						return newRow;
 					});
 
-					await initialMessage.edit({ components: disabledComponents });
+					await initialMessage
+						.edit({ components: disabledComponents })
+						.catch((error) => {
+							console.error('Failed to disable components on timeout:', error);
+						});
 				} catch (error) {
 					console.error('Failed to disable components:', error);
 				}
 			}
 		});
-	} catch (err) {
-		const errorMessage =
-			err instanceof Error ? err.message : 'An unexpected error occurred';
-		if (!interaction.replied && !interaction.deferred) {
-			await interaction.reply({
-				content: errorMessage,
-				flags: MessageFlags.Ephemeral,
-			});
-		} else {
-			await interaction.editReply({ content: errorMessage });
-		}
+	} catch (error) {
+		console.error('Failed to create collector:', error);
+		// If we can't create a collector, we'll just leave the message as is
 	}
 }

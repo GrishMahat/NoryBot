@@ -3,7 +3,7 @@ import {
 	GuildApplicationCommandManager,
 	ApplicationCommandManager,
 	ApplicationCommand,
-} from 'discord.js';
+} from "discord.js";
 
 /**
  * Fetches and caches the application commands for a given client and guild ID.

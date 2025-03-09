@@ -1,10 +1,6 @@
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import getAllFiles from './getAllFiles.js';
-import { Button } from '../../types/index.js';
-
-// Helper to get the current directory path in ES modules
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import getAllFiles from './getAllFiles';
+import { Button } from '../../types/index';
 
 /**
  * Dynamically imports and returns an array of button objects from files in the 'buttons' directory.
@@ -33,11 +29,9 @@ export default async function importButtons(
 
 	// Iterate through each button file
 	for (const buttonFile of buttonFiles) {
-		const buttonFileURL = pathToFileURL(buttonFile).href;
-
 		try {
-			// Dynamically import the button file
-			const importedModule = await import(buttonFileURL);
+			// Dynamically import the button file directly
+			const importedModule = await import(buttonFile);
 			const buttonObject: Button = importedModule.default;
 
 			// Validate the imported object
@@ -48,7 +42,7 @@ export default async function importButtons(
 				typeof buttonObject.run !== 'function'
 			) {
 				console.warn(
-					`Skipped importing ${buttonFileURL} as it does not export a valid button object.`,
+					`Skipped importing ${buttonFile} as it does not export a valid button object.`,
 				);
 				continue;
 			}
@@ -60,7 +54,7 @@ export default async function importButtons(
 			buttons.push(buttonObject);
 		} catch (error) {
 			console.error(
-				`Failed to import ${buttonFileURL}: ${(error as Error).message}`,
+				`Failed to import ${buttonFile}: ${(error as Error).message}`,
 			);
 		}
 	}
