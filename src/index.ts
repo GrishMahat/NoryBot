@@ -1,8 +1,9 @@
+import 'module-alias/register';
 import 'dotenv/config';
-import { Client, GatewayIntentBits } from "discord.js";
-import loadEventHandlers from "./handlers/eventHandler";
-import ErrorHandler from "./handlers/errorHandler";
-import { config } from "./config/config";
+import { Client, GatewayIntentBits } from 'discord.js';
+import loadEventHandlers from '@/handlers/eventHandler';
+import ErrorHandler from '@/handlers/errorHandler';
+import { config } from '@/config/config';
 
 // Create error handler instance
 const errorHandler = new ErrorHandler({
