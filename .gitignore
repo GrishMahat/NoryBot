@@ -8,3 +8,4 @@ all.env
 all.dev
 temp_quote.png
 temp_quote.*
+coverage/
