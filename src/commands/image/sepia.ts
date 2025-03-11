@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
+import { sepia } from '@norysight/discord-image';
 
 const sepiaCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -45,7 +45,7 @@ const sepiaCommand: LocalCommand = {
 			});
 
 			// Generate the sepia image
-			const img = await new DIG.Sepia().getImage(avatarUrl);
+			const img = await sepia(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'sepia.png' });

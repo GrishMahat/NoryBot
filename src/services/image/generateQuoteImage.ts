@@ -1,4 +1,4 @@
-import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from 'canvas';
+import { NodeCanvasRenderingContext2D, canvas } from './canvasWrapper';
 import { QuoteResponse } from '../../types/index';
 
 export function validateInput(data: QuoteResponse): void {
@@ -435,14 +435,12 @@ function calculateCanvasDimensions(quote: string): {
 	return { width, height };
 }
 
-export async function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
+export function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
 	validateInput(data);
 
-	const { createCanvas } = await import('canvas');
-
 	const { width, height } = calculateCanvasDimensions(data.quote);
-	const canvas = createCanvas(width, height);
-	const ctx = canvas.getContext('2d');
+	const canvasInstance = canvas.createCanvas(width, height);
+	const ctx = canvasInstance.getContext('2d');
 
 	const { h, s, l } = createGradientBackground(
 		ctx,
@@ -476,5 +474,5 @@ export async function generateQuoteImage(data: QuoteResponse): Promise<Buffer> {
 	drawDecorativeFlourishes(ctx, data.author, width, authorY);
 	drawBorder(ctx, width, height, h, s, l);
 
-	return canvas.toBuffer();
+	return Promise.resolve(canvasInstance.toBuffer());
 }

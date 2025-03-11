@@ -6,7 +6,7 @@ import {
 	MessageFlags,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
+import { affect } from '@norysight/discord-image';
 
 const affectCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -50,7 +50,7 @@ const affectCommand: LocalCommand = {
 			});
 
 			// Generate the Affect meme image
-			const img = await new DIG.Affect().getImage(avatarUrl);
+			const img = await affect(avatarUrl);
 
 			// Create an attachment for the generated image
 			const attachment = new AttachmentBuilder(img, { name: 'affect.png' });

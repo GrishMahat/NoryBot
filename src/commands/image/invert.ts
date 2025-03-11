@@ -5,8 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
-
+import { invert } from '@norysight/discord-image';
 const invertCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('invert')
@@ -45,7 +44,7 @@ const invertCommand: LocalCommand = {
 			});
 
 			// Generate the inverted image
-			const img = await new DIG.Invert().getImage(avatarUrl);
+			const img = await invert(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'invert.png' });

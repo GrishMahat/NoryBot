@@ -5,8 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
-
+import { greyscale } from '@norysight/discord-image';
 const greyscaleCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('greyscale')
@@ -45,7 +44,7 @@ const greyscaleCommand: LocalCommand = {
 			});
 
 			// Generate the greyscale image
-			const img = await new DIG.Greyscale().getImage(avatarUrl);
+			const img = await greyscale(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, {

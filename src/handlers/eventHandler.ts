@@ -108,13 +108,20 @@ const processEventFolder = async (
 				eventFolder,
 			});
 		}
-
-		const eventFiles = files.filter(
-			(file) =>
-				/\.(js|ts)$/.test(file) &&
-				!file.endsWith('.d.ts') &&
-				!file.endsWith('.js.map'),
-		);
+		const eventFiles = files.filter((file) => {
+				try {
+			return (
+					file &&
+					typeof file === 'string' &&
+					/\.(js|ts)$/.test(file) &&
+					!file.endsWith('.d.ts') &&
+					!file.endsWith('.js.map')
+			);
+				} catch (error) {
+			console.error(`Error processing file: ${file}`, error);
+			return false;
+				}
+		}).filter(Boolean);
 
 		await Promise.all(
 			eventFiles.map((file) =>

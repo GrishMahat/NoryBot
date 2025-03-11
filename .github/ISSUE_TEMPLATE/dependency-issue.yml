@@ -6,16 +6,19 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a dependency issue!
+        Thanks for taking the time to report a dependency issue! Please fill out this form as completely as possible to help us resolve the issue quickly.
         
   - type: dropdown
     id: dependency-type
     attributes:
       label: Type of Dependency
+      description: Select the category that best describes the dependency
       options:
-        - Production Dependency
-        - Development Dependency
-        - pnpm/npm related
+        - Production Dependency (required for runtime)
+        - Development Dependency (used for development/building)
+        - pnpm/npm Package Manager Issue
+        - Peer Dependency
+        - Optional Dependency
         - Other
     validations:
       required: true
@@ -24,8 +27,8 @@ body:
     id: package-name
     attributes:
       label: Package Name
-      description: Which package is causing issues?
-      placeholder: "e.g., discord.js, typescript, etc."
+      description: Which package is causing issues? Include scope if applicable
+      placeholder: "@types/node, discord.js, typescript, etc."
     validations:
       required: true
       
@@ -33,17 +36,28 @@ body:
     id: current-version
     attributes:
       label: Current Version
-      description: What version are you currently using?
-      placeholder: "e.g., 14.7.1"
+      description: What version of the package are you currently using?
+      placeholder: "14.7.1"
     validations:
       required: true
+
+  - type: input
+    id: expected-version
+    attributes:
+      label: Expected Working Version
+      description: If known, what version should work or worked previously?
+      placeholder: "14.7.0"
       
   - type: textarea
     id: problem-description
     attributes:
       label: Problem Description
-      description: Describe the issue you're experiencing
-      placeholder: "Detailed description of the problem..."
+      description: Please provide a clear and detailed description of the issue you're experiencing
+      placeholder: |
+        1. What's happening?
+        2. What did you expect to happen?
+        3. How is this affecting your development/production?
+        4. Steps to reproduce the issue
     validations:
       required: true
       
@@ -51,14 +65,32 @@ body:
     id: error-logs
     attributes:
       label: Error Logs
-      description: Please copy and paste any relevant error messages
+      description: Please copy and paste any relevant error messages or stack traces
       render: shell
+      placeholder: |
+        Error: Cannot find module 'package-name'
+        at Object.<anonymous> (/path/to/file:1:1)
+        ...
+      
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Please provide details about your environment
+      value: |
+        - Operating System:
+        - Node.js Version:
+        - Package Manager & Version:
+        - Project Version:
+      render: markdown
       
   - type: checkboxes
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](../CODE_OF_CONDUCT.md)
       options:
+        - label: I have checked for existing issues and confirmed this is not a duplicate
+          required: true
         - label: I agree to follow this project's Code of Conduct
           required: true 

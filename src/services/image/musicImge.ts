@@ -1,8 +1,4 @@
-import {
-	loadImage,
-	createCanvas,
-	CanvasRenderingContext2D as NodeCanvasRenderingContext2D,
-} from 'canvas';
+import { canvas, NodeCanvasRenderingContext2D } from './canvasWrapper';
 import { MusicImageOptions } from '../../types/index';
 
 /**
@@ -170,8 +166,8 @@ export async function generateMusicImage(
 
 	const width = 1200;
 	const height = 630;
-	const canvas = createCanvas(width, height);
-	const ctx = canvas.getContext('2d') as NodeCanvasRenderingContext2D;
+	const canvasInstance = canvas.createCanvas(width, height);
+	const ctx = canvasInstance.getContext('2d') as NodeCanvasRenderingContext2D;
 
 	// Create enhanced gradient background
 	const gradient = ctx.createRadialGradient(
@@ -190,7 +186,7 @@ export async function generateMusicImage(
 
 	try {
 		// Load and draw album art with enhanced effects
-		const albumImage = await loadImage(options.image);
+		const albumImage = await canvas.loadImage(options.image);
 		const imageSize = height * 0.7;
 		const imageX = width * 0.1;
 		const imageY = (height - imageSize) / 2;
@@ -356,7 +352,7 @@ export async function generateMusicImage(
 		console.error('Error generating music image:', error);
 	}
 
-	return canvas.toBuffer();
+	return canvasInstance.toBuffer();
 }
 
 /**

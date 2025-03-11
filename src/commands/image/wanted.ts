@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { wanted } from '@norysight/discord-image';
 
 const wantedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -18,13 +18,20 @@ const wantedCommand: LocalCommand = {
 				.setDescription('The user to put on the wanted poster')
 				.setRequired(false),
 		)
-		.addNumberOption((option) =>
+		.addStringOption((option) =>
 			option
 				.setName('currency')
-				.setDescription('The reward amount (default: 1000)')
+				.setDescription('The currency symbol (default: $)')
+				.setRequired(false)
+				.setMaxLength(1),
+		)
+		.addNumberOption((option) =>
+			option
+				.setName('amount')
+				.setDescription('The reward amount (default: random)')
 				.setRequired(false)
 				.setMinValue(1)
-				.setMaxValue(1000000),
+				.setMaxValue(10000000000000),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -43,7 +50,15 @@ const wantedCommand: LocalCommand = {
 
 			const targetUser =
 				interaction.options.get('user')?.user || interaction.user;
-			const currency = interaction.options.get('currency')?.value || 1000;
+			const currency = interaction.options.get('currency')?.value?.toString() || '$';
+			const amount = interaction.options.get('amount')?.value as number || Math.floor(Math.random() * 1000000);
+
+			if (currency.length > 1) {
+				interaction.editReply({
+					content: 'Currency symbol must be a single character',
+				});
+				return;
+			}
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -52,10 +67,7 @@ const wantedCommand: LocalCommand = {
 			});
 
 			// Generate the Wanted image
-			const img = await new DIG.Wanted().getImage(
-				avatarUrl,
-				currency.toString(),
-			);
+			const img = await wanted(avatarUrl, currency, amount);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'wanted.png' });
@@ -67,7 +79,7 @@ const wantedCommand: LocalCommand = {
 					iconURL: client.user.displayAvatarURL(),
 				})
 				.setDescription(
-					`🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** $${currency.toLocaleString()}`,
+					`🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** ${currency}${amount.toLocaleString()}`,
 				)
 				.setImage('attachment://wanted.png')
 				.setTimestamp()
@@ -87,7 +99,7 @@ const wantedCommand: LocalCommand = {
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
 				.setDescription(
-					'Failed to generate the wanted poster. Please try again later.',
+					error instanceof Error ? error.message : 'Failed to generate the wanted poster. Please try again later.',
 				)
 				.setTimestamp();
 

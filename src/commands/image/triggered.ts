@@ -6,8 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
-
+import { triggered } from '@norysight/discord-image';
 const triggeredCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('triggered')
@@ -46,7 +45,7 @@ const triggeredCommand: LocalCommand = {
 			});
 
 			// Generate the Triggered image
-			const img = await new DIG.Triggered().getImage(avatarUrl);
+			const img = await triggered(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, {

@@ -5,8 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
-
+import { Batslap } from '@norysight/discord-image';
 const batslapCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('batslap')
@@ -62,7 +61,7 @@ const batslapCommand: LocalCommand = {
 			});
 
 			// Generate the Batslap image
-			const img = await new DIG.Batslap().getImage(slapperAvatar, targetAvatar);
+			const img = await Batslap(slapperAvatar, targetAvatar);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, { name: 'batslap.png' });

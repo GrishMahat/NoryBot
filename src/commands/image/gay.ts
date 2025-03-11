@@ -6,8 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
-
+import { gay } from '@norysight/discord-image';
 const gayCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('gay')
@@ -46,7 +45,7 @@ const gayCommand: LocalCommand = {
 			});
 
 			// Generate the Gay effect image
-			const img = await new DIG.Gay().getImage(avatarUrl);
+			const img = await gay(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'gay.png' });
