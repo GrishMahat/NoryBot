@@ -5,8 +5,7 @@ import {
 	Client,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
-
+import { beautiful} from "@norysight/discord-image"
 const beautifulCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')
@@ -45,7 +44,7 @@ const beautifulCommand: LocalCommand = {
 			});
 
 			// Generate the Beautiful image
-			const img = await new DIG.Beautiful().getImage(avatarUrl);
+			const img = await beautiful(avatarUrl);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, {

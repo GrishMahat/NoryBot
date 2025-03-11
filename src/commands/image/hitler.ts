@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { hitler } from '@norysight/discord-image';
 
 const hitlerCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ const hitlerCommand: LocalCommand = {
 			});
 
 			// Generate the Hitler image
-			const img = await new DIG.Hitler().getImage(avatarUrl);
+			const img = await hitler(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'hitler.png' });

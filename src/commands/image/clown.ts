@@ -6,8 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
-
+import { clown } from '@norysight/discord-image';
 const clownCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('clown')
@@ -46,7 +45,7 @@ const clownCommand: LocalCommand = {
 			});
 
 			// Generate the Clown image
-			const img = await new DIG.Clown().getImage(avatarUrl);
+			const img = await clown(avatarUrl);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, { name: 'clown.png' });

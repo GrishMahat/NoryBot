@@ -6,8 +6,7 @@ import {
 	MessageFlags,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
-
+import { ad } from "@norysight/discord-image"
 const admixCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('admix')
@@ -47,7 +46,7 @@ const admixCommand: LocalCommand = {
 			});
 
 			// Generate the Admix image
-			const img = await new DIG.Ad().getImage(avatarUrl);
+			const img = await ad(avatarUrl);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, { name: 'admix.png' });
