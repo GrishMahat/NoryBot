@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import { triggered } from '@norysight/discord-image';
+import { triggered } from 'discord-image-utils';
 const triggeredCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('triggered')

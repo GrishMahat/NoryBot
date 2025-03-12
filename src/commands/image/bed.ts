@@ -7,7 +7,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { bed } from 'discord-image-utils';
 
 const bedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -70,7 +70,7 @@ const bedCommand: LocalCommand = {
 			});
 
 			// Generate the Bed image
-			const img = await new DIG.Bed().getImage(scaredAvatar, targetAvatar);
+			const img = await bed(scaredAvatar, targetAvatar);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, { name: 'bed.png' });

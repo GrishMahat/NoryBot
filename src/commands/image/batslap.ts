@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { Batslap } from '@norysight/discord-image';
+import { Batslap } from 'discord-image-utils';
 const batslapCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('batslap')

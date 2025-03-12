@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { trash } from 'discord-image-utils';
 
 const trashCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ const trashCommand: LocalCommand = {
 			});
 
 			// Generate the Trash image
-			const img = await new DIG.Trash().getImage(avatarUrl);
+			const img = await trash(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'trash.png' });

@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import { wanted } from '@norysight/discord-image';
+import { wanted } from 'discord-image-utils';
 
 const wantedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -50,8 +50,11 @@ const wantedCommand: LocalCommand = {
 
 			const targetUser =
 				interaction.options.get('user')?.user || interaction.user;
-			const currency = interaction.options.get('currency')?.value?.toString() || '$';
-			const amount = interaction.options.get('amount')?.value as number || Math.floor(Math.random() * 1000000);
+			const currency =
+				interaction.options.get('currency')?.value?.toString() || '$';
+			const amount =
+				(interaction.options.get('amount')?.value as number) ||
+				Math.floor(Math.random() * 1000000);
 
 			if (currency.length > 1) {
 				interaction.editReply({
@@ -99,7 +102,9 @@ const wantedCommand: LocalCommand = {
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
 				.setDescription(
-					error instanceof Error ? error.message : 'Failed to generate the wanted poster. Please try again later.',
+					error instanceof Error
+						? error.message
+						: 'Failed to generate the wanted poster. Please try again later.',
 				)
 				.setTimestamp();
 

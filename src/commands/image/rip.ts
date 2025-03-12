@@ -7,7 +7,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { rip } from 'discord-image-utils';
 
 const ripCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ const ripCommand: LocalCommand = {
 			});
 
 			// Generate the RIP image
-			const img = await new DIG.Rip().getImage(avatarUrl);
+			const img = await rip(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'rip.png' });

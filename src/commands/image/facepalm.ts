@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { facepalm } from 'discord-image-utils';
 
 const facepalmCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ const facepalmCommand: LocalCommand = {
 			});
 
 			// Generate the Facepalm image
-			const img = await new DIG.Facepalm().getImage(avatarUrl);
+			const img = await facepalm(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, {

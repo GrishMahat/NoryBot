@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import { clown } from '@norysight/discord-image';
+import { clown } from 'discord-image-utils';
 const clownCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('clown')

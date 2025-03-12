@@ -6,7 +6,7 @@ import {
 	MessageFlags,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { affect } from '@norysight/discord-image';
+import { affect } from 'discord-image-utils';
 
 const affectCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

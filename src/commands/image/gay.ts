@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import { gay } from '@norysight/discord-image';
+import { gay } from 'discord-image-utils';
 const gayCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('gay')

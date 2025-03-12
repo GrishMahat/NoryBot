@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { invert } from '@norysight/discord-image';
+import { invert } from 'discord-image-utils';
 const invertCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('invert')

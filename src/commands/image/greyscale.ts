@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { greyscale } from '@norysight/discord-image';
+import { greyscale } from 'discord-image-utils';
 const greyscaleCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('greyscale')

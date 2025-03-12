@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { sepia } from '@norysight/discord-image';
+import { sepia } from 'discord-image-utils';
 
 const sepiaCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

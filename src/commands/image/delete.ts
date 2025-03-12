@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { Delete } from 'discord-image-utils';
 
 const deleteCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ const deleteCommand: LocalCommand = {
 			});
 
 			// Generate the Delete image
-			const img = await new DIG.Delete().getImage(avatarUrl);
+			const img = await Delete(avatarUrl);
 
 			// Create an attachment
 			const attachment = new AttachmentBuilder(img, { name: 'delete.png' });

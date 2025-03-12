@@ -5,7 +5,7 @@ import {
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import DIG from 'discord-image-generation';
+import { jail } from 'discord-image-utils';
 
 const jailCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -44,7 +44,7 @@ const jailCommand: LocalCommand = {
 				size: 512,
 			});
 
-			const img = await new DIG.Jail().getImage(avatarUrl);
+			const img = await jail(avatarUrl);
 			const attachment = new AttachmentBuilder(img, { name: 'jail.png' });
 
 			const embed = new EmbedBuilder()

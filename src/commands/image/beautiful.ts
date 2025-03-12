@@ -5,7 +5,7 @@ import {
 	Client,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { beautiful} from "@norysight/discord-image"
+import { beautiful } from 'discord-image-utils';
 const beautifulCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')

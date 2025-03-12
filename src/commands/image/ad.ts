@@ -6,7 +6,7 @@ import {
 	MessageFlags,
 	ChatInputCommandInteraction,
 } from 'discord.js';
-import { ad } from "@norysight/discord-image"
+import { ad } from 'discord-image-utils';
 const admixCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('admix')

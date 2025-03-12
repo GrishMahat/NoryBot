@@ -7,7 +7,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import DIG from 'discord-image-generation';
+import { bobross } from 'discord-image-utils';
 
 const bobrossCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -48,7 +48,7 @@ const bobrossCommand: LocalCommand = {
 			});
 
 			// Generate the Bob Ross painting image
-			const img = await new DIG.Bobross().getImage(avatarUrl);
+			const img = await bobross(avatarUrl);
 
 			// Create an attachment using AttachmentBuilder
 			const attachment = new AttachmentBuilder(img, { name: 'bobross.png' });

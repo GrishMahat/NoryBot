@@ -6,7 +6,7 @@ import {
 	ChatInputCommandInteraction,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
-import { hitler } from '@norysight/discord-image';
+import { hitler } from 'discord-image-utils';
 
 const hitlerCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
