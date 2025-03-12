@@ -1,7 +1,6 @@
 import {
 	Client,
 	ButtonInteraction,
-	GuildMember,
 	PermissionsBitField,
 } from 'discord.js';
 import buttonValidator from '@/events/validations/buttonValidator';
@@ -13,52 +12,48 @@ global.errorHandler = {
 };
 
 // Mock the getButtons function
-jest.mock('@/utils/helpers/getButtons', () => {
-	return jest.fn().mockImplementation(() => [
-		{
-			customId: 'test_button',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-		},
-		{
-			customId: 'admin_button',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			userPermissions: ['Administrator'],
-		},
-		{
-			customId: 'dev_button',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			devOnly: true,
-		},
-		{
-			customId: 'cooldown_button',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			cooldown: 60,
-		},
-	]);
-});
+jest.mock('@/utils/helpers/getButtons', () => jest.fn().mockImplementation(() => [
+	{
+		customId: 'test_button',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+	},
+	{
+		customId: 'admin_button',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		userPermissions: ['Administrator'],
+	},
+	{
+		customId: 'dev_button',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		devOnly: true,
+	},
+	{
+		customId: 'cooldown_button',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		cooldown: 60,
+	},
+]));
 
 // Mock LRUCache and CooldownManager
-jest.mock('@/services/manager/LRUCache', () => {
-	return jest.fn().mockImplementation(() => ({
-		get: jest.fn(),
-		set: jest.fn(),
-		has: jest.fn(),
-		delete: jest.fn(),
-		size: jest.fn().mockReturnValue(0),
-		clear: jest.fn(),
-		getStats: jest.fn().mockReturnValue({}),
-		setOnExpireHandler: jest.fn(),
-		setAutoCleanupEnabled: jest.fn(),
-	}));
-});
+jest.mock('@/services/manager/LRUCache', () => jest.fn().mockImplementation(() => ({
+	get: jest.fn(),
+	set: jest.fn(),
+	has: jest.fn(),
+	delete: jest.fn(),
+	size: jest.fn().mockReturnValue(0),
+	clear: jest.fn(),
+	getStats: jest.fn().mockReturnValue({}),
+	setOnExpireHandler: jest.fn(),
+	setAutoCleanupEnabled: jest.fn(),
+})));
 
 jest.mock('@/services/manager/CooldownManager', () => ({
 	isOnCooldown: jest.fn().mockReturnValue(false),
@@ -97,30 +92,28 @@ describe('ButtonValidator', () => {
 
 	const mockClient = new Client({ intents: [] });
 
-	const createMockInteraction = (customId: string, hasPerms = true) => {
-		return {
-			customId,
-			user: {
-				id: 'user-id',
-				tag: 'User#0000',
-				username: 'TestUser',
-				displayAvatarURL: jest
-					.fn()
-					.mockImplementation((options) => 'https://example.com/avatar.png'),
-			},
-			guild: { id: 'guild-id' },
-			member: {
-				permissions: new PermissionsBitField(hasPerms ? ['Administrator'] : []),
-			},
-			deferReply: mockDefer,
-			reply: mockReply,
-			editReply: mockEditReply,
-			createdTimestamp: Date.now(),
-			isButton: () => true,
-			replied: false,
-			deferred: false,
-		} as unknown as ButtonInteraction;
-	};
+	const createMockInteraction = (customId: string, hasPerms = true): ButtonInteraction => ({
+		customId,
+		user: {
+			id: 'user-id',
+			tag: 'User#0000',
+			username: 'TestUser',
+			displayAvatarURL: jest
+				.fn()
+				.mockImplementation((options) => 'https://example.com/avatar.png'),
+		},
+		guild: { id: 'guild-id' },
+		member: {
+			permissions: new PermissionsBitField(hasPerms ? ['Administrator'] : []),
+		},
+		deferReply: mockDefer,
+		reply: mockReply,
+		editReply: mockEditReply,
+		createdTimestamp: Date.now(),
+		isButton: () => true,
+		replied: false,
+		deferred: false,
+	} as unknown as ButtonInteraction);
 
 	beforeEach(() => {
 		jest.clearAllMocks();

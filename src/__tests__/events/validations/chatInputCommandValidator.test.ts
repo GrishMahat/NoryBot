@@ -12,59 +12,55 @@ global.errorHandler = {
 };
 
 // Mock the getLocalCommands function
-jest.mock('@/utils/helpers/getLocalCommands', () => {
-	return jest.fn().mockImplementation(() => [
-		{
-			name: 'test',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-		},
-		{
-			name: 'admin',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			userPermissions: ['Administrator'],
-		},
-		{
-			name: 'dev',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			devOnly: true,
-		},
-		{
-			name: 'cooldown',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			cooldown: 60,
-		},
-		{
-			name: 'nsfw',
-			run: jest
-				.fn()
-				.mockImplementation((client, interaction) => Promise.resolve()),
-			nsfwOnly: true,
-		},
-	]);
-});
+jest.mock('@/utils/helpers/getLocalCommands', () => jest.fn().mockImplementation(() => [
+	{
+		name: 'test',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+	},
+	{
+		name: 'admin',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		userPermissions: ['Administrator'],
+	},
+	{
+		name: 'dev',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		devOnly: true,
+	},
+	{
+		name: 'cooldown',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		cooldown: 60,
+	},
+	{
+		name: 'nsfw',
+		run: jest
+			.fn()
+			.mockImplementation((client, interaction) => Promise.resolve()),
+		nsfwOnly: true,
+	},
+]));
 
 // Mock LRUCache and CooldownManager
-jest.mock('@/services/manager/LRUCache', () => {
-	return jest.fn().mockImplementation(() => ({
-		get: jest.fn().mockReturnValue([]),
-		set: jest.fn(),
-		has: jest.fn(),
-		delete: jest.fn(),
-		size: jest.fn().mockReturnValue(0),
-		clear: jest.fn(),
-		getStats: jest.fn().mockReturnValue({}),
-		setOnExpireHandler: jest.fn(),
-		setAutoCleanupEnabled: jest.fn(),
-	}));
-});
+jest.mock('@/services/manager/LRUCache', () => jest.fn().mockImplementation(() => ({
+	get: jest.fn().mockReturnValue([]),
+	set: jest.fn(),
+	has: jest.fn(),
+	delete: jest.fn(),
+	size: jest.fn().mockReturnValue(0),
+	clear: jest.fn(),
+	getStats: jest.fn().mockReturnValue({}),
+	setOnExpireHandler: jest.fn(),
+	setAutoCleanupEnabled: jest.fn(),
+})));
 
 jest.mock('@/services/manager/CooldownManager', () => ({
 	isOnCooldown: jest.fn().mockReturnValue(false),
@@ -108,34 +104,32 @@ describe('ChatInputCommandValidator', () => {
 		commandName: string,
 		hasPerms = true,
 		isNsfw = false,
-	) => {
-		return {
-			commandName,
-			user: {
-				id: 'user-id',
-				tag: 'User#0000',
-				username: 'TestUser',
-				displayAvatarURL: jest
-					.fn()
-					.mockImplementation((options) => 'https://example.com/avatar.png'),
-			},
-			guild: { id: 'guild-id' },
-			channel: { nsfw: isNsfw },
-			member: {
-				permissions: new PermissionsBitField(hasPerms ? ['Administrator'] : []),
-			},
-			deferReply: mockDefer,
-			reply: mockReply,
-			editReply: mockEditReply,
-			createdTimestamp: Date.now(),
-			isChatInputCommand: () => true,
-			options: {
-				getSubcommand: jest.fn().mockReturnValue(''),
-			},
-			replied: false,
-			deferred: false,
-		} as unknown as ChatInputCommandInteraction;
-	};
+	): ChatInputCommandInteraction => ({
+		commandName,
+		user: {
+			id: 'user-id',
+			tag: 'User#0000',
+			username: 'TestUser',
+			displayAvatarURL: jest
+				.fn()
+				.mockImplementation((options) => 'https://example.com/avatar.png'),
+		},
+		guild: { id: 'guild-id' },
+		channel: { nsfw: isNsfw },
+		member: {
+			permissions: new PermissionsBitField(hasPerms ? ['Administrator'] : []),
+		},
+		deferReply: mockDefer,
+		reply: mockReply,
+		editReply: mockEditReply,
+		createdTimestamp: Date.now(),
+		isChatInputCommand: () => true,
+		options: {
+			getSubcommand: jest.fn().mockReturnValue(''),
+		},
+		replied: false,
+		deferred: false,
+	} as unknown as ChatInputCommandInteraction);
 
 	beforeEach(() => {
 		jest.clearAllMocks();

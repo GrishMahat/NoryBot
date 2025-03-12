@@ -1,5 +1,11 @@
-import { Client, WebhookClient } from 'discord.js';
+import { Client } from 'discord.js';
 import ErrorHandler from '@/handlers/errorHandler';
+
+// Mock console methods
+const consoleErrorSpy = jest
+	.spyOn(console, 'error')
+	.mockImplementation(() => {});
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
 // Mock discord.js components
 jest.mock('discord.js', () => {
@@ -30,126 +36,105 @@ jest.mock('discord.js', () => {
 });
 
 // Mock determineSeverity
-jest.mock('@/services/error/determineSeverity', () => {
-	return jest.fn().mockReturnValue('critical');
-});
+jest.mock('@/services/error/determineSeverity', () =>
+	jest.fn().mockReturnValue('critical'),
+);
 
 // Mock determineErrorCategory
-jest.mock('@/services/error/determineErrorCategory', () => {
-	return jest.fn().mockReturnValue('api');
-});
+jest.mock('@/services/error/determineErrorCategory', () =>
+	jest.fn().mockReturnValue('api'),
+);
 
 // Mock getRecoverySuggestions
-jest.mock('@/services/error/getRecoverySuggestions', () => {
-	return jest.fn().mockReturnValue(['Retry the operation', 'Check API status']);
-});
+jest.mock('@/services/error/getRecoverySuggestions', () =>
+	jest.fn().mockReturnValue(['Retry the operation', 'Check API status']),
+);
 
 // Mock PerformanceMonitor
-jest.mock('@/services/error/performanceMonitor', () => {
-	return {
-		PerformanceMonitor: jest.fn().mockImplementation(() => ({
-			initialize: jest.fn(),
-			recordError: jest.fn(),
-			getMetrics: jest.fn().mockReturnValue({}),
-		})),
-	};
+jest.mock('@/services/error/performanceMonitor', () => ({
+	PerformanceMonitor: jest.fn().mockImplementation(() => ({
+		initialize: jest.fn(),
+		recordError: jest.fn(),
+		getMetrics: jest.fn().mockReturnValue({}),
+	})),
+}));
+
+// Mock process.env
+const originalEnv = process.env;
+
+beforeEach(() => {
+	jest.clearAllMocks();
+	process.env = { ...originalEnv };
 });
 
-// Mock ErrorMetricsService
-jest.mock('@/services/error/ErrorMetricsService', () => {
-	return {
-		ErrorMetricsService: jest.fn().mockImplementation(() => ({
-			initialize: jest.fn(),
-			recordError: jest.fn(),
-			getErrorMetrics: jest.fn().mockReturnValue({}),
-		})),
-	};
+afterEach(() => {
+	process.env = originalEnv;
 });
 
-// Create console spies
-const consoleErrorSpy = jest
-	.spyOn(console, 'error')
-	.mockImplementation(() => {});
-const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+afterAll(() => {
+	consoleErrorSpy.mockRestore();
+	consoleWarnSpy.mockRestore();
+});
 
-describe('ErrorHandler', () => {
-	// Mock process.env
-	const originalEnv = process.env;
+it('should initialize with default config', () => {
+	const errorHandler = new ErrorHandler();
+	expect(errorHandler).toBeDefined();
+});
 
-	beforeEach(() => {
-		jest.clearAllMocks();
-		process.env = { ...originalEnv };
+it('should initialize with custom config', () => {
+	const errorHandler = new ErrorHandler({
+		webhook: 'https://example.com/webhook',
+		environment: 'test',
+		maxCacheSize: 50,
 	});
+	expect(errorHandler).toBeDefined();
+});
 
-	afterEach(() => {
-		process.env = originalEnv;
-	});
+it('should handle errors correctly', async () => {
+	process.env.ERROR_WEBHOOK = 'https://example.com/webhook';
+	const errorHandler = new ErrorHandler();
 
-	afterAll(() => {
-		consoleErrorSpy.mockRestore();
-		consoleWarnSpy.mockRestore();
-	});
+	// Initialize with client
+	const mockClient = new Client({ intents: [] });
+	errorHandler.initialize(mockClient);
 
-	it('should initialize with default config', () => {
-		const errorHandler = new ErrorHandler();
-		expect(errorHandler).toBeDefined();
-	});
+	const error = new Error('Test error');
+	await errorHandler.handleError(error, 'test');
 
-	it('should initialize with custom config', () => {
-		const errorHandler = new ErrorHandler({
-			webhook: 'https://example.com/webhook',
-			environment: 'test',
-			maxCacheSize: 50,
-		});
-		expect(errorHandler).toBeDefined();
-	});
+	// When an error is handled with a webhook URL, the error should be logged or sent
+	expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
+});
 
-	it('should handle errors correctly', async () => {
-		process.env.ERROR_WEBHOOK = 'https://example.com/webhook';
-		const errorHandler = new ErrorHandler();
+it('should not attempt to send to webhook if not configured', async () => {
+	process.env.ERROR_WEBHOOK = '';
+	const errorHandler = new ErrorHandler();
 
-		// Initialize with client
-		const mockClient = new Client({ intents: [] });
-		errorHandler.initialize(mockClient);
+	const error = new Error('Test error');
+	await errorHandler.handleError(error, 'test');
 
-		const error = new Error('Test error');
-		await errorHandler.handleError(error, 'test');
+	// When no webhook is configured, errors should still be logged
+	expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
+});
 
-		// When an error is handled with a webhook URL, the error should be logged or sent
-		expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
-	});
+it('should handle different error types', async () => {
+	process.env.ERROR_WEBHOOK = 'https://example.com/webhook';
+	const errorHandler = new ErrorHandler();
 
-	it('should not attempt to send to webhook if not configured', async () => {
-		process.env.ERROR_WEBHOOK = '';
-		const errorHandler = new ErrorHandler();
+	// Test with string error
+	await errorHandler.handleError('String error', 'stringError');
 
-		const error = new Error('Test error');
-		await errorHandler.handleError(error, 'test');
+	// Test with Error object
+	await errorHandler.handleError(new Error('Error object'), 'errorObject');
 
-		// When no webhook is configured, errors should still be logged
-		expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
-	});
+	// Test with custom error object
+	await errorHandler.handleError(
+		{
+			name: 'CustomError',
+			message: 'Custom error',
+		},
+		'customError',
+	);
 
-	it('should handle different error types', async () => {
-		process.env.ERROR_WEBHOOK = 'https://example.com/webhook';
-		const errorHandler = new ErrorHandler();
-
-		// Test with string error
-		await errorHandler.handleError('String error', 'stringError');
-
-		// Test with Error object
-		await errorHandler.handleError(new Error('Error object'), 'errorObject');
-
-		// Test with custom error object
-		await errorHandler.handleError(
-			{
-				name: 'CustomError',
-				message: 'Custom error',
-			},
-			'customError',
-		);
-
-		// Errors should be logged regardless of type
-		expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
-	});
+	// Errors should be logged regardless of type
+	expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
 });

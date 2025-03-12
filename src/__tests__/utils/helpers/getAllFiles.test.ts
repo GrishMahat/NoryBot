@@ -26,11 +26,11 @@ describe('getAllFiles utility', () => {
 	it('should return only files with .js and .ts extensions', () => {
 		// Setup mock with different file types
 		(fs.readdirSync as jest.Mock).mockReturnValue([
-			{ name: 'file1.js', isDirectory: () => false },
-			{ name: 'file2.ts', isDirectory: () => false },
-			{ name: 'file3.d.ts', isDirectory: () => false }, // Should be excluded
-			{ name: 'file4.js.map', isDirectory: () => false }, // Should be excluded
-			{ name: 'file5.txt', isDirectory: () => false }, // Should be excluded
+			{ name: 'file1.js', isDirectory: (): boolean => false },
+			{ name: 'file2.ts', isDirectory: (): boolean => false },
+			{ name: 'file3.d.ts', isDirectory: (): boolean => false }, // Should be excluded
+			{ name: 'file4.js.map', isDirectory: (): boolean => false }, // Should be excluded
+			{ name: 'file5.txt', isDirectory: (): boolean => false }, // Should be excluded
 		]);
 
 		const result = getAllFiles('/test/directory');
@@ -47,8 +47,8 @@ describe('getAllFiles utility', () => {
 		(fs.readdirSync as jest.Mock).mockImplementation((dir) => {
 			if (dir === '/test/directory') {
 				return [
-					{ name: 'file1.js', isDirectory: () => false },
-					{ name: 'subfolder', isDirectory: () => true },
+					{ name: 'file1.js', isDirectory: (): boolean => false },
+					{ name: 'subfolder', isDirectory: (): boolean => true },
 				];
 			} else {
 				return []; // Empty for subfolders
