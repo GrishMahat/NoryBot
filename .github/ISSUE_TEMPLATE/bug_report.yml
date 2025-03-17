@@ -1,0 +1,96 @@
+name: "🐛 Bug Report"
+description: Create a report to help us improve
+title: "🐛 Bug: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form as completely as possible to help us resolve the issue quickly.
+        
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: Type of Bug
+      description: Select the category that best describes the bug
+      options:
+        - Command/Feature Not Working
+        - Bot Crashes/Disconnects
+        - Permission Issues
+        - Database Issues
+        - API Integration Problems
+        - Performance Issues
+        - Other
+    validations:
+      required: true
+      
+  - type: input
+    id: command-name
+    attributes:
+      label: Command/Feature Name
+      description: Which command or feature is affected?
+      placeholder: "!help, /ping, etc."
+      
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: |
+        1. What's happening?
+        2. What did you expect to happen?
+        3. How is this affecting your bot's functionality?
+        4. Steps to reproduce the issue
+    validations:
+      required: true
+      
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Logs
+      description: Please copy and paste any relevant error messages or stack traces
+      render: shell
+      placeholder: |
+        Error: Cannot find module 'package-name'
+        at Object.<anonymous> (/path/to/file:1:1)
+        ...
+      
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Please provide details about your environment
+      value: |
+        - Operating System:
+        - Node.js Version:
+        - Package Manager & Version:
+        - Discord.js Version:
+        - Bot Version:
+        - Intents Used:
+        - Partials Used:
+        - Database (if applicable):
+        - Other Dependencies:
+      render: markdown
+      
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - When did this start happening?
+        - Did this work before?
+        - Are there any specific conditions that trigger this bug?
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](../CODE_OF_CONDUCT.md)
+      options:
+        - label: I have checked for existing issues and confirmed this is not a duplicate
+          required: true
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+        - label: I have checked the Discord.js documentation for similar issues
+          required: true 

@@ -1,0 +1,90 @@
+name: "✨ Feature Request"
+description: Suggest an idea for this project
+title: "✨ Feature: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please fill out this form as completely as possible to help us understand your request.
+        
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Type of Feature
+      description: Select the category that best describes the feature
+      options:
+        - New Command
+        - New Event Handler
+        - New Integration
+        - UI/UX Improvement
+        - Performance Enhancement
+        - Documentation
+        - Other
+    validations:
+      required: true
+      
+  - type: input
+    id: feature-name
+    attributes:
+      label: Feature Name
+      description: What would you like to name this feature?
+      placeholder: "Command name, feature title, etc."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of what you want to happen
+      placeholder: |
+        1. What is the feature?
+        2. How would it work?
+        3. What problem does it solve?
+        4. Any specific requirements or constraints?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe the scenarios where this feature would be useful
+      placeholder: |
+        - When users want to...
+        - During...
+        - To help with...
+      
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: |
+        - I considered...
+        - Another approach could be...
+        - I also thought about...
+      
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the feature request here
+      placeholder: |
+        - Similar features in other bots
+        - Mockups or examples
+        - Related issues or PRs
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](../CODE_OF_CONDUCT.md)
+      options:
+        - label: I have checked for existing feature requests and confirmed this is not a duplicate
+          required: true
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+        - label: I understand this is a request and not a demand
+          required: true 
