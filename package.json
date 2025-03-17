@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
-    "axios": "^1.8.2",
+    "axios": "^1.8.3",
     "canvas": "3.1.0",
     "colors": "^1.4.0",
     "discord-image-utils": "^0.0.7",
