@@ -1,0 +1,74 @@
+bug:
+- "bug"
+- "fix"
+- "issue"
+- "error"
+- "crash"
+- "not working"
+- "broken"
+- "failing"
+
+enhancement:
+- "feature"
+- "improvement"
+- "enhancement"
+- "new"
+- "add"
+- "implement"
+- "suggestion"
+
+documentation:
+- "docs"
+- "documentation"
+- "readme"
+- "guide"
+- "tutorial"
+- "help"
+- "explain"
+
+dependencies:
+- "dependencies"
+- "package"
+- "npm"
+- "pnpm"
+- "yarn"
+- "install"
+- "update"
+- "upgrade"
+
+discord:
+- "discord"
+- "discord.js"
+- "bot"
+- "client"
+- "guild"
+- "channel"
+- "message"
+- "command"
+
+security:
+- "security"
+- "vulnerability"
+- "exploit"
+- "hack"
+- "safe"
+- "permission"
+- "access"
+
+performance:
+- "performance"
+- "speed"
+- "slow"
+- "optimize"
+- "memory"
+- "cpu"
+- "resource"
+
+urgent:
+- "urgent"
+- "critical"
+- "important"
+- "asap"
+- "emergency"
+- "priority"
+- "blocking" 

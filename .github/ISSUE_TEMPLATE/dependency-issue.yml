@@ -1,5 +1,5 @@
-name: "📦 Dependency Issue"
-description: Report a problem with dependencies
+name: "📦 Discord Bot Dependency Issue"
+description: Report a problem with Discord bot dependencies
 title: "📦 Dependency: "
 labels: ["dependencies", "triage"]
 body:
@@ -14,11 +14,14 @@ body:
       label: Type of Dependency
       description: Select the category that best describes the dependency
       options:
-        - Production Dependency (required for runtime)
-        - Development Dependency (used for development/building)
+        - Discord.js Core
+        - Discord.js Extensions (Voice, Gateway, etc.)
+        - Database Dependencies
+        - API Integration Dependencies
+        - Development Tools
         - pnpm/npm Package Manager Issue
-        - Peer Dependency
-        - Optional Dependency
+        - Peer Dependencies
+        - Optional Dependencies
         - Other
     validations:
       required: true
@@ -28,7 +31,7 @@ body:
     attributes:
       label: Package Name
       description: Which package is causing issues? Include scope if applicable
-      placeholder: "@types/node, discord.js, typescript, etc."
+      placeholder: "discord.js, @discordjs/voice, @discordjs/rest, etc."
     validations:
       required: true
       
@@ -37,7 +40,7 @@ body:
     attributes:
       label: Current Version
       description: What version of the package are you currently using?
-      placeholder: "14.7.1"
+      placeholder: "14.14.1"
     validations:
       required: true
 
@@ -46,7 +49,7 @@ body:
     attributes:
       label: Expected Working Version
       description: If known, what version should work or worked previously?
-      placeholder: "14.7.0"
+      placeholder: "14.14.0"
       
   - type: textarea
     id: problem-description
@@ -56,8 +59,9 @@ body:
       placeholder: |
         1. What's happening?
         2. What did you expect to happen?
-        3. How is this affecting your development/production?
+        3. How is this affecting your bot's functionality?
         4. Steps to reproduce the issue
+        5. Any specific Discord.js features affected
     validations:
       required: true
       
@@ -81,7 +85,10 @@ body:
         - Operating System:
         - Node.js Version:
         - Package Manager & Version:
-        - Project Version:
+        - Discord.js Version:
+        - Bot Version:
+        - Intents Used:
+        - Partials Used:
       render: markdown
       
   - type: checkboxes
@@ -93,4 +100,6 @@ body:
         - label: I have checked for existing issues and confirmed this is not a duplicate
           required: true
         - label: I agree to follow this project's Code of Conduct
+          required: true
+        - label: I have checked the Discord.js documentation for similar issues
           required: true 
