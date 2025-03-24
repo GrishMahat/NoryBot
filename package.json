@@ -32,7 +32,7 @@
     "tsx": "^4.19.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
+    "@eslint/js": "^9.23.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.10",
     "eslint": "^9.22.0",
