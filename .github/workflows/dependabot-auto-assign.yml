@@ -1,0 +1,113 @@
+name: Dependabot Auto-Assign
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  process-dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.issue.title, 'Dependabot') || github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Process Dependabot Issue/PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const issueNumber = context.payload.issue ? context.payload.issue.number : context.payload.pull_request.number;
+              const isIssue = !!context.payload.issue;
+              const item = context.payload.issue || context.payload.pull_request;
+              
+              console.log(`Processing ${isIssue ? 'issue' : 'PR'} #${issueNumber}`);
+              
+              // Check if issue/PR exists
+              let endpoint = isIssue ? 'issues' : 'pulls';
+              const checkItem = await github.rest[endpoint].get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              }).catch(err => {
+                console.log(`Issue/PR #${issueNumber} not found: ${err.message}`);
+                return null;
+              });
+              
+              if (!checkItem) {
+                console.log(`Skipping processing as item #${issueNumber} was not found`);
+                return;
+              }
+              
+              // Check if already assigned to avoid redundant assignments
+              const assignees = item.assignees || [];
+              if (assignees.some(assignee => assignee.login === 'dependabot[bot]')) {
+                console.log(`Dependabot already assigned to #${issueNumber}, skipping assignment`);
+              } else {
+                // Assign dependabot
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  assignees: ["dependabot[bot]"]
+                });
+                console.log(`Successfully assigned dependabot to #${issueNumber}`);
+              }
+              
+              // Apply labels
+              const currentLabels = item.labels?.map(label => label.name) || [];
+              const labelsToAdd = ['dependencies', 'automated'];
+              const newLabels = labelsToAdd.filter(label => !currentLabels.includes(label));
+              
+              if (newLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: newLabels
+                });
+                console.log(`Added labels: ${newLabels.join(', ')} to #${issueNumber}`);
+              }
+              
+              // Add a comment if it's a PR
+              if (!isIssue) {
+                const comments = await github.rest.issues.listComments({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber
+                });
+                
+                // Only add comment if no bot comment exists
+                if (!comments.data.some(comment => comment.user.login === 'github-actions[bot]')) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `🤖 This dependency update has been automatically assigned to @dependabot[bot]. CI tests will run to verify compatibility.`
+                  });
+                  console.log(`Added informational comment to PR #${issueNumber}`);
+                }
+              }
+              
+            } catch (error) {
+              console.log(`Error occurred: ${error.message}`);
+              console.log(`Stack trace: ${error.stack}`);
+              
+              // Report error as a comment if possible
+              try {
+                const issueNumber = context.payload.issue?.number || context.payload.pull_request?.number;
+                if (issueNumber) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `⚠️ Error while processing automation: ${error.message}`
+                  });
+                }
+              } catch (commentError) {
+                console.log(`Failed to post error comment: ${commentError.message}`);
+              }
+            } 

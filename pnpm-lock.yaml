@@ -21,8 +21,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       discord-image-utils:
-        specifier: ^0.0.7
-        version: 0.0.7
+        specifier: ^0.0.8
+        version: 0.0.8
       discord.js:
         specifier: ^14.18.0
         version: 14.18.0
@@ -1201,8 +1201,8 @@ packages:
   discord-api-types@0.37.119:
     resolution: {integrity: sha512-WasbGFXEB+VQWXlo6IpW3oUv73Yuau1Ig4AZF/m13tXcTKnMpc/mHjpztIlz4+BM9FG9BHQkEXiPto3bKduQUg==}
 
-  discord-image-utils@0.0.7:
-    resolution: {integrity: sha512-tmOryWWEax19vhEESdPGJrs/o0deS+JoLC0zTOtk1N7M4gqXGiTrnpyCFnMuvBrkaLhOKm+czto9/zBNTeyGzA==}
+  discord-image-utils@0.0.8:
+    resolution: {integrity: sha512-JhMxHPkPAFzJnSWKu4eCjjv/tcujNkZZCIYX++R0GqPuso7DER4QOyt2FE/heOb2i2JJ6BkmEZM37fI53gYwbQ==}
     engines: {node: '>=16.0.0'}
 
   discord.js@14.18.0:
@@ -4005,7 +4005,7 @@ snapshots:
 
   discord-api-types@0.37.119: {}
 
-  discord-image-utils@0.0.7:
+  discord-image-utils@0.0.8:
     dependencies:
       canvas: 3.1.0
       gifencoder: 2.0.1
