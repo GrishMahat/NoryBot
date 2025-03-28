@@ -51,6 +51,7 @@ export default async (client: Client): Promise<void> => {
 				err instanceof Error ? err.message : 'Unknown error'
 			}`.red,
 		);
+		await global.errorHandler.handleError(err, 'registerContextMenusError');
 	}
 };
 

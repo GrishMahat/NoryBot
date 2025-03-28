@@ -9,6 +9,7 @@ import getLocalCommands from '../../utils/helpers/getLocalCommands';
 import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
 import compareCommands from '../../utils/validators/commandComparing';
 import { LocalCommand } from '../../types/index';
+import { error } from 'console';
 
 /**
  * Synchronizes local command definitions with the Discord application's registered commands.
@@ -83,6 +84,7 @@ export default async (client: Client): Promise<void> => {
 				err instanceof Error ? err.message : 'Unknown error'
 			}`.red,
 		);
+		await global.errorHandler.handleError(err, 'EventHandlerSetupError');
 	}
 };
 
