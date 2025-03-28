@@ -130,11 +130,13 @@ export interface ErrorDetails {
 	/** Error category for grouping */
 	category: string;
 	/** Suggestions for resolving the error */
-	recoverySuggestions: string;
+	recoverySuggestions: string[];
 	/** Additional metadata */
 	metadata: {
 		nodeVersion: string;
 		clientId: string;
+		os: string;
+		arch: string;
 	};
 	/** Contextual information about the error */
 	context: ErrorContext;
@@ -162,6 +164,8 @@ export interface ErrorInfo {
 	details: ErrorDetails;
 	/** Number of occurrences */
 	occurrences: number;
+	/** Timestamp of the first occurrence */
+	firstOccurrence: number;
 	/** Timestamp of the last occurrence */
 	lastOccurrence: number;
 	/** Whether the error has been resolved */
@@ -171,7 +175,7 @@ export interface ErrorInfo {
 	/** How the error was resolved */
 	resolution?: string;
 	/** Number of retry attempts made */
-	retryAttempts: number;
+	retryAttempts?: number;
 	/** Current retry count */
 	retryCount: number;
 	/** Timestamp of the last retry attempt */
@@ -192,6 +196,10 @@ export interface ErrorGroup {
 	firstOccurrence: number;
 	/** Timestamp of last occurrence */
 	lastOccurrence: number;
+	/** Distribution of errors by severity */
+	severityDistribution: Record<ErrorSeverity, number>;
+	/** Whether a summary report has been sent for this group */
+	reportSent: boolean;
 }
 
 /**
