@@ -158,7 +158,9 @@ class ModalValidator {
 		// Ensure permissions is a PermissionsBitField object
 		if (!(member.permissions instanceof PermissionsBitField)) return false;
 		// Check if the member has all specified permissions
-		return permissions.every((permission) => member.permissions.has(permission));
+		return permissions.every((permission) =>
+			member.permissions.has(permission),
+		);
 	}
 
 	/**
@@ -182,7 +184,10 @@ class ModalValidator {
 								// Modals are often guild-based, but check just in case
 								const member = interaction.member;
 								if (!(member instanceof GuildMember)) return false; // Cannot check permissions outside a guild context
-								return this.checkPermissions(member, modal.userPermissions || []);
+								return this.checkPermissions(
+									member,
+									modal.userPermissions || [],
+								);
 							}
 						: (): boolean => true, // No permissions required
 					botPermissions: modal.botPermissions
@@ -207,7 +212,8 @@ class ModalValidator {
 
 			if (retryCount < 3) {
 				console.log(
-					`Retrying modal load in 5 seconds... (Attempt ${retryCount + 1})`.yellow,
+					`Retrying modal load in 5 seconds... (Attempt ${retryCount + 1})`
+						.yellow,
 				);
 				await new Promise((resolve) => setTimeout(resolve, 5000));
 				await this.initializeModals(retryCount + 1); // Retry loading
@@ -237,7 +243,7 @@ class ModalValidator {
 		interaction: ModalSubmitInteraction,
 		modal: Modal,
 	): InteractionReplyOptions | null {
-		const { developersId, testServerId, maintenance } = config;
+		const { developersId, testServerId } = config;
 		const userId = interaction.user.id;
 		const customId = modal.customId;
 
@@ -317,7 +323,9 @@ class ModalValidator {
 			// If initialization failed after retries, isInitialized might still be false.
 			// We should probably stop processing if modals aren't loaded.
 			if (!this.isInitialized) {
-				console.warn('Modal interaction received, but modals are not loaded.'.yellow);
+				console.warn(
+					'Modal interaction received, but modals are not loaded.'.yellow,
+				);
 				try {
 					await interaction.reply(
 						this.createEmbed(
@@ -327,7 +335,10 @@ class ModalValidator {
 						),
 					);
 				} catch (replyError) {
-					console.error('Failed to send modal unavailable reply:'.red, replyError);
+					console.error(
+						'Failed to send modal unavailable reply:'.red,
+						replyError,
+					);
 				}
 				return;
 			}
@@ -349,7 +360,9 @@ class ModalValidator {
 
 			// Modal Not Found
 			if (!modal) {
-				console.warn(`Modal handler not found for customId: ${customId}`.yellow);
+				console.warn(
+					`Modal handler not found for customId: ${customId}`.yellow,
+				);
 				// Optionally reply to the user, though often modals are internal
 				// await interaction.reply(this.createEmbed(interaction, Colors.Red, 'Unknown modal interaction.'));
 				return; // Stop processing if modal definition doesn't exist

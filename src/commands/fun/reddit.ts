@@ -11,7 +11,6 @@ import {
 import axios, { AxiosError } from 'axios';
 import {
 	RedditListing,
-	RedditPost,
 	RedditPostData,
 	RedditSortOption,
 	RedditTimeOption,
@@ -113,7 +112,8 @@ const safeReply = async (
 	isEphemeral = false,
 ): Promise<void> => {
 	try {
-		const replyOptions = typeof options === 'string' ? { content: options } : options;
+		const replyOptions =
+			typeof options === 'string' ? { content: options } : options;
 
 		if (interaction.deferred || interaction.replied) {
 			await interaction.editReply(replyOptions as InteractionEditReplyOptions);
@@ -193,7 +193,9 @@ const redditCommand: Command = {
 
 		const subreddit = interaction.options.getString('subreddit', true);
 		const sort =
-			(interaction.options.getString('sort') as RedditSortOption | 'controversial') || 'hot';
+			(interaction.options.getString('sort') as
+				| RedditSortOption
+				| 'controversial') || 'hot';
 		const time =
 			(interaction.options.getString('time') as RedditTimeOption) || 'day';
 

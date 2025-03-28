@@ -11,14 +11,11 @@
   ],
   "scripts": {
     "start": "node dist/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "start:ts": "tsx src/index.ts",
     "lint": "eslint src",
     "dev": "nodemon --exec tsx src/index.ts",
     "build": "tsc",
-    "pre": "npx prettier . --write "
+    "format": "npx prettier . --write "
   },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
@@ -33,15 +30,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
-    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.13",
     "eslint": "^9.23.0",
     "globals": "^16.0.0",
-    "jest": "^29.7.0",
     "module-alias": "^2.2.3",
     "nodemon": "^3.1.9",
     "prettier": "3.5.3",
-    "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.2",

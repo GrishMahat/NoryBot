@@ -53,11 +53,11 @@ const timestampCommand: Command = {
 
 			// Parse relative dates
 			const relativeKeywords: Record<string, (d: Date) => void> = {
-				now: () => date = new Date(),
+				now: () => (date = new Date()),
 				tomorrow: (d) => d.setDate(d.getDate() + 1),
 				'next week': (d) => d.setDate(d.getDate() + 7),
 				'next month': (d) => d.setMonth(d.getMonth() + 1),
-				'next year': (d) => d.setFullYear(d.getFullYear() + 1)
+				'next year': (d) => d.setFullYear(d.getFullYear() + 1),
 			};
 
 			const keyword = input.toLowerCase();
@@ -94,16 +94,16 @@ const timestampCommand: Command = {
 				const validFormats = [
 					'• YYYY-MM-DD',
 					'• now',
-					'• tomorrow', 
+					'• tomorrow',
 					'• next week',
 					'• next month',
-					'• next year'
+					'• next year',
 				].join('\n');
 
 				await interaction.editReply({
-					content: 
+					content:
 						`${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n${validFormats}\n` +
-						'You can also add a time using the time option (e.g., 15:30 or 3:30 PM)'
+						'You can also add a time using the time option (e.g., 15:30 or 3:30 PM)',
 				});
 				return;
 			}
@@ -117,9 +117,17 @@ const timestampCommand: Command = {
 				{ name: 'Long Time (T)', code: 'T', example: `<t:${timestamp}:T>` },
 				{ name: 'Short Date (d)', code: 'd', example: `<t:${timestamp}:d>` },
 				{ name: 'Long Date (D)', code: 'D', example: `<t:${timestamp}:D>` },
-				{ name: 'Short Date/Time (f)', code: 'f', example: `<t:${timestamp}:f>` },
-				{ name: 'Long Date/Time (F)', code: 'F', example: `<t:${timestamp}:F>` },
-				{ name: 'Relative Time (R)', code: 'R', example: `<t:${timestamp}:R>` }
+				{
+					name: 'Short Date/Time (f)',
+					code: 'f',
+					example: `<t:${timestamp}:f>`,
+				},
+				{
+					name: 'Long Date/Time (F)',
+					code: 'F',
+					example: `<t:${timestamp}:F>`,
+				},
+				{ name: 'Relative Time (R)', code: 'R', example: `<t:${timestamp}:R>` },
 			];
 
 			const embed = new EmbedBuilder()
@@ -127,21 +135,21 @@ const timestampCommand: Command = {
 				.setTitle(`${emojiConfig.statistics} Discord Timestamp Formats`)
 				.setDescription(
 					'Here are the different timestamp formats. The display format (12/24hr) depends on your Discord language setting.\n' +
-					'US English (🇺🇸) shows 12-hour format\n' +
-					'UK English (🇬🇧) shows 24-hour format\n\n' +
-					`${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n\n' : ''}` +
-					'**Note:** Click on the codes to copy them!'
+						'US English (🇺🇸) shows 12-hour format\n' +
+						'UK English (🇬🇧) shows 24-hour format\n\n' +
+						`${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n\n' : ''}` +
+						'**Note:** Click on the codes to copy them!',
 				)
 				.addFields(
-					formats.map(format => ({
+					formats.map((format) => ({
 						name: format.name,
 						value: `\`${format.example}\`\n${format.example}`,
-						inline: true
-					}))
+						inline: true,
+					})),
 				)
 				.setFooter({
 					text: "Copy the code format you want to use | Timestamps automatically adjust to viewer's timezone",
-					iconURL: client.user?.displayAvatarURL()
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setTimestamp();
 
@@ -149,7 +157,7 @@ const timestampCommand: Command = {
 		} catch (error) {
 			global.errorHandler.handleError(error, 'TimestampCommand');
 			await interaction.editReply({
-				content: `${emojiConfig.notag} An error occurred while processing the timestamp.`
+				content: `${emojiConfig.notag} An error occurred while processing the timestamp.`,
 			});
 		}
 	},

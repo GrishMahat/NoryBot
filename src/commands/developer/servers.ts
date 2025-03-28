@@ -14,11 +14,11 @@ import {
 	ComponentType,
 	ChatInputCommandInteraction,
 	TextChannel,
-	ChannelType, // Added for type safety
-	GuildPremiumTier, // Added for boost level enum
-	User, // Added for User type hint
-	Collection, // Added for Collection type hint
-	ColorResolvable, // Added for Embed color type
+	ChannelType,
+	GuildPremiumTier,
+	User,
+	Collection,
+	ColorResolvable,
 } from 'discord.js';
 import paginateEmbeds from '../../utils/helpers/Pagination';
 import { LocalCommand } from '../../types/index';
@@ -43,13 +43,14 @@ interface EnrichedGuildInfo {
 }
 
 // Helper function to safely get user avatar URL
-const safeAvatarURL = (user: User | null): string | null => {
-	return user?.displayAvatarURL({ forceStatic: false, size: 1024 }) ?? null;
-};
+const safeAvatarURL = (user: User | null): string | null =>
+	user?.displayAvatarURL({ forceStatic: false, size: 1024 }) ?? null;
 
 // Helper function to generate invite link
 async function generateInvite(guild: Guild): Promise<string | null> {
-	if (!guild.members.me?.permissions.has(PermissionFlagsBits.CreateInstantInvite)) {
+	if (
+		!guild.members.me?.permissions.has(PermissionFlagsBits.CreateInstantInvite)
+	) {
 		// console.warn(`Missing CreateInstantInvite permission in guild ${guild.id}`);
 		return null; // Bot lacks permission
 	}
@@ -60,7 +61,7 @@ async function generateInvite(guild: Guild): Promise<string | null> {
 			(ch): ch is TextChannel =>
 				ch.type === ChannelType.GuildText &&
 				ch
-					.permissionsFor(guild.members.me!) // We know 'me' exists if we checked permissions
+					.permissionsFor(guild.members.me ?? guild.client.user) // Use optional chaining + fallback instead of !
 					?.has(PermissionFlagsBits.CreateInstantInvite),
 		);
 
@@ -134,9 +135,7 @@ const serversCommand: LocalCommand = {
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('user')
-				.setDescription(
-					'Show servers owned by a user that the bot is also in.',
-				)
+				.setDescription('Show servers owned by a user that the bot is also in.')
 				.addUserOption((option) =>
 					option
 						.setName('user')
@@ -162,7 +161,9 @@ const serversCommand: LocalCommand = {
 				.addBooleanOption((option) =>
 					option
 						.setName('detailed')
-						.setDescription('Show detailed statistics including member counts and boost levels.')
+						.setDescription(
+							'Show detailed statistics including member counts and boost levels.',
+						)
 						.setRequired(false),
 				),
 		)
@@ -226,7 +227,9 @@ const serversCommand: LocalCommand = {
 					break;
 				default:
 					// This should technically be unreachable due to SlashCommandBuilder structure
-					console.error(`Reached default case with unknown subcommand: ${subcommand}`);
+					console.error(
+						`Reached default case with unknown subcommand: ${subcommand}`,
+					);
 					await interaction.editReply({
 						content: '❌ An unexpected error occurred: Unknown subcommand.',
 					});
@@ -260,31 +263,38 @@ async function handleListSubcommand(
 
 	// Fetch guild data concurrently
 	const guildInfos = await Promise.all(
-		client.guilds.cache.map(async (guild: Guild): Promise<EnrichedGuildInfo> => {
-			// Fetch owner only if detailed view is requested
-			let owner: GuildMember | undefined;
-			if (isDetailed) {
-				try {
-					owner = await guild.fetchOwner();
-				} catch (fetchError) {
-					console.error(`Failed to fetch owner for guild ${guild.id}:`, fetchError);
-					// Proceed without owner info if fetching fails
+		client.guilds.cache.map(
+			async (guild: Guild): Promise<EnrichedGuildInfo> => {
+				// Fetch owner only if detailed view is requested
+				let owner: GuildMember | undefined;
+				if (isDetailed) {
+					try {
+						owner = await guild.fetchOwner();
+					} catch (fetchError) {
+						console.error(
+							`Failed to fetch owner for guild ${guild.id}:`,
+							fetchError,
+						);
+						// Proceed without owner info if fetching fails
+					}
 				}
-			}
 
-			// Generate invite link (handles permissions and errors internally)
-			const inviteLink = await generateInvite(guild);
+				// Generate invite link (handles permissions and errors internally)
+				const inviteLink = await generateInvite(guild);
 
-			return {
-				name: guild.name,
-				memberCount: guild.memberCount,
-				id: guild.id,
-				inviteLink: inviteLink,
-				owner: owner, // Will be undefined if not detailed or fetch failed
-				createdAt: guild.createdAt,
-				boostLevel: guild.premiumTier,
-			};
-		}),
+				const enrichedGuild = {
+					name: guild.name,
+					memberCount: guild.memberCount,
+					id: guild.id,
+					inviteLink,
+					owner, // Will be undefined if not detailed or fetch failed
+					createdAt: guild.createdAt,
+					boostLevel: guild.premiumTier,
+				};
+
+				return enrichedGuild;
+			},
+		),
 	);
 
 	// Sort guilds based on the chosen option
@@ -364,8 +374,13 @@ function createServerListEmbeds(
 			let fieldValue = `🆔 ID: ${guild.id}\n👥 Members: ${guild.memberCount.toLocaleString()}`;
 
 			if (isDetailed) {
-				const ownerTag = guild.owner ? guild.owner.user.tag : 'Unknown/Fetch Failed';
-				const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'short'); // e.g., "MM/DD/YY"
+				const ownerTag = guild.owner
+					? guild.owner.user.tag
+					: 'Unknown/Fetch Failed';
+				const createdTimestamp = formatTimestamp(
+					guild.createdAt.getTime(),
+					'short',
+				); // e.g., "MM/DD/YY"
 				fieldValue += `\n👑 Owner: ${ownerTag}\n📅 Created: ${createdTimestamp}\n✨ Boost: Tier ${guild.boostLevel} (${GuildPremiumTier[guild.boostLevel]})\n🔗 ${inviteText}`;
 			} else {
 				fieldValue += `\n🔗 ${inviteText}`;
@@ -451,7 +466,10 @@ async function handleLeaveSubcommand(
 		}
 	} catch (error) {
 		// Handle timeout or other errors during awaitMessageComponent
-		console.error(`Error or timeout waiting for leave confirmation for guild ${serverId}:`, error);
+		console.error(
+			`Error or timeout waiting for leave confirmation for guild ${serverId}:`,
+			error,
+		);
 		await interaction.editReply({
 			content: `⏱️ No response received within ${CONFIRMATION_TIMEOUT / 1000} seconds, cancelling server leave.`,
 			components: [], // Remove buttons after timeout
@@ -494,10 +512,16 @@ async function handleCheckSubcommand(
 					const owner = await guild.fetchOwner();
 					ownerTag = owner.user.tag;
 				} catch (fetchError) {
-					console.error(`Failed to fetch owner for guild ${guild.id} during check:`, fetchError);
+					console.error(
+						`Failed to fetch owner for guild ${guild.id} during check:`,
+						fetchError,
+					);
 					ownerTag = 'Fetch Failed';
 				}
-				const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'relative'); // Relative time
+				const createdTimestamp = formatTimestamp(
+					guild.createdAt.getTime(),
+					'relative',
+				); // Relative time
 
 				embeds.push(
 					new EmbedBuilder()
@@ -562,8 +586,7 @@ async function handleUserSubcommand(
 		.join('\n');
 
 	if (serverList.length > MAX_SERVER_LIST_LENGTH) {
-		serverList =
-			serverList.substring(0, MAX_SERVER_LIST_LENGTH - 3) + '...';
+		serverList = serverList.substring(0, MAX_SERVER_LIST_LENGTH - 3) + '...';
 	}
 
 	const embed = new EmbedBuilder()
@@ -574,7 +597,10 @@ async function handleUserSubcommand(
 		.setColor(DEFAULT_EMBED_COLOR)
 		.addFields({
 			name: 'Server List',
-			value: serverCount > 0 ? serverList : 'No servers found where this user is the owner.',
+			value:
+				serverCount > 0
+					? serverList
+					: 'No servers found where this user is the owner.',
 		})
 		.setThumbnail(safeAvatarURL(user))
 		.setFooter({
@@ -604,11 +630,16 @@ async function handleInfoSubcommand(
 	try {
 		// Fetch owner and other data
 		const owner = await guild.fetchOwner();
-		const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'full', { includeTime: true });
+		const createdTimestamp = formatTimestamp(
+			guild.createdAt.getTime(),
+			'full',
+			{ includeTime: true },
+		);
 		// Remove premiumTierTimestamp since it's not available
-		const boostInfo = guild.premiumTier > 0
-			? `Tier ${guild.premiumTier} (${GuildPremiumTier[guild.premiumTier]})`
-			: 'Not boosted';
+		const boostInfo =
+			guild.premiumTier > 0
+				? `Tier ${guild.premiumTier} (${GuildPremiumTier[guild.premiumTier]})`
+				: 'Not boosted';
 
 		const embed = new EmbedBuilder()
 			.setTitle(`📊 Server Information: ${guild.name}`)
@@ -617,12 +648,23 @@ async function handleInfoSubcommand(
 			.addFields(
 				{ name: '🆔 Server ID', value: `\`${guild.id}\``, inline: true },
 				{ name: '👑 Owner', value: owner.user.tag, inline: true },
-				{ name: '👥 Members', value: guild.memberCount.toLocaleString(), inline: true },
+				{
+					name: '👥 Members',
+					value: guild.memberCount.toLocaleString(),
+					inline: true,
+				},
 				{ name: '📅 Created', value: createdTimestamp, inline: true },
 				{ name: '✨ Boost Level', value: boostInfo, inline: true },
 				{ name: '🌍 Region', value: guild.preferredLocale, inline: true },
-				{ name: '🔒 Verification Level', value: guild.verificationLevel.toString(), inline: true },
-				{ name: '📝 Description', value: guild.description || 'No description set' },
+				{
+					name: '🔒 Verification Level',
+					value: guild.verificationLevel.toString(),
+					inline: true,
+				},
+				{
+					name: '📝 Description',
+					value: guild.description || 'No description set',
+				},
 			)
 			.setFooter({
 				text: `Requested by ${interaction.user.username}`,
@@ -649,9 +691,15 @@ async function handleStatsSubcommand(
 
 	// Calculate basic stats
 	const totalGuilds = guilds.size;
-	const totalMembers = Array.from(guilds.values()).reduce((acc: number, guild) => acc + guild.memberCount, 0);
+	const totalMembers = Array.from(guilds.values()).reduce(
+		(acc: number, guild) => acc + guild.memberCount,
+		0,
+	);
 	const averageMembers = Math.round(totalMembers / totalGuilds);
-	const totalBoostLevel = Array.from(guilds.values()).reduce((acc: number, guild) => acc + guild.premiumTier, 0);
+	const totalBoostLevel = Array.from(guilds.values()).reduce(
+		(acc: number, guild) => acc + guild.premiumTier,
+		0,
+	);
 	const averageBoostLevel = (totalBoostLevel / totalGuilds).toFixed(1);
 
 	const embed = new EmbedBuilder()
@@ -659,10 +707,26 @@ async function handleStatsSubcommand(
 		.setColor(DEFAULT_EMBED_COLOR)
 		.setThumbnail(safeAvatarURL(client.user))
 		.addFields(
-			{ name: '📈 Total Servers', value: totalGuilds.toLocaleString(), inline: true },
-			{ name: '👥 Total Members', value: totalMembers.toLocaleString(), inline: true },
-			{ name: '📊 Average Members', value: averageMembers.toLocaleString(), inline: true },
-			{ name: '✨ Average Boost Level', value: averageBoostLevel, inline: true },
+			{
+				name: '📈 Total Servers',
+				value: totalGuilds.toLocaleString(),
+				inline: true,
+			},
+			{
+				name: '👥 Total Members',
+				value: totalMembers.toLocaleString(),
+				inline: true,
+			},
+			{
+				name: '📊 Average Members',
+				value: averageMembers.toLocaleString(),
+				inline: true,
+			},
+			{
+				name: '✨ Average Boost Level',
+				value: averageBoostLevel,
+				inline: true,
+			},
 		);
 
 	if (isDetailed) {
@@ -682,7 +746,7 @@ async function handleStatsSubcommand(
 			'5000+': 0,
 		};
 
-		guilds.forEach(guild => {
+		guilds.forEach((guild) => {
 			// Count boost levels
 			boostLevels[`tier${guild.premiumTier}` as keyof typeof boostLevels]++;
 
@@ -696,22 +760,28 @@ async function handleStatsSubcommand(
 
 		embed.addFields(
 			{
-				name: '🚀 Boost Level Distribution', value: Object.entries(boostLevels)
-					.map(([level, count]) => `${level === 'none' ? 'None' : `Tier ${level.slice(-1)}`}: ${count}`)
-					.join('\n')
+				name: '🚀 Boost Level Distribution',
+				value: Object.entries(boostLevels)
+					.map(
+						([level, count]) =>
+							`${level === 'none' ? 'None' : `Tier ${level.slice(-1)}`}: ${count}`,
+					)
+					.join('\n'),
 			},
 			{
-				name: '👥 Member Range Distribution', value: Object.entries(memberRanges)
+				name: '👥 Member Range Distribution',
+				value: Object.entries(memberRanges)
 					.map(([range, count]) => `${range}: ${count}`)
-					.join('\n')
+					.join('\n'),
 			},
 		);
 	}
 
-	embed.setFooter({
-		text: `Requested by ${interaction.user.username}`,
-		iconURL: safeAvatarURL(interaction.user) ?? undefined,
-	})
+	embed
+		.setFooter({
+			text: `Requested by ${interaction.user.username}`,
+			iconURL: safeAvatarURL(interaction.user) ?? undefined,
+		})
 		.setTimestamp();
 
 	await interaction.editReply({ embeds: [embed] });
@@ -725,9 +795,9 @@ async function handleSearchSubcommand(
 	const guilds = client.guilds.cache;
 
 	// Search by name or ID
-	const results = guilds.filter(guild =>
-		guild.name.toLowerCase().includes(query) ||
-		guild.id.includes(query)
+	const results = guilds.filter(
+		(guild) =>
+			guild.name.toLowerCase().includes(query) || guild.id.includes(query),
 	);
 
 	if (results.size === 0) {
@@ -746,14 +816,18 @@ async function handleSearchSubcommand(
 	results.forEach((guild) => {
 		const pageIndex = Math.floor(currentIndex / MAX_RESULTS_PER_PAGE);
 		if (currentIndex % MAX_RESULTS_PER_PAGE === 0) {
-			embeds.push(new EmbedBuilder()
-				.setTitle('🔍 Server Search Results')
-				.setDescription(`Found **${results.size}** server(s) matching \`${query}\``)
-				.setColor(DEFAULT_EMBED_COLOR)
-				.setFooter({
-					text: `Page ${pageIndex + 1}/${totalPages} • Requested by ${interaction.user.username}`,
-					iconURL: safeAvatarURL(interaction.user) ?? undefined,
-				}));
+			embeds.push(
+				new EmbedBuilder()
+					.setTitle('🔍 Server Search Results')
+					.setDescription(
+						`Found **${results.size}** server(s) matching \`${query}\``,
+					)
+					.setColor(DEFAULT_EMBED_COLOR)
+					.setFooter({
+						text: `Page ${pageIndex + 1}/${totalPages} • Requested by ${interaction.user.username}`,
+						iconURL: safeAvatarURL(interaction.user) ?? undefined,
+					}),
+			);
 		}
 
 		const currentEmbed = embeds[pageIndex];

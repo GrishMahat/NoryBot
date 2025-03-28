@@ -162,7 +162,9 @@ class CommandValidator {
 				}
 			});
 			this.isInitialized = true;
-			console.log(`Successfully loaded ${this.commandMap.size} commands.`.green);
+			console.log(
+				`Successfully loaded ${this.commandMap.size} commands.`.green,
+			);
 		} catch (error) {
 			console.error('Failed to initialize commands:'.red, error);
 			// Use global error handler if available
@@ -173,7 +175,9 @@ class CommandValidator {
 				);
 			}
 			// Re-throw the error to indicate initialization failure
-			throw new Error(`Command Initialization Failed: ${error instanceof Error ? error.message : String(error)}`);
+			throw new Error(
+				`Command Initialization Failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
 		}
 	}
 
@@ -225,7 +229,9 @@ class CommandValidator {
 		if (!(member.permissions instanceof PermissionsBitField)) return false;
 
 		// Check if the member has all specified permissions
-		return permissions.every((permission) => member.permissions.has(permission));
+		return permissions.every((permission) =>
+			member.permissions.has(permission),
+		);
 	}
 
 	/**
@@ -252,7 +258,10 @@ class CommandValidator {
 		}
 
 		// 2. Cooldown Check
-		const remainingCooldown = cooldownManager.checkCooldown(userId, commandName);
+		const remainingCooldown = cooldownManager.checkCooldown(
+			userId,
+			commandName,
+		);
 		if (remainingCooldown > 0) {
 			return this.createEmbed(
 				interaction,
@@ -328,13 +337,25 @@ class CommandValidator {
 		try {
 			await this.initializeCommands();
 		} catch (initError) {
-			console.error('Initialization failed, cannot handle interaction:'.red, initError);
+			console.error(
+				'Initialization failed, cannot handle interaction:'.red,
+				initError,
+			);
 			// Attempt to inform the user if possible (and makes sense)
 			if (interaction.isRepliable()) {
 				try {
-					await interaction.reply(this.createEmbed(interaction, Colors.Red, 'Bot initialization failed. Please contact support.'));
+					await interaction.reply(
+						this.createEmbed(
+							interaction,
+							Colors.Red,
+							'Bot initialization failed. Please contact support.',
+						),
+					);
 				} catch (replyError) {
-					console.error('Failed to send initialization error reply:'.red, replyError);
+					console.error(
+						'Failed to send initialization error reply:'.red,
+						replyError,
+					);
 				}
 			}
 			return; // Stop processing if initialization failed
@@ -368,12 +389,17 @@ class CommandValidator {
 		const command = this.commandMap.get(commandName);
 
 		if (!command) {
-			console.warn(`Autocomplete received for unknown command: ${commandName}`.yellow);
+			console.warn(
+				`Autocomplete received for unknown command: ${commandName}`.yellow,
+			);
 			// Cannot reply with embeds here, respond with empty choices or handle error
 			try {
 				await interaction.respond([]);
 			} catch (e) {
-				console.error(`Error responding to autocomplete for unknown command: ${commandName}`, e);
+				console.error(
+					`Error responding to autocomplete for unknown command: ${commandName}`,
+					e,
+				);
 			}
 			return;
 		}
@@ -396,7 +422,10 @@ class CommandValidator {
 					try {
 						await interaction.respond([]);
 					} catch (respondError) {
-						console.error(`Failed to send empty response after autocomplete error for ${commandName}:`, respondError);
+						console.error(
+							`Failed to send empty response after autocomplete error for ${commandName}:`,
+							respondError,
+						);
 					}
 				}
 			}
@@ -405,7 +434,10 @@ class CommandValidator {
 			try {
 				await interaction.respond([]);
 			} catch (e) {
-				console.error(`Error sending default empty response for autocomplete: ${commandName}`, e);
+				console.error(
+					`Error sending default empty response for autocomplete: ${commandName}`,
+					e,
+				);
 			}
 		}
 	}
@@ -457,9 +489,9 @@ class CommandValidator {
 			this.updateMetrics(commandName, Date.now() - startTime);
 
 			console.log(
-				`Command executed: ${commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${Date.now() - startTime}ms`.green,
+				`Command executed: ${commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${Date.now() - startTime}ms`
+					.green,
 			);
-
 		} catch (error) {
 			// Update Metrics on Failure
 			this.updateMetrics(commandName, Date.now() - startTime, true);
@@ -484,11 +516,13 @@ class CommandValidator {
 					await interaction.reply(errorMessage);
 				}
 			} catch (replyError) {
-				console.error('Failed to send error reply to interaction:'.red, replyError);
+				console.error(
+					'Failed to send error reply to interaction:'.red,
+					replyError,
+				);
 			}
 		}
 	}
-
 
 	/**
 	 * Retrieves the current command usage metrics.
