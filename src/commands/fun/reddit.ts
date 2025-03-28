@@ -5,14 +5,128 @@ import {
 	Client,
 	ColorResolvable,
 	CacheType,
+	InteractionReplyOptions,
+	InteractionEditReplyOptions,
 } from 'discord.js';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
 	RedditListing,
+	RedditPost,
+	RedditPostData,
 	RedditSortOption,
 	RedditTimeOption,
 } from '../../types/index';
 import createPagination from '../../utils/helpers/Pagination';
+import { formatTimeAgo } from '../../utils/helpers/misc'; // Assuming a helper function exists or will be created
+
+// Constants
+const REDDIT_BASE_URL = 'https://www.reddit.com';
+const USER_AGENT = 'NoryBot/1.0 (Discord Bot)';
+const DEFAULT_EMBED_COLOR: ColorResolvable = '#FF4500';
+const REDDIT_ICON_URL =
+	'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png';
+const MAX_POST_LIMIT = 50;
+const API_TIMEOUT = 10000; // 10 seconds
+const PAGINATION_TIMEOUT = 300000; // 5 minutes
+const MAX_TITLE_LENGTH = 256;
+const MAX_DESCRIPTION_LENGTH = 4096; // Discord embed description limit
+
+/**
+ * Creates a Discord Embed for a given Reddit post.
+ * @param post - The Reddit post data.
+ * @returns An EmbedBuilder instance.
+ */
+const createPostEmbed = (post: RedditPostData): EmbedBuilder => {
+	const timeString = formatTimeAgo(post.created_utc * 1000);
+
+	const embed = new EmbedBuilder()
+		.setColor(
+			(post.link_flair_background_color ||
+				DEFAULT_EMBED_COLOR) as ColorResolvable,
+		)
+		.setTitle(
+			post.title.length > MAX_TITLE_LENGTH
+				? post.title.substring(0, MAX_TITLE_LENGTH - 3) + '...'
+				: post.title,
+		)
+		.setURL(`${REDDIT_BASE_URL}${post.permalink}`)
+		.setAuthor({
+			name: post.subreddit_name_prefixed,
+			url: `${REDDIT_BASE_URL}/${post.subreddit_name_prefixed}`,
+			iconURL: REDDIT_ICON_URL,
+		})
+		.setFooter({
+			text: `${post.over_18 ? '🔞 NSFW | ' : ''}${post.spoiler ? '⚠️ Spoiler | ' : ''}👍 ${post.ups.toLocaleString()} (${Math.round(post.upvote_ratio * 100)}%) | 💬 ${post.num_comments.toLocaleString()} | Posted ${timeString} by u/${post.author}`,
+		});
+
+	let description = '';
+
+	// Handle text content first
+	if (post.selftext) {
+		description =
+			post.selftext.length > MAX_DESCRIPTION_LENGTH
+				? post.selftext.substring(0, MAX_DESCRIPTION_LENGTH - 3) + '...'
+				: post.selftext;
+	}
+
+	// Handle media content, potentially prepending to description
+	if (post.is_video && post.media?.reddit_video) {
+		const videoLink = `🎥 [Video Link](${post.media.reddit_video.fallback_url})\n\n`;
+		// Prepend video link, ensuring total length doesn't exceed limit
+		if ((description + videoLink).length <= MAX_DESCRIPTION_LENGTH) {
+			description = videoLink + description;
+		} else {
+			// Prioritize video link if description is too long
+			description = videoLink;
+		}
+		// Use thumbnail if available
+		if (post.thumbnail && post.thumbnail !== 'default') {
+			embed.setImage(post.thumbnail);
+		}
+	} else if (post.url?.match(/\.(jpeg|jpg|gif|png)$/i)) {
+		// Direct image link
+		embed.setImage(post.url);
+	} else if (
+		post.thumbnail &&
+		!['self', 'default', 'nsfw', ''].includes(post.thumbnail) // Added empty string check
+	) {
+		// Other valid thumbnails
+		embed.setImage(post.thumbnail);
+	}
+
+	if (description) {
+		embed.setDescription(description);
+	}
+
+	return embed;
+};
+
+/**
+ * Handles replying or editing the interaction reply safely.
+ * @param interaction - The command interaction.
+ * @param options - The reply options.
+ * @param isEphemeral - Whether the reply should be ephemeral (only applies if not deferred).
+ */
+const safeReply = async (
+	interaction: ChatInputCommandInteraction<CacheType>,
+	options: string | InteractionReplyOptions | InteractionEditReplyOptions,
+	isEphemeral = false,
+): Promise<void> => {
+	try {
+		const replyOptions = typeof options === 'string' ? { content: options } : options;
+
+		if (interaction.deferred || interaction.replied) {
+			await interaction.editReply(replyOptions as InteractionEditReplyOptions);
+		} else {
+			await interaction.reply({
+				...(replyOptions as InteractionReplyOptions),
+				ephemeral: isEphemeral,
+			});
+		}
+	} catch (error) {
+		console.error('Failed to send or edit reply:', error);
+	}
+};
 
 const redditCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -34,28 +148,30 @@ const redditCommand: Command = {
 					{ name: '⭐ New', value: 'new' },
 					{ name: '📈 Top', value: 'top' },
 					{ name: '📊 Rising', value: 'rising' },
+					{ name: '📊 Controversial', value: 'controversial' },
 				),
 		)
 		.addStringOption((option) =>
 			option
 				.setName('time')
-				.setDescription('Time period for top posts')
+				.setDescription('Time period for top posts (only works with sort=Top)')
 				.setRequired(false)
 				.addChoices(
-					{ name: '24 Hours', value: 'day' },
-					{ name: '7 Days', value: 'week' },
-					{ name: '30 Days', value: 'month' },
-					{ name: '365 Days', value: 'year' },
-					{ name: 'All Time', value: 'all' },
+					{ name: '⏳ Hour', value: 'hour' }, // Added Hour
+					{ name: '📅 Day', value: 'day' },
+					{ name: '📅 Week', value: 'week' },
+					{ name: '📅 Month', value: 'month' },
+					{ name: '📅 Year', value: 'year' },
+					{ name: '♾️ All Time', value: 'all' },
 				),
 		)
 		.toJSON(),
 	userPermissions: [],
-	botPermissions: [],
+	botPermissions: ['EmbedLinks'], // Ensure bot can send embeds
 	category: 'Fun',
-	cooldown: 10, // Reduced cooldown
-	nsfwMode: false,
-	deleted: false, // Command should be enabled
+	cooldown: 5, // Slightly reduced cooldown
+	nsfwMode: false, // Note: This doesn't prevent NSFW subreddits, only the command context
+	deleted: false,
 	testMode: false,
 	devOnly: false,
 
@@ -63,198 +179,138 @@ const redditCommand: Command = {
 		client: Client<boolean>,
 		interaction: ChatInputCommandInteraction<CacheType>,
 	): Promise<void> => {
-		// Immediately defer the reply to prevent interaction expiration
+		// Defer immediately
 		try {
-			// Only defer if not already deferred or replied
+			// Check if already deferred or replied to prevent errors
 			if (!interaction.deferred && !interaction.replied) {
 				await interaction.deferReply();
 			}
 		} catch (error) {
 			console.error('Failed to defer interaction:', error);
-			// If we can't defer, the interaction might be invalid or expired
-			// We'll just return and not attempt further operations
+			// If deferral fails, we likely can't respond further
 			return;
 		}
 
 		const subreddit = interaction.options.getString('subreddit', true);
 		const sort =
-			(interaction.options.getString('sort') as RedditSortOption) || 'hot';
+			(interaction.options.getString('sort') as RedditSortOption | 'controversial') || 'hot';
 		const time =
 			(interaction.options.getString('time') as RedditTimeOption) || 'day';
 
 		try {
-			// Construct the Reddit URL with proper encoding
-			const baseUrl = `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/${encodeURIComponent(sort)}.json`;
+			// Construct Reddit API URL
+			const encodedSubreddit = encodeURIComponent(subreddit);
+			const encodedSort = encodeURIComponent(sort);
+			const baseUrl = `${REDDIT_BASE_URL}/r/${encodedSubreddit}/${encodedSort}.json`;
 			const params = new URLSearchParams({
-				limit: '50', // Increased post limit
+				limit: String(MAX_POST_LIMIT),
 				raw_json: '1',
-				...(sort === 'top' && { t: time }),
 			});
+			// Add time parameter only if sorting by 'top' or 'controversial'
+			if (sort === 'top' || sort === 'controversial') {
+				params.append('t', time);
+			}
 
 			const response = await axios.get<RedditListing>(`${baseUrl}?${params}`, {
-				headers: {
-					'User-Agent': 'NoryBot/1.0 (Discord Bot)',
-				},
-				timeout: 10000, // Increased timeout to handle potential slow responses
+				headers: { 'User-Agent': USER_AGENT },
+				timeout: API_TIMEOUT,
 				maxRedirects: 3,
-				validateStatus: (status) => status < 500, // Handle 4xx errors explicitly
+				// Treat 4xx as non-errors for custom handling below
+				validateStatus: (status) => status >= 200 && status < 500,
 			});
 
-			const posts = response.data.data.children;
-
-			if (posts.length === 0) {
-				try {
-					await interaction.editReply({
-						content: `📭 No posts found in r/${subreddit}. The subreddit might be empty or doesn't exist.`,
-					});
-				} catch (replyError) {
-					console.error('Failed to edit reply for empty posts:', replyError);
-				}
+			// Handle specific HTTP errors returned by Reddit
+			if (response.status === 404) {
+				await safeReply(
+					interaction,
+					`❌ Subreddit \`r/${subreddit}\` not found. Please check the name.`,
+				);
+				return;
+			}
+			if (response.status === 403) {
+				await safeReply(
+					interaction,
+					`🔒 Access denied to \`r/${subreddit}\`. It might be private, quarantined, or banned.`,
+				);
+				return;
+			}
+			// Handle other potential non-200 statuses if necessary
+			if (response.status !== 200) {
+				await safeReply(
+					interaction,
+					`⚠️ Received an unexpected status code ${response.status} from Reddit for \`r/${subreddit}\`.`,
+				);
 				return;
 			}
 
-			const embeds = posts.map(({ data: post }) => {
-				// Format timestamp
-				const createdDate = new Date(post.created_utc * 1000);
-				const timeAgo = Math.floor((Date.now() - createdDate.getTime()) / 1000);
+			// Filter out potential null/undefined posts and stickied posts
+			const posts = response.data?.data?.children?.filter(
+				(p) => p?.data && !p.data.stickied,
+			);
 
-				let timeString;
-				if (timeAgo < 60) {
-					timeString = `${timeAgo} second${timeAgo === 1 ? '' : 's'} ago`;
-				} else if (timeAgo < 3600) {
-					const minutes = Math.floor(timeAgo / 60);
-					timeString = `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-				} else if (timeAgo < 86400) {
-					const hours = Math.floor(timeAgo / 3600);
-					timeString = `${hours} hour${hours === 1 ? '' : 's'} ago`;
-				} else {
-					const days = Math.floor(timeAgo / 86400);
-					timeString = `${days} day${days === 1 ? '' : 's'} ago`;
-				}
-
-				const embed = new EmbedBuilder()
-					.setColor(
-						(post.link_flair_background_color || '#FF4500') as ColorResolvable,
-					)
-					.setTitle(
-						post.title.length > 256
-							? post.title.substring(0, 253) + '...'
-							: post.title,
-					)
-					.setURL(`https://reddit.com${post.permalink}`)
-					.setAuthor({
-						name: post.subreddit_name_prefixed,
-						url: `https://reddit.com/${post.subreddit_name_prefixed}`,
-						iconURL:
-							'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png',
-					})
-					.setFooter({
-						text: `${post.over_18 ? '🔞 NSFW | ' : ''}${post.spoiler ? '⚠️ Spoiler | ' : ''}👍 ${post.ups.toLocaleString()} (${Math.round(post.upvote_ratio * 100)}%) | 💬 ${post.num_comments.toLocaleString()} | Posted ${timeString} by u/${post.author}`,
-					});
-
-				// Handle media content
-				if (post.is_video && post.media?.reddit_video) {
-					embed.setDescription(
-						`🎥 [Video Link](${post.media.reddit_video.fallback_url})`,
-					);
-					if (post.thumbnail && post.thumbnail !== 'default') {
-						embed.setImage(post.thumbnail);
-					}
-				} else if (post.url.match(/\.(jpeg|jpg|gif|png)$/i)) {
-					embed.setImage(post.url);
-				} else if (
-					post.thumbnail &&
-					!['self', 'default', 'nsfw'].includes(post.thumbnail)
-				) {
-					embed.setImage(post.thumbnail);
-				}
-
-				// Handle text content
-				if (post.selftext) {
-					const truncatedText =
-						post.selftext.length > 4000
-							? post.selftext.substring(0, 3997) + '...'
-							: post.selftext;
-					embed.setDescription(truncatedText);
-				}
-
-				return embed;
-			});
-
-			try {
-				// Use the pagination utility with the interaction
-				await createPagination(interaction, embeds, {
-					type: 'button',
-					time: 300000, // 5 minutes
-					buttonEmojis: {
-						prev: '◀️',
-						next: '▶️',
-					},
-					showPageNumbers: true,
-				});
-			} catch (paginationError) {
-				console.error('Pagination error:', paginationError);
-				// If pagination fails, try to send a simple response
-				try {
-					if (!interaction.replied) {
-						await interaction.editReply({
-							content: `Found ${embeds.length} posts in r/${subreddit}, but couldn't create pagination. Try again later.`,
-							embeds: embeds.length > 0 ? [embeds[0]] : [],
-						});
-					}
-				} catch (fallbackError) {
-					console.error('Failed to send fallback response:', fallbackError);
-				}
+			if (!posts || posts.length === 0) {
+				await safeReply(
+					interaction,
+					`📭 No posts found in \`r/${subreddit}\` (excluding stickied posts). The subreddit might be empty or inactive.`,
+				);
+				return;
 			}
+
+			// Create embeds for valid posts
+			const embeds = posts.map(({ data }) => createPostEmbed(data));
+
+			// Use pagination
+			await createPagination(interaction, embeds, {
+				type: 'button',
+				time: PAGINATION_TIMEOUT,
+				buttonEmojis: { prev: '◀️', next: '▶️' },
+				showPageNumbers: true,
+			});
 		} catch (error) {
-			console.error('Reddit API Error:', error);
-			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}.`;
+			console.error('Reddit Command Error:', error);
+			let errorMessage = `❌ An unexpected error occurred while fetching posts from \`r/${subreddit}\`.`;
 
 			if (axios.isAxiosError(error)) {
+				const axiosError = error as AxiosError;
 				if (
-					error.code === 'ECONNABORTED' ||
-					error.message.includes('timeout')
+					axiosError.code === 'ECONNABORTED' ||
+					axiosError.message.includes('timeout')
 				) {
 					errorMessage =
-						'⏱️ The request timed out. Reddit might be experiencing high load. Please try again.';
-				} else if (error.response) {
-					switch (error.response.status) {
-						case 404:
-							errorMessage = `❌ Subreddit r/${subreddit} doesn't exist.`;
-							break;
-						case 403:
-							errorMessage = `🔒 Subreddit r/${subreddit} is private or quarantined.`;
-							break;
-						case 429:
+						'⏱️ The request to Reddit timed out. Please try again later.';
+				} else if (axiosError.response) {
+					// Handle 5xx server errors from Reddit
+					switch (axiosError.response.status) {
+						case 429: // Should ideally not happen with validateStatus, but as fallback
 							errorMessage =
-								'⚠️ Rate limited by Reddit. Please wait a few minutes and try again.';
+								'⚠️ Rate limited by Reddit. Please wait a moment and try again.';
 							break;
 						case 500:
 						case 502:
 						case 503:
-							errorMessage =
-								'🛠️ Reddit is having technical difficulties. Please try again later.';
+						case 504:
+							errorMessage = `🛠️ Reddit seems to be having server issues (Status ${axiosError.response.status}). Please try again later.`;
+							break;
+						default:
+							errorMessage = `❓ Reddit returned an unexpected error (Status ${axiosError.response.status}).`;
 							break;
 					}
 				} else if (
-					error.code === 'ETIMEDOUT' ||
-					error.code === 'ECONNREFUSED'
+					axiosError.code === 'ETIMEDOUT' ||
+					axiosError.code === 'ENOTFOUND' || // Added ENOTFOUND for DNS issues
+					axiosError.code === 'ECONNREFUSED'
 				) {
 					errorMessage =
-						'🌐 Unable to connect to Reddit. The service might be down or experiencing issues.';
+						'🌐 Unable to connect to Reddit. Please check your connection or try again later.';
 				}
+			}
+			// Fallback for non-Axios errors or unhandled cases
+			else if (error instanceof Error) {
+				// Keep the default message but log the specific error name/message
+				console.error(`Non-Axios Error: ${error.name} - ${error.message}`);
 			}
 
-			// Handle the reply based on the interaction state
-			try {
-				if (interaction.deferred) {
-					await interaction.editReply({ content: errorMessage });
-				} else if (!interaction.replied) {
-					await interaction.reply({ content: errorMessage, ephemeral: true });
-				}
-			} catch (replyError) {
-				console.error('Failed to send error response:', replyError);
-			}
+			await safeReply(interaction, errorMessage);
 		}
 	},
 };
