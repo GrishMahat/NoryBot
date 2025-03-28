@@ -86,7 +86,7 @@ jobs:
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: issueNumber,
-                    body: `🤖 This dependency update has been automatically assigned to @dependabot[bot]. CI tests will run to verify compatibility.`
+                    body: `🤖 This dependency update has been automatically assigned to @dependabot[bot]. Compatibility will be verified during build.`
                   });
                   console.log(`Added informational comment to PR #${issueNumber}`);
                 }
