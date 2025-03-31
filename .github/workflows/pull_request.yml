@@ -6,6 +6,7 @@ on:
 permissions:
   pull-requests: write
   contents: read
+  issues: write
 
 jobs:
   assign-author:
@@ -16,13 +17,38 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            const author = pr.user.login;
-            await github.rest.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number,
-              assignees: [author]
-            });
+            if (!pr) {
+              core.setFailed('Pull request data is missing');
+              return;
+            }
+
+            const author = pr.user?.login;
+            if (!author) {
+              core.setFailed('Author information is missing');
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            if (!owner || !repo) {
+              core.setFailed('Repository information is missing');
+              return;
+            }
+
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: pr.number,
+                assignees: [author]
+              });
+              console.log(`Successfully assigned ${author} to PR #${pr.number}`);
+            } catch (error) {
+              if (error.status === 404) {
+                core.setFailed(`Failed to assign author: Repository or PR not found. Please check permissions and repository access.`);
+              } else {
+                core.setFailed(`Failed to assign author: ${error.message}`);
+              }
+            }
             
   check-labels:
     runs-on: ubuntu-latest
@@ -32,15 +58,25 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            const labels = pr.labels.map(label => label.name);
+            if (!pr) {
+              core.setFailed('Pull request data is missing');
+              return;
+            }
+
+            const labels = pr.labels?.map(label => label.name) || [];
             const requiredLabels = ['enhancement', 'bug', 'documentation', 'dependencies'];
             const hasRequiredLabel = labels.some(label => requiredLabels.includes(label));
             
             if (!hasRequiredLabel) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                body: '⚠️ Please add at least one of the following labels: enhancement, bug, documentation, or dependencies'
-              });
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: '⚠️ Please add at least one of the following labels: enhancement, bug, documentation, or dependencies'
+                });
+                console.log('Added label reminder comment');
+              } catch (error) {
+                core.setFailed(`Failed to add label reminder comment: ${error.message}`);
+              }
             } 
