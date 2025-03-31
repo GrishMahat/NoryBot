@@ -7,6 +7,7 @@ permissions:
   pull-requests: write
   contents: read
   issues: write
+  checks: write
 
 jobs:
   assign-author:
@@ -35,6 +36,14 @@ jobs:
             }
 
             try {
+              // First verify we can access the PR
+              await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: pr.number
+              });
+
+              // Then try to assign the author
               await github.rest.issues.addAssignees({
                 owner,
                 repo,
@@ -44,7 +53,9 @@ jobs:
               console.log(`Successfully assigned ${author} to PR #${pr.number}`);
             } catch (error) {
               if (error.status === 404) {
-                core.setFailed(`Failed to assign author: Repository or PR not found. Please check permissions and repository access.`);
+                core.setFailed(`Failed to assign author: Repository or PR not found. Please check permissions and repository access. Error details: ${error.message}`);
+              } else if (error.status === 403) {
+                core.setFailed(`Permission denied. Please check if the workflow has the required permissions. Error details: ${error.message}`);
               } else {
                 core.setFailed(`Failed to assign author: ${error.message}`);
               }
@@ -77,6 +88,10 @@ jobs:
                 });
                 console.log('Added label reminder comment');
               } catch (error) {
-                core.setFailed(`Failed to add label reminder comment: ${error.message}`);
+                if (error.status === 403) {
+                  core.setFailed(`Permission denied. Please check if the workflow has the required permissions. Error details: ${error.message}`);
+                } else {
+                  core.setFailed(`Failed to add label reminder comment: ${error.message}`);
+                }
               }
             } 
