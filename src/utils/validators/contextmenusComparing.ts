@@ -16,7 +16,7 @@ const compareContextMenuCommands = (
 	const defaultValues = {
 		name: null,
 		type: null,
-		integration_types: [0],
+		integration_types: [0,1],
 		nsfw: false,
 		dm_permission: true,
 		default_member_permissions: null,
@@ -78,7 +78,7 @@ const compareContextMenuCommands = (
 		{
 			key: 'integrationTypes',
 			existing: existing.integrationTypes,
-			local: local.data.integration_types,
+			local: local.data.integration_types ?? defaultValues.integration_types,
 			defaultValue: defaultValues.integration_types,
 		},
 		{
@@ -99,7 +99,7 @@ const compareContextMenuCommands = (
 	if (
 		changed(existing.nameLocalizations, local.data.name_localizations, null)
 	) {
-		console.log('Difference found in name localizations:', {
+		console.log(`Difference found in contexmenus ${local} name localizations:`, {
 			existing: existing.nameLocalizations,
 			local: local.data.name_localizations,
 		});
@@ -113,7 +113,7 @@ const compareContextMenuCommands = (
 		) {
 			// Only log if values are actually different
 			if (comparison.existing !== comparison.local) {
-				console.log(`Difference found in ${comparison.key}:`, {
+				console.log(`Difference found in contexmenu ${comparison.local} ${comparison.key}:`, {
 					existing: comparison.existing,
 					local: comparison.local,
 				});

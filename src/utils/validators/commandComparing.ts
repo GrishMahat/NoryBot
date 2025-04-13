@@ -106,7 +106,7 @@ const compareCommands = (
 		if (
 			changed(comparison.existing, comparison.local, comparison.defaultValue)
 		) {
-			console.log(`Difference found in ${comparison.key}:`, {
+			console.log(`Difference found in ${comparison.local}command   ${comparison.key}:`, {
 				existing: comparison.existing,
 				local: comparison.local,
 			});

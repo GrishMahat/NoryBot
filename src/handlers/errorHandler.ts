@@ -92,9 +92,9 @@ class ErrorHandler {
 			);
 		}
 
-		console.log(
-			`ErrorHandler: Initialized with grouping threshold of ${this.config.groupingThreshold} errors`,
-		);
+		// console.log(
+		// 	`ErrorHandler: Initialized with grouping threshold of ${this.config.groupingThreshold} errors`,
+		// );
 	}
 
 	/**
@@ -110,13 +110,14 @@ class ErrorHandler {
 				return;
 			}
 			this.webhook = new WebhookClient({ url: this.config.webhook });
-			console.log('ErrorHandler: Webhook client initialized successfully.');
 			// Optional: Send a test message on initialization
+      // console.log('ErrorHandler: Webhook client initialized successfully.');
 			// this.webhook.send({ content: `Error handler initialized in ${this.config.environment} mode.` }).catch((err) => {
 			//   console.error('ErrorHandler: Failed to send test message to webhook:', err);
 			//   this.webhook = null; // Invalidate webhook if test message fails
 			// });
 		} catch (error) {
+      console.log(`Webhook ${this.config.webhook}`)
 			console.error('ErrorHandler: Failed to create WebhookClient:', error);
 			this.webhook = null;
 		}

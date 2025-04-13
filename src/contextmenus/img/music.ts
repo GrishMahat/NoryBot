@@ -11,8 +11,8 @@ import { generateMusicImage } from '../../services/image/musicImge';
 const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()
 		.setName('Music Player View')
-		.setType(ApplicationCommandType.Message),
-
+		.setType(ApplicationCommandType.Message)
+    .setContexts([0, 1, 2]),
 	async run(client: Client, interaction: ContextMenuCommandInteraction) {
 		if (!interaction.isMessageContextMenuCommand()) return;
 
