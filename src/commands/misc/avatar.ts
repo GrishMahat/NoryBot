@@ -1,124 +1,122 @@
 import {
-  EmbedBuilder,
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  Client,
-  GuildMember,
-  User,
+	EmbedBuilder,
+	SlashCommandBuilder,
+	ChatInputCommandInteraction,
+	Client,
+	GuildMember,
+	User,
 } from 'discord.js';
 import { LocalCommand } from '../../types/index';
 
 const avatarCommand: LocalCommand = {
-  data: new SlashCommandBuilder()
-    .setName('avatar')
-    .setDescription('Show and interact with user avatars')
-    .addUserOption((option) =>
-      option
-        .setName('user')
-        .setDescription('User whose avatar you want to see')
-        .setRequired(false),
-    )
-    .setContexts([0, 1, 2])
-    .setIntegrationTypes([0, 1])
-    .toJSON(),
+	data: new SlashCommandBuilder()
+		.setName('avatar')
+		.setDescription('Show and interact with user avatars')
+		.addUserOption((option) =>
+			option
+				.setName('user')
+				.setDescription('User whose avatar you want to see')
+				.setRequired(false),
+		)
+		.setContexts([0, 1, 2])
+		.setIntegrationTypes([0, 1])
+		.toJSON(),
 
-  run: async (
-    client: Client,
-    interaction: ChatInputCommandInteraction,
-  ): Promise<void> => {
-    try {
-      await interaction.deferReply();
+	run: async (
+		client: Client,
+		interaction: ChatInputCommandInteraction,
+	): Promise<void> => {
+		try {
+			await interaction.deferReply();
 
-      const targetUser =
-        interaction.options.getUser('user') || interaction.user;
+			const targetUser =
+				interaction.options.getUser('user') || interaction.user;
 
-      if (!interaction.guild) {
-        await handleDMAvatar(interaction, targetUser);
-        return;
-      }
+			if (!interaction.guild) {
+				await handleDMAvatar(interaction, targetUser);
+				return;
+			}
 
-      const targetMember = await interaction.guild.members
-        .fetch(targetUser.id)
-        .catch(() => null);
-      if (!targetMember) {
-        await interaction.editReply({
-          content: '❌ Could not fetch member information.',
-        });
-        return;
-      }
+			const targetMember = await interaction.guild.members
+				.fetch(targetUser.id)
+				.catch(() => null);
+			if (!targetMember) {
+				await interaction.editReply({
+					content: '❌ Could not fetch member information.',
+				});
+				return;
+			}
 
-      const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+			const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
-      const avatarData = await getAvatarData(targetUser, targetMember);
-      const { allAvatars } = avatarData;
+			const avatarData = await getAvatarData(targetUser, targetMember);
+			const { allAvatars } = avatarData;
 
-      if (allAvatars.length === 0) {
-        await interaction.editReply({
-          content: '❌ No avatar found for this user.',
-        });
-        return;
-      }
+			if (allAvatars.length === 0) {
+				await interaction.editReply({
+					content: '❌ No avatar found for this user.',
+				});
+				return;
+			}
 
-      const embedDescription = [
-        `👤 **User:** ${targetUser.toString()} (${targetUser.id})`,
-        `🖼️ **Global Avatar:** ${targetUser.avatar ? '✅' : '❌'}`,
-        `🖼️ **Server Avatar:** ${targetMember.avatar ? '✅' : '❌'}`,
-        `🎞️ **Animated:** ${targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_') ? '✅' : '❌'}`,
-        `📏 **Available Sizes:** ${sizes.join(', ')}px`,
-      ];
+			const embedDescription = [
+				`👤 **User:** ${targetUser.toString()} (${targetUser.id})`,
+				`🖼️ **Global Avatar:** ${targetUser.avatar ? '✅' : '❌'}`,
+				`🖼️ **Server Avatar:** ${targetMember.avatar ? '✅' : '❌'}`,
+				`🎞️ **Animated:** ${targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_') ? '✅' : '❌'}`,
+				`📏 **Available Sizes:** ${sizes.join(', ')}px`,
+			];
 
-      const bannerURL = targetUser.bannerURL({ size: 4096 });
-      if (bannerURL) {
-        embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
-      }
+			const bannerURL = targetUser.bannerURL({ size: 4096 });
+			if (bannerURL) {
+				embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
+			}
 
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: targetUser.tag || targetUser.username,
-          iconURL: targetUser.displayAvatarURL({ size: 16 }),
-        })
-        .setTitle('💎 Avatar Information')
-        .setDescription(embedDescription.join('\n'))
-        .setImage(targetUser.displayAvatarURL({ size: 4096 }))
-        .setColor(targetMember.displayColor || '#2F3136')
-        .setFooter({
-          text: `Requested by ${interaction.user.tag || interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL(),
-        })
-        .setTimestamp();
+			const embed = new EmbedBuilder()
+				.setAuthor({
+					name: targetUser.tag || targetUser.username,
+					iconURL: targetUser.displayAvatarURL({ size: 16 }),
+				})
+				.setTitle('💎 Avatar Information')
+				.setDescription(embedDescription.join('\n'))
+				.setImage(targetUser.displayAvatarURL({ size: 4096 }))
+				.setColor(targetMember.displayColor || '#2F3136')
+				.setFooter({
+					text: `Requested by ${interaction.user.tag || interaction.user.username}`,
+					iconURL: interaction.user.displayAvatarURL(),
+				})
+				.setTimestamp();
 
-      await interaction.editReply({
-        embeds: [embed],
-      });
-    } catch (error) {
-      console.error('Error in avatar command:', error);
-      await interaction.editReply({
-        content: '❌ An error occurred while fetching the user avatar.',
-      });
-    }
-  },
+			await interaction.editReply({
+				embeds: [embed],
+			});
+		} catch (error) {
+			console.error('Error in avatar command:', error);
+			await interaction.editReply({
+				content: '❌ An error occurred while fetching the user avatar.',
+			});
+		}
+	},
 };
 
 // Rest of the code remains the same, just update the DM handler:
 
 async function handleDMAvatar(
-  interaction: ChatInputCommandInteraction,
-  targetUser: User,
+	interaction: ChatInputCommandInteraction,
+	targetUser: User,
 ): Promise<void> {
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: targetUser.tag || targetUser.username,
-      iconURL: targetUser.displayAvatarURL({ size: 16 }),
-    })
-    .setTitle('💎 Avatar Information')
-    .setDescription(
-      `👤 **User:** ${targetUser.toString()} (${targetUser.id})`,
-    )
-    .setImage(targetUser.displayAvatarURL({ size: 4096 }))
-    .setColor('#2F3136')
-    .setTimestamp();
+	const embed = new EmbedBuilder()
+		.setAuthor({
+			name: targetUser.tag || targetUser.username,
+			iconURL: targetUser.displayAvatarURL({ size: 16 }),
+		})
+		.setTitle('💎 Avatar Information')
+		.setDescription(`👤 **User:** ${targetUser.toString()} (${targetUser.id})`)
+		.setImage(targetUser.displayAvatarURL({ size: 4096 }))
+		.setColor('#2F3136')
+		.setTimestamp();
 
-  await interaction.editReply({ embeds: [embed] });
+	await interaction.editReply({ embeds: [embed] });
 }
 
 // The getAvatarData function remains unchanged

@@ -16,7 +16,7 @@ const compareContextMenuCommands = (
 	const defaultValues = {
 		name: null,
 		type: null,
-		integration_types: [0,1],
+		integration_types: [0, 1],
 		nsfw: false,
 		dm_permission: true,
 		default_member_permissions: null,
@@ -99,10 +99,13 @@ const compareContextMenuCommands = (
 	if (
 		changed(existing.nameLocalizations, local.data.name_localizations, null)
 	) {
-		console.log(`Difference found in contexmenus ${local} name localizations:`, {
-			existing: existing.nameLocalizations,
-			local: local.data.name_localizations,
-		});
+		console.log(
+			`Difference found in contexmenus ${local} name localizations:`,
+			{
+				existing: existing.nameLocalizations,
+				local: local.data.name_localizations,
+			},
+		);
 		return true;
 	}
 
@@ -113,10 +116,13 @@ const compareContextMenuCommands = (
 		) {
 			// Only log if values are actually different
 			if (comparison.existing !== comparison.local) {
-				console.log(`Difference found in contexmenu ${comparison.local} ${comparison.key}:`, {
-					existing: comparison.existing,
-					local: comparison.local,
-				});
+				console.log(
+					`Difference found in contexmenu ${comparison.local} ${comparison.key}:`,
+					{
+						existing: comparison.existing,
+						local: comparison.local,
+					},
+				);
 			}
 			return true;
 		}

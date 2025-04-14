@@ -15,7 +15,7 @@ const UserAvatarContextMenu: LocalContextMenu = {
 		.setName('User Avatar')
 		.setType(2)
 		.setDMPermission(false)
-    .setContexts([0, 1, 2]),
+		.setContexts([0, 1, 2]),
 	userPermissions: [],
 	botPermissions: [],
 	run: async (client: Client, interaction: ContextMenuCommandInteraction) => {

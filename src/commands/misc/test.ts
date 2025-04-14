@@ -27,7 +27,7 @@ const testCommand: Command = {
 		)
 		.toJSON(),
 	testMode: false,
-	deleted: false,
+	deleted: true,
 	run: async (
 		client: Client,
 		interaction: ChatInputCommandInteraction,

@@ -12,36 +12,20 @@ import { LocalCommand } from '../../types/index';
 
 /**
  * Synchronizes local command definitions with the Discord application's registered commands.
+ *
  * This function performs the following steps:
  * - Fetches local command definitions and registered application commands.
- * - Deletes commands from the application that are no longer present locally.
+ * - Deletes commands from the application that are no longer present locally or that are marked as deleted.
  * - Updates existing commands if there are any changes.
  * - Registers new commands that are defined locally but not yet registered.
  * - Logs the changes made during the synchronization process.
  *
  * @async
- * @function syncCommands
  * @param {Client} client - The Discord.js client instance.
  * @returns {Promise<void>} Resolves when the synchronization process is complete.
- * @throws {Error} Throws an error if fetching commands fails or if unexpected issues occur.
  *
- * @example
- * // Usage in your main bot file
- *
- * @note
- * Ensure that you have the necessary permissions to manage application commands.
- * This function should be called after the client is ready.
- *
- * @since 0.0.1
- * @see {@link https://discord.js.org/#/docs/main/stable/class/Client|Discord.js Client}
- * @see {@link https://discord.com/developers/docs/interactions/application-commands|Discord Application Commands}
- *
- * @todo
- * - Implement caching mechanisms to reduce redundant API calls.
- * - Include validation for command data before attempting to register or update.
- * - Provide better error handling and retry logic for rate limits.
+ * @note Call this function after the client is ready and ensure you have the necessary permissions.
  */
-
 export default async (client: Client): Promise<void> => {
 	try {
 		const [localCommands, applicationCommands] = await Promise.all([
@@ -57,12 +41,14 @@ export default async (client: Client): Promise<void> => {
 		const updatedCommands: string[] = [];
 		const newCommands: string[] = [];
 
-		await deleteUnusedCommands(
+		// Delete commands that either no longer exist locally or are marked as deleted
+		await deleteObsoleteCommands(
 			applicationCommands,
 			localCommands,
 			deletedCommands,
 		);
 
+		// Process the valid (non-deleted) commands for update or creation
 		await updateOrCreateCommands(
 			applicationCommands,
 			localCommands,
@@ -88,49 +74,67 @@ export default async (client: Client): Promise<void> => {
 };
 
 /**
- * Deletes application commands that are not present in the local command definitions.
+ * Deletes application commands that are no longer defined locally or are marked as deleted.
+ * We create a set of valid command names from local commands that are NOT marked as deleted,
+ * then remove all application commands which do not appear in this set.
  *
  * @async
- * @function deleteUnusedCommands
- * @param {ApplicationCommand[]} applicationCommands - The list of commands registered with the application.
+ * @param {ApplicationCommand[]} applicationCommands - The list of commands registered with Discord.
  * @param {LocalCommand[]} localCommands - The list of local command definitions.
  * @param {string[]} deletedCommands - An array to store the names of deleted commands.
- * @returns {Promise<void>} Resolves when deletion is complete.
- *
- * @throws {Error} Throws an error if command deletion fails.
- *
- * @example
- * // Called internally within syncCommands
- * await deleteUnusedCommands(applicationCommands, localCommands, deletedCommands);
- *
- * @since 0.0.1
+ * @returns {Promise<void>}
  */
-
-async function deleteUnusedCommands(
+async function deleteObsoleteCommands(
 	applicationCommands: ApplicationCommand[],
 	localCommands: LocalCommand[],
 	deletedCommands: string[],
 ): Promise<void> {
-	const localCommandNames = new Set(
-		localCommands.map((cmd) => cmd.data?.name).filter(Boolean),
+	// Build a set of command names that we want to keep (only those not marked as deleted)
+	const validCommandNames = new Set(
+		localCommands
+			.filter((cmd) => !cmd.deleted)
+			.map((cmd) => cmd.data?.name)
+			.filter(Boolean),
 	);
+
+	// Identify commands that should be deleted:
+	// - They are ChatInput type,
+	// - They have a valid name,
+	// - Their name is not present in the validCommandNames set.
 	const commandsToDelete = applicationCommands.filter(
 		(cmd) =>
 			cmd.type === ApplicationCommandType.ChatInput &&
 			cmd.name &&
-			!localCommandNames.has(cmd.name),
+			!validCommandNames.has(cmd.name),
 	);
 
 	await Promise.all(
 		commandsToDelete.map(async (cmd) => {
-			if (cmd.name) {
+			try {
 				await cmd.delete();
 				deletedCommands.push(cmd.name);
+			} catch (err: unknown) {
+				console.error(
+					`[${new Date().toISOString()}] Failed to delete command ${cmd.name}: ${
+						err instanceof Error ? err.message : 'Unknown error'
+					}`.red,
+				);
 			}
 		}),
 	);
 }
 
+/**
+ * Updates existing commands or creates new commands based on local command definitions.
+ *
+ * @async
+ * @param {ApplicationCommand[]} applicationCommands - The list of commands registered with Discord.
+ * @param {LocalCommand[]} localCommands - The list of local command definitions.
+ * @param {Client} client - The Discord.js client instance.
+ * @param {string[]} updatedCommands - An array to collect names of updated commands.
+ * @param {string[]} newCommands - An array to collect names of newly registered commands.
+ * @returns {Promise<void>}
+ */
 async function updateOrCreateCommands(
 	applicationCommands: ApplicationCommand[],
 	localCommands: LocalCommand[],
@@ -140,13 +144,18 @@ async function updateOrCreateCommands(
 ): Promise<void> {
 	for (const [index, localCommand] of localCommands.entries()) {
 		try {
-			if (!localCommand || !localCommand.data || !localCommand.data.name) {
+			// Ensure local command is properly defined and not marked as deleted
+			if (
+				!localCommand ||
+				!localCommand.data ||
+				!localCommand.data.name ||
+				localCommand.deleted === true
+			) {
 				continue;
 			}
 
 			const { data } = localCommand;
 			const commandName = data.name;
-
 			const existingCommand = applicationCommands.find(
 				(cmd) => cmd.name === commandName,
 			);
@@ -171,6 +180,14 @@ async function updateOrCreateCommands(
 	}
 }
 
+/**
+ * Compares an existing command with its local definition and applies updates if needed.
+ *
+ * @async
+ * @param {ApplicationCommand} existingCommand - The command as registered with Discord.
+ * @param {LocalCommand} localCommand - The locally defined command data.
+ * @returns {Promise<boolean>} Returns true if the command was updated, false otherwise.
+ */
 async function handleExistingCommand(
 	existingCommand: ApplicationCommand,
 	localCommand: LocalCommand,
@@ -187,7 +204,6 @@ async function handleExistingCommand(
 				options:
 					(localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
 			});
-
 			return true;
 		} catch (error: unknown) {
 			console.error(
@@ -201,6 +217,14 @@ async function handleExistingCommand(
 	return false;
 }
 
+/**
+ * Creates a new command based on the provided local command data.
+ *
+ * @async
+ * @param {Client} client - The Discord.js client instance.
+ * @param {LocalCommand['data']} data - The local command definition data.
+ * @returns {Promise<void>}
+ */
 async function createCommand(
 	client: Client,
 	data: LocalCommand['data'],
@@ -226,6 +250,14 @@ async function createCommand(
 	}
 }
 
+/**
+ * Logs a formatted report of command synchronization changes.
+ *
+ * @param {LocalCommand[]} localCommands - The complete list of local command definitions.
+ * @param {string[]} updatedCommands - Names of updated commands.
+ * @param {string[]} newCommands - Names of newly registered commands.
+ * @param {string[]} deletedCommands - Names of deleted commands.
+ */
 function logCommandChanges(
 	localCommands: LocalCommand[],
 	updatedCommands: string[],
@@ -240,8 +272,9 @@ function logCommandChanges(
 
 	console.log(header);
 	console.log(
-		`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(35 - localCommands.length.toString().length)} ║`
-			.cyan,
+		`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(
+			35 - localCommands.length.toString().length,
+		)} ║`.cyan,
 	);
 
 	if (updatedCommands.length || newCommands.length || deletedCommands.length) {
@@ -270,6 +303,5 @@ function logCommandChanges(
 			console.log(`║   • ${cmd.red}${' '.repeat(45 - cmd.length)} ║`.cyan),
 		);
 	}
-
 	console.log(footer);
 }

@@ -7,6 +7,7 @@ import {
 	CacheType,
 	InteractionReplyOptions,
 	InteractionEditReplyOptions,
+	GuildTextBasedChannel,
 } from 'discord.js';
 import axios, { AxiosError } from 'axios';
 import {
@@ -167,7 +168,7 @@ const redditCommand: Command = {
 		)
 		.toJSON(),
 	userPermissions: [],
-	botPermissions: ['EmbedLinks'], // Ensure bot can send embeds
+	botPermissions: [],
 	category: 'Fun',
 	cooldown: 5, // Slightly reduced cooldown
 	nsfwMode: false, // Note: This doesn't prevent NSFW subreddits, only the command context
@@ -188,6 +189,29 @@ const redditCommand: Command = {
 		} catch (error) {
 			console.error('Failed to defer interaction:', error);
 			// If deferral fails, we likely can't respond further
+			return;
+		}
+
+		// Ensure channel is cached to prevent ChannelNotCached errors
+		if (!interaction.channel?.id) {
+			await safeReply(
+				interaction,
+				'❌ Cannot execute command - channel information is missing.',
+				true,
+			);
+			return;
+		}
+
+		// Fetch and cache the channel if needed
+		const channel = (await client.channels.fetch(
+			interaction.channel.id,
+		)) as GuildTextBasedChannel;
+		if (!channel) {
+			await safeReply(
+				interaction,
+				'❌ Cannot execute command - failed to fetch channel information.',
+				true,
+			);
 			return;
 		}
 

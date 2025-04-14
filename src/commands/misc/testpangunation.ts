@@ -11,6 +11,7 @@ const testPangunation: LocalCommand = {
 		.setName('testpangunation')
 		.setDescription('Test pangunation')
 		.toJSON(),
+	devOnly: true,
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
 		// Create a set of embed pages.
 		const pages = [
