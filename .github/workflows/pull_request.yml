@@ -10,57 +10,6 @@ permissions:
   checks: write
 
 jobs:
-  assign-author:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Assign PR Author
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            if (!pr) {
-              core.setFailed('Pull request data is missing');
-              return;
-            }
-
-            const author = pr.user?.login;
-            if (!author) {
-              core.setFailed('Author information is missing');
-              return;
-            }
-
-            const { owner, repo } = context.repo;
-            if (!owner || !repo) {
-              core.setFailed('Repository information is missing');
-              return;
-            }
-
-            try {
-              // First verify we can access the PR
-              await github.rest.pulls.get({
-                owner,
-                repo,
-                pull_number: pr.number
-              });
-
-              // Then try to assign the author
-              await github.rest.issues.addAssignees({
-                owner,
-                repo,
-                issue_number: pr.number,
-                assignees: [author]
-              });
-              console.log(`Successfully assigned ${author} to PR #${pr.number}`);
-            } catch (error) {
-              if (error.status === 404) {
-                core.setFailed(`Failed to assign author: Repository or PR not found. Please check permissions and repository access. Error details: ${error.message}`);
-              } else if (error.status === 403) {
-                core.setFailed(`Permission denied. Please check if the workflow has the required permissions. Error details: ${error.message}`);
-              } else {
-                core.setFailed(`Failed to assign author: ${error.message}`);
-              }
-            }
-            
   check-labels:
     runs-on: ubuntu-latest
     steps:
