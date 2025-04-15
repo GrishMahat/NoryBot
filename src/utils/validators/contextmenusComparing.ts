@@ -16,7 +16,7 @@ const compareContextMenuCommands = (
 	const defaultValues = {
 		name: null,
 		type: null,
-		integration_types: [0, 1],
+		integration_types: [0],
 		nsfw: false,
 		dm_permission: true,
 		default_member_permissions: null,

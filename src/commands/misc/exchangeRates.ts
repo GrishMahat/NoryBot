@@ -77,7 +77,9 @@ const currencyCommand: LocalCommand = {
 		interaction: ChatInputCommandInteraction<CacheType>,
 	): Promise<void> => {
 		try {
-			await interaction.deferReply();
+			if (!interaction.replied && !interaction.deferred) {
+				await interaction.deferReply();
+			}
 
 			const amount = interaction.options.getNumber('amount', true);
 			const sourceCurrency = interaction.options
@@ -201,9 +203,15 @@ const currencyCommand: LocalCommand = {
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
 			console.error('Error in currency converter:', error);
-			await interaction.editReply({
-				content: `${emojiConfig.notag} An error occurred while converting currencies. Please try again later.`,
-			});
+			if (!interaction.replied && !interaction.deferred) {
+				await interaction.reply({
+					content: `${emojiConfig.notag} An error occurred while converting currencies. Please try again later.`,
+				});
+			} else {
+				await interaction.editReply({
+					content: `${emojiConfig.notag} An error occurred while converting currencies. Please try again later.`,
+				});
+			}
 		}
 	},
 

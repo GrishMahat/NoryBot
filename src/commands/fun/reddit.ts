@@ -7,7 +7,6 @@ import {
 	CacheType,
 	InteractionReplyOptions,
 	InteractionEditReplyOptions,
-	GuildTextBasedChannel,
 } from 'discord.js';
 import axios, { AxiosError } from 'axios';
 import {
@@ -166,6 +165,8 @@ const redditCommand: Command = {
 					{ name: '♾️ All Time', value: 'all' },
 				),
 		)
+		.setContexts([0, 1, 2])
+		.setIntegrationTypes([0, 1])
 		.toJSON(),
 	userPermissions: [],
 	botPermissions: [],
@@ -193,27 +194,27 @@ const redditCommand: Command = {
 		}
 
 		// Ensure channel is cached to prevent ChannelNotCached errors
-		if (!interaction.channel?.id) {
-			await safeReply(
-				interaction,
-				'❌ Cannot execute command - channel information is missing.',
-				true,
-			);
-			return;
-		}
+		// if (!interaction.channel?.id) {
+		// 	await safeReply(
+		// 		interaction,
+		// 		'❌ Cannot execute command - channel information is missing.',
+		// 		true,
+		// 	);
+		// 	return;
+		// }
 
 		// Fetch and cache the channel if needed
-		const channel = (await client.channels.fetch(
-			interaction.channel.id,
-		)) as GuildTextBasedChannel;
-		if (!channel) {
-			await safeReply(
-				interaction,
-				'❌ Cannot execute command - failed to fetch channel information.',
-				true,
-			);
-			return;
-		}
+		//const channel = (await client.channels.fetch(
+		//interaction.channel.id,
+		//)) as GuildTextBasedChannel;
+		//if (!channel) {
+		//await safeReply(
+		//interaction,
+		//'❌ Cannot execute command - failed to fetch channel information.',
+		//	true,
+		//	);
+		//	return;
+		//	}
 
 		const subreddit = interaction.options.getString('subreddit', true);
 		const sort =

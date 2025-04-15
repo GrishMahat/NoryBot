@@ -451,75 +451,60 @@ class CommandValidator {
 		client: Client,
 		interaction: ChatInputCommandInteraction,
 	): Promise<void> {
+		if (!this.isInitialized) {
+			await this.initializeCommands();
+		}
+
 		const startTime = Date.now();
-		const commandName = interaction.commandName;
+		const { commandName } = interaction;
 
 		try {
 			const command = this.commandMap.get(commandName);
-
-			// Command Not Found
 			if (!command) {
-				console.warn(`Command not found: ${commandName}`.yellow);
-				await interaction.reply(
-					this.createEmbed(interaction, Colors.Red, 'Command not found.'),
-				);
+				await interaction.reply({
+					content: 'Command not found.',
+					ephemeral: true,
+				});
 				return;
 			}
 
-			// Validate Command Usage
+			// Defer the reply immediately if the command might take time
+			// if (!interaction.deferred && !interaction.replied) {
+			//   await interaction.deferReply();
+			// }
+
 			const validationError = this.validateCommand(interaction, command);
 			if (validationError) {
-				await interaction.reply(validationError);
-				// Optionally update metrics for failed validation attempts?
-				// this.updateMetrics(commandName, Date.now() - startTime, true);
+				await interaction.editReply({
+					content: validationError.content,
+					embeds: validationError.embeds,
+					components: validationError.components,
+				});
 				return;
 			}
 
-			// Set Cooldown After Successful Validation
-			cooldownManager.setCooldown(
-				interaction.user.id,
-				commandName,
-				command.cooldown || 3, // Default cooldown if not specified
-			);
-
-			// Execute Command Logic
 			await command.run(client, interaction);
-
-			// Update Metrics on Success
 			this.updateMetrics(commandName, Date.now() - startTime);
-
 			console.log(
-				`Command executed: ${commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${Date.now() - startTime}ms`
-					.green,
+				`Command executed: ${commandName} by ${interaction.user.tag}`.green,
 			);
 		} catch (error) {
-			// Update Metrics on Failure
 			this.updateMetrics(commandName, Date.now() - startTime, true);
-			console.error(`Error executing command ${commandName}:`.red, error);
-
-			// Use global error handler
-			if (global.errorHandler?.handleError) {
-				await global.errorHandler.handleError(error, 'CommandExecutionError');
-			}
-
-			// Inform User about the Error (if possible)
-			const errorMessage = this.createEmbed(
-				interaction,
-				Colors.Red,
-				'An unexpected error occurred while executing this command.',
-			);
+			await global.errorHandler.handleError(error, 'CommandExecutionError');
 
 			try {
-				if (interaction.replied || interaction.deferred) {
-					await interaction.followUp(errorMessage);
+				if (!interaction.deferred && !interaction.replied) {
+					await interaction.reply({
+						content: 'An error occurred while processing your request.',
+						ephemeral: true,
+					});
 				} else {
-					await interaction.reply(errorMessage);
+					await interaction.editReply({
+						content: 'An error occurred while processing your request.',
+					});
 				}
 			} catch (replyError) {
-				console.error(
-					'Failed to send error reply to interaction:'.red,
-					replyError,
-				);
+				console.error('Failed to send error response:', replyError);
 			}
 		}
 	}

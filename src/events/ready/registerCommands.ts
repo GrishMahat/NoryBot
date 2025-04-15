@@ -4,6 +4,8 @@ import {
 	Client,
 	ApplicationCommandType,
 	ApplicationCommandOptionData,
+	PermissionsBitField,
+	PermissionResolvable,
 } from 'discord.js';
 import getLocalCommands from '../../utils/helpers/getLocalCommands';
 import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
@@ -196,13 +198,23 @@ async function handleExistingCommand(
 
 	if (needsUpdate) {
 		try {
+			const defaultMemberPermissions = localCommand.data
+				.default_member_permissions
+				? new PermissionsBitField(
+						localCommand.data
+							.default_member_permissions as PermissionResolvable,
+					)
+				: null;
+
 			await existingCommand.edit({
 				name: localCommand.data.name,
 				description: localCommand.data.description ?? '',
-				contexts: localCommand.data.contexts ?? [0, 1],
+				contexts: localCommand.data.contexts ?? [0, 1, 2],
 				integrationTypes: localCommand.data.integration_types ?? [0, 1],
 				options:
 					(localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
+				dmPermission: localCommand.data.dm_permission ?? true,
+				defaultMemberPermissions,
 			});
 			return true;
 		} catch (error: unknown) {
@@ -234,12 +246,20 @@ async function createCommand(
 	}
 
 	try {
+		const defaultMemberPermissions = data.default_member_permissions
+			? new PermissionsBitField(
+					data.default_member_permissions as PermissionResolvable,
+				)
+			: null;
+
 		await client.application?.commands.create({
 			name: data.name,
 			description: data.description ?? '',
-			contexts: data.contexts ?? [0, 1],
+			contexts: data.contexts ?? [0, 1, 2],
 			integrationTypes: data.integration_types ?? [0, 1],
 			options: (data.options as ApplicationCommandOptionData[]) ?? [],
+			dmPermission: data.dm_permission ?? true,
+			defaultMemberPermissions,
 		});
 	} catch (err: unknown) {
 		console.error(
