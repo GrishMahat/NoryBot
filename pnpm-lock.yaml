@@ -21,8 +21,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       discord-image-utils:
-        specifier: ^0.0.8
-        version: 0.0.8
+        specifier: ^0.1.0
+        version: 0.1.0
       discord.js:
         specifier: ^14.18.0
         version: 14.18.0
@@ -782,8 +782,8 @@ packages:
   discord-api-types@0.37.119:
     resolution: {integrity: sha512-WasbGFXEB+VQWXlo6IpW3oUv73Yuau1Ig4AZF/m13tXcTKnMpc/mHjpztIlz4+BM9FG9BHQkEXiPto3bKduQUg==}
 
-  discord-image-utils@0.0.8:
-    resolution: {integrity: sha512-JhMxHPkPAFzJnSWKu4eCjjv/tcujNkZZCIYX++R0GqPuso7DER4QOyt2FE/heOb2i2JJ6BkmEZM37fI53gYwbQ==}
+  discord-image-utils@0.1.0:
+    resolution: {integrity: sha512-qqmnozGffByAPkBt9lVlZSQ6InygJBbE8dGw2Q1Q2og6n8RxDNH0LW3KLOFOG2MPoIgmH5gUQLTrIXtlZ3UWWA==}
     engines: {node: '>=16.0.0'}
 
   discord.js@14.18.0:
@@ -1746,8 +1746,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.24.2:
-    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
+  zod@3.24.3:
+    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
 snapshots:
 
@@ -2008,7 +2008,7 @@ snapshots:
     dependencies:
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-blur@1.6.0':
     dependencies:
@@ -2018,7 +2018,7 @@ snapshots:
   '@jimp/plugin-circle@1.6.0':
     dependencies:
       '@jimp/types': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-color@1.6.0':
     dependencies:
@@ -2026,7 +2026,7 @@ snapshots:
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
       tinycolor2: 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-contain@1.6.0':
     dependencies:
@@ -2035,7 +2035,7 @@ snapshots:
       '@jimp/plugin-resize': 1.6.0
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-cover@1.6.0':
     dependencies:
@@ -2043,20 +2043,20 @@ snapshots:
       '@jimp/plugin-crop': 1.6.0
       '@jimp/plugin-resize': 1.6.0
       '@jimp/types': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-crop@1.6.0':
     dependencies:
       '@jimp/core': 1.6.0
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-displace@1.6.0':
     dependencies:
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-dither@1.6.0':
     dependencies:
@@ -2066,12 +2066,12 @@ snapshots:
     dependencies:
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-flip@1.6.0':
     dependencies:
       '@jimp/types': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-hash@1.6.0':
     dependencies:
@@ -2089,7 +2089,7 @@ snapshots:
   '@jimp/plugin-mask@1.6.0':
     dependencies:
       '@jimp/types': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-print@1.6.0':
     dependencies:
@@ -2102,18 +2102,18 @@ snapshots:
       parse-bmfont-binary: 1.0.6
       parse-bmfont-xml: 1.1.6
       simple-xml-to-json: 1.2.3
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-quantize@1.6.0':
     dependencies:
       image-q: 4.0.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-resize@1.6.0':
     dependencies:
       '@jimp/core': 1.6.0
       '@jimp/types': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-rotate@1.6.0':
     dependencies:
@@ -2122,7 +2122,7 @@ snapshots:
       '@jimp/plugin-resize': 1.6.0
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/plugin-threshold@1.6.0':
     dependencies:
@@ -2131,11 +2131,11 @@ snapshots:
       '@jimp/plugin-hash': 1.6.0
       '@jimp/types': 1.6.0
       '@jimp/utils': 1.6.0
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/types@1.6.0':
     dependencies:
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@jimp/utils@1.6.0':
     dependencies:
@@ -2508,7 +2508,7 @@ snapshots:
 
   discord-api-types@0.37.119: {}
 
-  discord-image-utils@0.0.8:
+  discord-image-utils@0.1.0:
     dependencies:
       canvas: 3.1.0
       gifencoder: 2.0.1
@@ -3464,4 +3464,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.24.2: {}
+  zod@3.24.3: {}
