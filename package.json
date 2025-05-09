@@ -30,11 +30,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.17",
     "eslint": "^9.26.0",
     "globals": "^16.0.0",
     "module-alias": "^2.2.3",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "prettier": "3.5.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
