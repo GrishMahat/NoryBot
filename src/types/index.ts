@@ -3,19 +3,22 @@
  * @description Central export point for all type definitions used in the bot
  */
 
-// Discord-related types
+// Core Discord Types
 export * from './discord/commands';
 export * from './discord/events';
 
-// Feature-specific types
+// Feature Types
 export * from './features/currency';
 export * from './features/image';
 
-// API-related types
+// API Integration Types
 export * from './api/reddit';
 
-// Error handling types
+// Error Handling Types
 export * from './error/index';
 
-// Utility types
+// Utility Types
 export * from './utils/index';
+
+// Global Type Augmentations
+export * from './global';
