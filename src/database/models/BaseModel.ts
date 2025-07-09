@@ -12,11 +12,7 @@ export const baseSchemaOptions: SchemaOptions = {
 	},
 	toObject: {
 		virtuals: true,
-		transform: function(
-			doc: any,
-			ret: any,
-			options: any,
-		): any {
+		transform: function (doc: any, ret: any, options: any): any {
 			ret.id = ret._id;
 			delete ret._id;
 			delete ret.__v;

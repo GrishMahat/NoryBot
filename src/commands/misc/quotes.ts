@@ -12,7 +12,7 @@ import {
 	MessageFlags,
 } from 'discord.js';
 import { LocalCommand, QuoteResponse } from '../../types/index';
-import { Quote } from "discord-image-utils";
+import { Quote } from 'discord-image-utils';
 import emojiConfig from '../../config/emoji';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -39,7 +39,7 @@ const quotesCommand: LocalCommand = {
 			const quote = await fetchQuote();
 			const imageBuffer = await Quote({
 				quote: quote.quote,
-				author: quote.author			
+				author: quote.author,
 			});
 
 			tempImagePath = join(process.cwd(), `temp_quote_${Date.now()}.png`);

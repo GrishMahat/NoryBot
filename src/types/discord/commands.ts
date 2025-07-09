@@ -181,74 +181,74 @@ export interface Modal extends BaseCommandConfig {
  */
 
 // Command Categories
-export type CommandCategory = 
-    | 'general'
-    | 'moderation'
-    | 'fun'
-    | 'utility'
-    | 'admin'
-    | 'music'
-    | 'games'
-    | 'economy';
+export type CommandCategory =
+	| 'general'
+	| 'moderation'
+	| 'fun'
+	| 'utility'
+	| 'admin'
+	| 'music'
+	| 'games'
+	| 'economy';
 
 // Command Permission Levels
-export type PermissionLevel = 
-    | 'everyone'
-    | 'moderator'
-    | 'administrator'
-    | 'owner';
+export type PermissionLevel =
+	| 'everyone'
+	| 'moderator'
+	| 'administrator'
+	| 'owner';
 
 // Command Cooldown Types
 export interface CommandCooldown {
-    type: 'user' | 'guild' | 'channel';
-    duration: number;
+	type: 'user' | 'guild' | 'channel';
+	duration: number;
 }
 
 // Command Options
 export interface CommandOptions {
-    name: string;
-    description: string;
-    category: CommandCategory;
-    permissionLevel: PermissionLevel;
-    cooldown?: CommandCooldown;
-    aliases?: string[];
-    usage?: string;
-    examples?: string[];
-    enabled?: boolean;
-    guildOnly?: boolean;
-    nsfw?: boolean;
-    requireArgs?: boolean;
-    minArgs?: number;
-    maxArgs?: number;
+	name: string;
+	description: string;
+	category: CommandCategory;
+	permissionLevel: PermissionLevel;
+	cooldown?: CommandCooldown;
+	aliases?: string[];
+	usage?: string;
+	examples?: string[];
+	enabled?: boolean;
+	guildOnly?: boolean;
+	nsfw?: boolean;
+	requireArgs?: boolean;
+	minArgs?: number;
+	maxArgs?: number;
 }
 
 // Command Context
 export interface CommandContext {
-    message: any; // Replace with actual Discord.js Message type
-    args: string[];
-    prefix: string;
-    command: CommandOptions;
-    guild?: any; // Replace with actual Discord.js Guild type
-    channel: any; // Replace with actual Discord.js Channel type
-    author: any; // Replace with actual Discord.js User type
-    member?: any; // Replace with actual Discord.js GuildMember type
+	message: any; // Replace with actual Discord.js Message type
+	args: string[];
+	prefix: string;
+	command: CommandOptions;
+	guild?: any; // Replace with actual Discord.js Guild type
+	channel: any; // Replace with actual Discord.js Channel type
+	author: any; // Replace with actual Discord.js User type
+	member?: any; // Replace with actual Discord.js GuildMember type
 }
 
 // Command Handler Types
 export interface CommandHandler {
-    name: string;
-    execute: (context: CommandContext) => Promise<void>;
-    options: CommandOptions;
+	name: string;
+	execute: (context: CommandContext) => Promise<void>;
+	options: CommandOptions;
 }
 
 // Command Collection
 export interface CommandCollection {
-    [key: string]: CommandHandler;
+	[key: string]: CommandHandler;
 }
 
 // Command Registry
 export interface CommandRegistry {
-    commands: CommandCollection;
-    categories: Map<CommandCategory, CommandHandler[]>;
-    aliases: Map<string, string>;
+	commands: CommandCollection;
+	categories: Map<CommandCategory, CommandHandler[]>;
+	aliases: Map<string, string>;
 }
