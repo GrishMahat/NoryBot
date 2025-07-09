@@ -20,7 +20,6 @@ declare global {
 			errorHandler: ErrorHandler;
 		}
 	}
-	// eslint-disable-next-line no-var
 	var errorHandler: ErrorHandler;
 }
 

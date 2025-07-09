@@ -6,7 +6,7 @@ import {
 	AttachmentBuilder,
 	// MessageFlags,
 } from 'discord.js';
-import { generateMusicImage } from '../../services/image/musicImge';
+import { Music } from 'discord-image-utils';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()
@@ -40,7 +40,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
 			const totalTime = Math.floor(Math.random() * 300) + 60; // 1-6 minutes
 			const currentTime = Math.floor(Math.random() * totalTime);
 
-			const imageBuffer = await generateMusicImage({
+			const imageBuffer = await Music({
 				title: title || 'Untitled',
 				artist: artist || 'Unknown Artist',
 				image: imageUrl,
