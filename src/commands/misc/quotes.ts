@@ -12,7 +12,7 @@ import {
 	MessageFlags,
 } from 'discord.js';
 import { LocalCommand, QuoteResponse } from '../../types/index';
-import { generateQuoteImage } from '../../services/image/generateQuoteImage';
+import { Quote } from 'discord-image-utils';
 import emojiConfig from '../../config/emoji';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -37,7 +37,10 @@ const quotesCommand: LocalCommand = {
 		try {
 			await interaction.deferReply();
 			const quote = await fetchQuote();
-			const imageBuffer = await generateQuoteImage(quote);
+			const imageBuffer = await Quote({
+				quote: quote.quote,
+				author: quote.author,
+			});
 
 			tempImagePath = join(process.cwd(), `temp_quote_${Date.now()}.png`);
 			writeFileSync(tempImagePath, imageBuffer);
@@ -90,7 +93,10 @@ const quotesCommand: LocalCommand = {
 					await i.deferUpdate();
 					try {
 						const newQuote = await fetchQuote();
-						const newImageBuffer = await generateQuoteImage(newQuote);
+						const newImageBuffer = await Quote({
+							quote: newQuote.quote,
+							author: newQuote.author,
+						});
 
 						const newTempPath = join(
 							process.cwd(),
