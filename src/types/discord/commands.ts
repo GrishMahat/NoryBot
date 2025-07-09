@@ -16,6 +16,11 @@ import {
 	ChatInputCommandInteraction,
 	AutocompleteInteraction,
 	CommandInteraction,
+	Message,
+	Guild,
+	TextBasedChannel,
+	User,
+	GuildMember,
 } from 'discord.js';
 
 /**
@@ -224,14 +229,14 @@ export interface CommandOptions {
 
 // Command Context
 export interface CommandContext {
-	message: any; // Replace with actual Discord.js Message type
+	message: Message;
 	args: string[];
 	prefix: string;
 	command: CommandOptions;
-	guild?: any; // Replace with actual Discord.js Guild type
-	channel: any; // Replace with actual Discord.js Channel type
-	author: any; // Replace with actual Discord.js User type
-	member?: any; // Replace with actual Discord.js GuildMember type
+	guild?: Guild | null;
+	channel: TextBasedChannel;
+	author: User;
+	member?: GuildMember | null;
 }
 
 // Command Handler Types

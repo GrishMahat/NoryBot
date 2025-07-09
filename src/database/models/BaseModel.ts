@@ -1,4 +1,4 @@
-import { Document, SchemaOptions, ToObjectOptions } from 'mongoose';
+import { Document, SchemaOptions } from 'mongoose';
 
 export interface BaseDocument extends Document {
 	createdAt: Date;
@@ -12,7 +12,8 @@ export const baseSchemaOptions: SchemaOptions = {
 	},
 	toObject: {
 		virtuals: true,
-		transform: function (doc: any, ret: any, options: any): any {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		transform(doc: any, ret: any, options: any): any {
 			ret.id = ret._id;
 			delete ret._id;
 			delete ret.__v;

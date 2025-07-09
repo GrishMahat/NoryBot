@@ -252,7 +252,7 @@ export default async function createPagination(
 		const handlePageChange = async (
 			newPage: number,
 			i: MessageComponentInteraction,
-		) => {
+		): Promise<void> => {
 			if (newPage !== currentPage) {
 				currentPage = newPage;
 				updateEmbedFooter(
@@ -358,7 +358,10 @@ export default async function createPagination(
 				try {
 					// Try to check if we can still access the channel
 					await initialMessage.fetch();
-				} catch (fetchError) {
+				} catch (
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+					_
+				) {
 					// Message is no longer accessible, silently exit
 					console.log(
 						'Pagination message no longer accessible, skipping cleanup',
@@ -419,7 +422,10 @@ export default async function createPagination(
 				try {
 					// Try to check if we can still access the channel
 					await initialMessage.fetch();
-				} catch (fetchError) {
+				} catch (
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+					_
+				) {
 					// Message is no longer accessible, silently exit
 					console.log(
 						'Pagination message no longer accessible, skipping cleanup',
