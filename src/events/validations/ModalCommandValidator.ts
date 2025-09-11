@@ -10,6 +10,7 @@ import {
 	Colors,
 	PermissionsBitField,
 	Interaction,
+	MessageFlags,
 } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
@@ -96,20 +97,22 @@ class ModalValidator {
 		options: Partial<InteractionReplyOptions> = {},
 	): InteractionReplyOptions {
 		const user = interaction.user;
+		const embed = new EmbedBuilder()
+			.setColor(color)
+			.setDescription(description)
+			.setAuthor({
+				name: user.username,
+				iconURL: user.displayAvatarURL({ forceStatic: false }),
+			})
+			.setTimestamp();
+
+		const { ephemeral, flags, ...rest } = options;
+		const finalFlags = (ephemeral ?? true) ? MessageFlags.Ephemeral : flags;
+
 		return {
-			embeds: [
-				new EmbedBuilder()
-					.setColor(color)
-					.setDescription(description)
-					.setAuthor({
-						name: user.username,
-						iconURL: user.displayAvatarURL({ forceStatic: false }),
-					})
-					.setTimestamp(),
-			],
-			// Default to ephemeral messages for modals, can be overridden
-			ephemeral: options.ephemeral ?? true,
-			...options, // Spread any additional options
+			embeds: [embed],
+			flags: finalFlags,
+			...rest,
 		};
 	}
 

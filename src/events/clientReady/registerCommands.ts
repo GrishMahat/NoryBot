@@ -30,10 +30,15 @@ import { LocalCommand } from '../../types/index';
  */
 export default async (client: Client): Promise<void> => {
 	try {
+		
+		// Measure data fetching time
+		const fetchStartTime = process.hrtime.bigint();
 		const [localCommands, applicationCommands] = await Promise.all([
 			getLocalCommands(),
 			getApplicationCommands(client),
 		]);
+		const fetchEndTime = process.hrtime.bigint();
+		const fetchTime = Number(fetchEndTime - fetchStartTime) / 1_000_000;
 
 		if (!localCommands || !applicationCommands) {
 			throw new Error('Failed to fetch commands');
@@ -42,6 +47,9 @@ export default async (client: Client): Promise<void> => {
 		const deletedCommands: string[] = [];
 		const updatedCommands: string[] = [];
 		const newCommands: string[] = [];
+
+		// Measure processing time (excluding Discord API calls)
+		const processStartTime = process.hrtime.bigint();
 
 		// Delete commands that either no longer exist locally or are marked as deleted
 		await deleteObsoleteCommands(
@@ -59,11 +67,18 @@ export default async (client: Client): Promise<void> => {
 			newCommands,
 		);
 
+		const processEndTime = process.hrtime.bigint();
+		const processTime = Number(processEndTime - processStartTime) / 1_000_000;
+		const totalTime = Number(processEndTime - fetchStartTime) / 1_000_000;
+
 		logCommandChanges(
 			localCommands,
 			updatedCommands,
 			newCommands,
 			deletedCommands,
+			fetchTime,
+			processTime,
+			totalTime,
 		);
 	} catch (err: unknown) {
 		console.error(
@@ -128,6 +143,7 @@ async function deleteObsoleteCommands(
 
 /**
  * Updates existing commands or creates new commands based on local command definitions.
+ * Optimized to process commands in parallel for better performance.
  *
  * @async
  * @param {ApplicationCommand[]} applicationCommands - The list of commands registered with Discord.
@@ -144,30 +160,35 @@ async function updateOrCreateCommands(
 	updatedCommands: string[],
 	newCommands: string[],
 ): Promise<void> {
-	for (const [index, localCommand] of localCommands.entries()) {
-		try {
-			// Ensure local command is properly defined and not marked as deleted
-			if (
-				!localCommand ||
-				!localCommand.data ||
-				!localCommand.data.name ||
-				localCommand.deleted === true
-			) {
-				continue;
-			}
+	// Filter valid commands first
+	const validCommands = localCommands.filter(
+		(cmd) =>
+			cmd &&
+			cmd.data &&
+			cmd.data.name &&
+			cmd.deleted !== true
+	);
 
+	// Create a map for faster lookup of existing commands
+	const existingCommandsMap = new Map(
+		applicationCommands.map(cmd => [cmd.name, cmd])
+	);
+
+	// Process all commands in parallel
+	const commandPromises = validCommands.map(async (localCommand, index) => {
+		try {
 			const { data } = localCommand;
 			const commandName = data.name;
-			const existingCommand = applicationCommands.find(
-				(cmd) => cmd.name === commandName,
-			);
+			const existingCommand = existingCommandsMap.get(commandName);
 
 			if (existingCommand) {
 				const isUpdated = await handleExistingCommand(
 					existingCommand,
 					localCommand,
 				);
-				if (isUpdated) updatedCommands.push(commandName);
+				if (isUpdated) {
+					updatedCommands.push(commandName);
+				}
 			} else {
 				await createCommand(client, data);
 				newCommands.push(commandName);
@@ -179,7 +200,10 @@ async function updateOrCreateCommands(
 				}`.red,
 			);
 		}
-	}
+	});
+
+	// Wait for all commands to be processed
+	await Promise.all(commandPromises);
 }
 
 /**
@@ -271,18 +295,24 @@ async function createCommand(
 }
 
 /**
- * Logs a formatted report of command synchronization changes.
+ * Logs a formatted report of command synchronization changes with detailed performance metrics.
  *
  * @param {LocalCommand[]} localCommands - The complete list of local command definitions.
  * @param {string[]} updatedCommands - Names of updated commands.
  * @param {string[]} newCommands - Names of newly registered commands.
  * @param {string[]} deletedCommands - Names of deleted commands.
+ * @param {number} fetchTime - Data fetching time in milliseconds.
+ * @param {number} processTime - Processing time in milliseconds.
+ * @param {number} totalTime - Total execution time in milliseconds.
  */
 function logCommandChanges(
 	localCommands: LocalCommand[],
 	updatedCommands: string[],
 	newCommands: string[],
 	deletedCommands: string[],
+	fetchTime: number,
+	processTime: number,
+	totalTime: number,
 ): void {
 	const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
 	const footer = '╚══════════════════════════════════════════════════════╝'
@@ -294,6 +324,22 @@ function logCommandChanges(
 	console.log(
 		`║ Total Commands: ${localCommands.length.toString().yellow}${' '.repeat(
 			35 - localCommands.length.toString().length,
+		)} ║`.cyan,
+	);
+	console.log(divider);
+	console.log(
+		`║ Data Fetch Time: ${fetchTime.toFixed(2).toString().blue}ms${' '.repeat(
+			30 - fetchTime.toFixed(2).toString().length,
+		)} ║`.cyan,
+	);
+	console.log(
+		`║ Process Time: ${processTime.toFixed(2).toString().green}ms${' '.repeat(
+			33 - processTime.toFixed(2).toString().length,
+		)} ║`.cyan,
+	);
+	console.log(
+		`║ Total Time: ${totalTime.toFixed(2).toString().yellow}ms${' '.repeat(
+			35 - totalTime.toFixed(2).toString().length,
 		)} ║`.cyan,
 	);
 

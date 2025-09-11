@@ -2,6 +2,7 @@ import {
 	CommandInteraction,
 	InteractionReplyOptions,
 	InteractionEditReplyOptions,
+	MessageFlags,
 } from 'discord.js';
 
 /**
@@ -24,7 +25,7 @@ export async function safeReply(
 		} else {
 			await interaction.reply({
 				...(replyOptions as InteractionReplyOptions),
-				ephemeral: isEphemeral,
+				flags: isEphemeral ? MessageFlags.Ephemeral : undefined,
 			});
 		}
 	} catch (error) {
@@ -43,7 +44,7 @@ export async function safeDefer(
 ): Promise<void> {
 	try {
 		if (!interaction.deferred && !interaction.replied) {
-			await interaction.deferReply({ ephemeral: isEphemeral });
+			await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
 		}
 	} catch (error) {
 		console.error('Failed to defer reply:', error);

@@ -68,10 +68,13 @@ class ButtonManager {
 			})
 			.setTimestamp();
 
+		const { ephemeral, flags, ...rest } = options;
+		const finalFlags = ephemeral ? MessageFlags.Ephemeral : flags;
+
 		return {
 			embeds: [embed],
-			flags: options.ephemeral ? MessageFlags.Ephemeral : undefined,
-			...options,
+			flags: finalFlags,
+			...rest,
 		};
 	}
 
