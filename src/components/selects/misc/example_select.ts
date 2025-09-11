@@ -1,5 +1,5 @@
 import { Client, StringSelectMenuInteraction, MessageFlags } from 'discord.js';
-import { SelectMenu } from '../types/index';
+import { SelectMenu } from '../../../types/index';
 
 const exampleSelectMenu: SelectMenu = {
 	customId: 'test-select',
@@ -14,3 +14,5 @@ const exampleSelectMenu: SelectMenu = {
 	},
 };
 export default exampleSelectMenu;
+
+
