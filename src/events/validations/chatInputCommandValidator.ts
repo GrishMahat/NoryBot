@@ -11,6 +11,7 @@ import {
 	PermissionResolvable,
 	InteractionReplyOptions,
 	Colors,
+	MessageFlags,
 	GuildMember,
 	AutocompleteInteraction,
 } from 'discord.js';
@@ -90,22 +91,24 @@ class CommandValidator {
 		description: string,
 		options: Partial<InteractionReplyOptions> = {},
 	): InteractionReplyOptions {
+		const embed = new EmbedBuilder()
+			.setColor(color)
+			.setDescription(description)
+			.setAuthor({
+				name: interaction.user.username,
+				iconURL: interaction.user.displayAvatarURL({
+					forceStatic: false,
+				}),
+			})
+			.setTimestamp();
+
+		const { ephemeral, flags, ...rest } = options;
+		const finalFlags = (ephemeral ?? true) ? MessageFlags.Ephemeral : flags;
+
 		return {
-			embeds: [
-				new EmbedBuilder()
-					.setColor(color)
-					.setDescription(description)
-					.setAuthor({
-						name: interaction.user.username,
-						iconURL: interaction.user.displayAvatarURL({
-							forceStatic: false,
-						}),
-					})
-					.setTimestamp(),
-			],
-			// Default to ephemeral messages, can be overridden
-			ephemeral: options.ephemeral ?? true,
-			...options, // Spread any additional options
+			embeds: [embed],
+			flags: finalFlags,
+			...rest,
 		};
 	}
 
@@ -463,7 +466,7 @@ class CommandValidator {
 			if (!command) {
 				await interaction.reply({
 					content: 'Command not found.',
-					ephemeral: true,
+					flags: [MessageFlags.Ephemeral],
 				});
 				return;
 			}
@@ -496,7 +499,7 @@ class CommandValidator {
 				if (!interaction.deferred && !interaction.replied) {
 					await interaction.reply({
 						content: 'An error occurred while processing your request.',
-						ephemeral: true,
+						flags: [MessageFlags.Ephemeral],
 					});
 				} else {
 					await interaction.editReply({

@@ -7,6 +7,7 @@ import {
 	CacheType,
 	InteractionReplyOptions,
 	InteractionEditReplyOptions,
+	MessageFlags,
 } from 'discord.js';
 import axios, { AxiosError } from 'axios';
 import {
@@ -120,7 +121,7 @@ const safeReply = async (
 		} else {
 			await interaction.reply({
 				...(replyOptions as InteractionReplyOptions),
-				ephemeral: isEphemeral,
+				flags: isEphemeral ? [MessageFlags.Ephemeral] : undefined,
 			});
 		}
 	} catch (error) {
