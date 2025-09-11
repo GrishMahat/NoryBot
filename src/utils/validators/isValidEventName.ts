@@ -10,7 +10,7 @@ export function isValidEventName(
 ): eventName is keyof ClientEvents {
 	// Define known Discord.js events as a Set for faster lookups
 	const validEvents = new Set([
-		'ready',
+		'clientReady',
 		'interactionCreate',
 		'messageCreate',
 		'guildCreate',
