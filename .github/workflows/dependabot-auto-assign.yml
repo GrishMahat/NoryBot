@@ -16,7 +16,7 @@ jobs:
     if: ${{ contains(github.event.issue.title, 'Dependabot') || github.actor == 'dependabot[bot]' }}
     steps:
       - name: Process Dependabot Issue/PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
