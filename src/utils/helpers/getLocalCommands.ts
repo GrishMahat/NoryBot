@@ -75,23 +75,23 @@ async function importCommandFile(
 export default async function loadCommands(
 	exceptions: string[] = [],
 ): Promise<LocalCommand[]> {
-	const commands: LocalCommand[] = [];
-
 	// Update path to point to the src/commands directory
 	const commandsPath = path.join(__dirname, '..', '..', 'commands');
 
 	try {
 		const commandFiles = getAllFiles(commandsPath);
 
-		for (const commandFile of commandFiles) {
-			const command = await importCommandFile(commandFile, exceptions);
-			if (command) {
-				commands.push(command);
-			}
-		}
+		// Process all command files in parallel for better performance
+		const commandPromises = commandFiles.map(commandFile => 
+			importCommandFile(commandFile, exceptions)
+		);
+
+		const commandResults = await Promise.all(commandPromises);
+		
+		// Filter out null results and return valid commands
+		return commandResults.filter((command): command is LocalCommand => command !== null);
 	} catch (error) {
 		console.error('Error loading commands:'.red, error);
+		return [];
 	}
-
-	return commands;
 }
