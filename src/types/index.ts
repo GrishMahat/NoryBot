@@ -20,5 +20,4 @@ export * from './error/index';
 // Utility Types
 export * from './utils/index';
 
-// Global Type Augmentations
-export * from './global';
+

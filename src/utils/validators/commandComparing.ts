@@ -11,6 +11,7 @@ import {
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
+ * Optimized for better performance with early returns and efficient comparisons.
  *
  * @param {ApplicationCommand} existing - The existing application command.
  * @param {LocalCommand} local - The local command to compare against.
@@ -29,108 +30,107 @@ const compareCommands = (
 	existing: ApplicationCommand,
 	local: LocalCommand,
 ): boolean => {
-	const defaultValues = {
-		name: null,
-		description: null,
-		type: 1,
-		contexts: [0, 1],
-		integration_types: [0, 1],
-		nsfw: false,
-		dm_permission: true,
-		default_member_permissions: null,
-	};
-
-	const changed = <T>(
-		a: T | null | undefined,
-		b: T | undefined,
-		defaultValue: T | null = null,
-	): boolean => {
-		if (b === undefined) {
-			return JSON.stringify(a) !== JSON.stringify(defaultValue);
-		}
-		return JSON.stringify(a) !== JSON.stringify(b);
-	};
-
-	const comparisons = [
-		{
-			key: 'name',
-			existing: existing.name,
-			local: local.data.name,
-			defaultValue: defaultValues.name,
-		},
-		{
-			key: 'description',
-			existing: existing.description,
-			local: local.data.description,
-			defaultValue: defaultValues.description,
-		},
-		{
-			key: 'type',
-			existing: existing.type,
-			local: local.data.type,
-			defaultValue: defaultValues.type,
-		},
-		{
-			key: 'contexts',
-			existing: existing.contexts,
-			local: local.data.contexts,
-			defaultValue: defaultValues.contexts,
-		},
-		{
-			key: 'integrationTypes',
-			existing: existing.integrationTypes,
-			local: local.data.integration_types,
-			defaultValue: defaultValues.integration_types,
-		},
-		{
-			key: 'nsfw',
-			existing: existing.nsfw,
-			local: local.data.nsfw,
-			defaultValue: defaultValues.nsfw,
-		},
-		{
-			key: 'dmPermission',
-			existing: existing.dmPermission,
-			local: local.data.dm_permission,
-			defaultValue: defaultValues.dm_permission,
-		},
-		{
-			key: 'defaultMemberPermissions',
-			existing: existing.defaultMemberPermissions?.toString() || null,
-			local: local.data.default_member_permissions?.toString() || null,
-			defaultValue: defaultValues.default_member_permissions,
-		},
-	];
-
-	for (const comparison of comparisons) {
-		if (
-			changed(comparison.existing, comparison.local, comparison.defaultValue)
-		) {
-			console.log(
-				`Difference found in ${comparison.local}command   ${comparison.key}:`,
-				{
-					existing: comparison.existing,
-					local: comparison.local,
-				},
-			);
-			return true;
-		}
+	// const commandName = local.data.name;
+	
+	// Quick checks for basic properties with early returns
+	if (existing.name !== local.data.name) {
+		return true;
+	}
+	
+	if (existing.description !== (local.data.description ?? '')) {
+		return true;
+	}
+	
+	if (existing.type !== (local.data.type ?? 1)) {
+		return true;
+	}
+	
+	if (existing.nsfw !== (local.data.nsfw ?? false)) {
+		return true;
+	}
+	
+	if (existing.dmPermission !== (local.data.dm_permission ?? true)) {
+		return true;
 	}
 
-	// Check if options have changed
-	const optionsChanged = changed(
-		optionsArray(existing),
-		local.data.options ? optionsArray(local.data) : undefined,
-		[],
-	);
-
-	if (optionsChanged) {
-		console.log('Options have changed');
+	// Check contexts with normalized comparison
+	// Discord API might return different default contexts than our local commands
+	const existingContexts = normalizeContexts(existing.contexts);
+	const localContexts = normalizeContexts(local.data.contexts);
+	if (!arraysEqual(existingContexts, localContexts)) {
 		return true;
+	}
+
+	// Check integration types with normalized comparison
+	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
+	const localIntegrationTypes = normalizeIntegrationTypes(local.data.integration_types);
+	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
+		return true;
+	}
+
+	// Check default member permissions
+	const existingPerms = existing.defaultMemberPermissions?.toString() || null;
+	const localPerms = local.data.default_member_permissions?.toString() || null;
+	if (existingPerms !== localPerms) {
+		return true;
+	}
+
+	// Check options only if they exist (most expensive operation)
+	const existingOptions = existing.options || [];
+	const localOptions = local.data.options || [];
+	
+	if (existingOptions.length !== localOptions.length) {
+		return true;
+	}
+	
+	// Only do deep comparison if options exist
+	if (existingOptions.length > 0) {
+		const existingOptionsArray = optionsArray(existing);
+		const localOptionsArray = optionsArray(local.data);
+		const optionsEqual = arraysEqual(existingOptionsArray, localOptionsArray);
+		return !optionsEqual;
 	}
 
 	return false;
 };
+
+/**
+ * Normalizes contexts to handle Discord API vs local command differences
+ * @param {number[] | undefined} contexts - The contexts array
+ * @returns {number[]} - Normalized contexts array
+ */
+function normalizeContexts(contexts: number[] | undefined): number[] {
+	if (!contexts || contexts.length === 0) {
+		return [0, 1, 2]; // Default: Guild, Bot DM, Private Channel
+	}
+	return [...contexts].sort(); // Sort for consistent comparison
+}
+
+/**
+ * Normalizes integration types to handle Discord API vs local command differences
+ * @param {number[] | undefined} integrationTypes - The integration types array
+ * @returns {number[]} - Normalized integration types array
+ */
+function normalizeIntegrationTypes(integrationTypes: number[] | undefined): number[] {
+	if (!integrationTypes || integrationTypes.length === 0) {
+		return [0, 1]; // Default: Guild Install, User Install
+	}
+	return [...integrationTypes].sort(); // Sort for consistent comparison
+}
+
+/**
+ * Efficiently compares two arrays for equality
+ * @param {any[]} a - First array
+ * @param {any[]} b - Second array
+ * @returns {boolean} - True if arrays are equal
+ */
+function arraysEqual(a: any[], b: any[]): boolean {
+	if (a.length !== b.length) return false;
+	for (let i = 0; i < a.length; i++) {
+		if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) return false;
+	}
+	return true;
+}
 
 /**
  * Recursively removes undefined or empty properties from an object.
