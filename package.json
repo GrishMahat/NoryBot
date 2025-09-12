@@ -15,7 +15,14 @@
     "lint": "eslint src",
     "dev": "nodemon --exec tsx src/index.ts",
     "build": "tsc",
-    "format": "npx prettier . --write "
+    "format": "npx prettier . --write ",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@discordjs/voice": "^0.19.0",
@@ -32,6 +39,8 @@
     "@types/node": "^24.3.1",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
     "module-alias": "^2.2.3",
     "nodemon": "^3.1.10",
     "prettier": "3.6.2",

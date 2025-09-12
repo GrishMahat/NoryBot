@@ -57,21 +57,14 @@ const factCommand: LocalCommand = {
 				components: [row],
 			});
 
-			// Create collector from the interaction directly
-			const collector = interaction.channel?.createMessageComponentCollector({
+			const collector = reply.createMessageComponentCollector({
 				componentType: ComponentType.Button,
 				filter: (i: ButtonInteraction) =>
-					i.customId === 'regenerate_fact' ||
-					(i.customId === 'share_fact' &&
-						i.user.id === interaction.user.id &&
-						i.message.id === reply.id),
+					(i.customId === 'regenerate_fact' &&
+						i.user.id === interaction.user.id) ||
+					(i.customId === 'share_fact' && i.user.id === interaction.user.id),
 				time: 120000,
 			});
-
-			if (!collector) {
-				console.error('Failed to create collector');
-				return;
-			}
 
 			collector.on('collect', async (i: ButtonInteraction) => {
 				try {
