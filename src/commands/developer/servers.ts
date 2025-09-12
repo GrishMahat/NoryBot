@@ -236,7 +236,9 @@ const serversCommand: LocalCommand = {
 					break;
 			}
 		} catch (error) {
-			console.error(`Error executing servers command (${subcommand}):`, error);
+      errorHandler.handleError(error, "Servers Command", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
+
+			// console.error(`Error executing servers command (${subcommand}):`, error);
 			// Ensure reply is edited safely
 			const replyOptions = {
 				content:
@@ -466,6 +468,7 @@ async function handleLeaveSubcommand(
 		}
 	} catch (error) {
 		// Handle timeout or other errors during awaitMessageComponent
+
 		console.error(
 			`Error or timeout waiting for leave confirmation for guild ${serverId}:`,
 			error,
@@ -674,6 +677,7 @@ async function handleInfoSubcommand(
 
 		await interaction.editReply({ embeds: [embed] });
 	} catch (error) {
+    // errorHandler.handleError(error, "Servers Command - Info Subcommand", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
 		console.error(`Error fetching server info for ${serverId}:`, error);
 		await interaction.editReply({
 			content: '❌ An error occurred while fetching server information.',

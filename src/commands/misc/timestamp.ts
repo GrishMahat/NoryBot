@@ -155,7 +155,7 @@ const timestampCommand: Command = {
 
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
-			global.errorHandler.handleError(error, 'TimestampCommand');
+			errorHandler.handleError(error, 'TimestampCommand');
 			await interaction.editReply({
 				content: `${emojiConfig.notag} An error occurred while processing the timestamp.`,
 			});
