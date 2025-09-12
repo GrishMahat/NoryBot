@@ -11,7 +11,10 @@ import modalValidator from './validations/ModalCommandValidator';
  * @param client - Discord client instance
  * @param interaction - The interaction received from Discord
  */
-export default async (client: Client, interaction: Interaction): Promise<void> => {
+export default async (
+	client: Client,
+	interaction: Interaction,
+): Promise<void> => {
 	try {
 		// Route interactions to appropriate validators
 		if (interaction.isChatInputCommand()) {

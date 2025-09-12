@@ -11,10 +11,10 @@ import {
 	MessageFlags,
 	ComponentType,
 	Message,
-    // v2 display components
-    TextDisplayBuilder,
-    SectionBuilder,
-    ContainerBuilder,
+	// v2 display components
+	TextDisplayBuilder,
+	SectionBuilder,
+	ContainerBuilder,
 } from 'discord.js';
 
 export type PaginationType = 'button' | 'select' | 'both';

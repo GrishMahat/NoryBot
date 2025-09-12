@@ -82,14 +82,16 @@ export default async function loadCommands(
 		const commandFiles = getAllFiles(commandsPath);
 
 		// Process all command files in parallel for better performance
-		const commandPromises = commandFiles.map(commandFile => 
-			importCommandFile(commandFile, exceptions)
+		const commandPromises = commandFiles.map((commandFile) =>
+			importCommandFile(commandFile, exceptions),
 		);
 
 		const commandResults = await Promise.all(commandPromises);
-		
+
 		// Filter out null results and return valid commands
-		return commandResults.filter((command): command is LocalCommand => command !== null);
+		return commandResults.filter(
+			(command): command is LocalCommand => command !== null,
+		);
 	} catch (error) {
 		console.error('Error loading commands:'.red, error);
 		return [];

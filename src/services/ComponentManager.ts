@@ -1,6 +1,15 @@
-import { Client, Interaction, ButtonInteraction, StringSelectMenuInteraction, ModalSubmitInteraction } from 'discord.js';
+import {
+	Client,
+	Interaction,
+	ButtonInteraction,
+	StringSelectMenuInteraction,
+	ModalSubmitInteraction,
+} from 'discord.js';
 import { Button, SelectMenu, Modal } from '../types/index';
-import { loadAllComponents, ComponentType } from '../utils/helpers/loadComponents';
+import {
+	loadAllComponents,
+	ComponentType,
+} from '../utils/helpers/loadComponents';
 
 /**
  * Unified component manager that handles all component types
@@ -19,12 +28,15 @@ export class ComponentManager {
 			const { buttons, selects, modals } = await loadAllComponents();
 
 			// Store components in their respective maps
-			buttons.forEach(button => this.buttons.set(button.customId, button));
-			selects.forEach(select => this.selects.set(select.customId, select));
-			modals.forEach(modal => this.modals.set(modal.customId, modal));
+			buttons.forEach((button) => this.buttons.set(button.customId, button));
+			selects.forEach((select) => this.selects.set(select.customId, select));
+			modals.forEach((modal) => this.modals.set(modal.customId, modal));
 
 			this.isLoaded = true;
-			console.log(`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`.green);
+			console.log(
+				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`
+					.green,
+			);
 		} catch (error) {
 			console.error('Failed to load components:', error);
 			throw error;
@@ -34,7 +46,10 @@ export class ComponentManager {
 	/**
 	 * Handle any interaction that might be a component
 	 */
-	async handleInteraction(client: Client, interaction: Interaction): Promise<void> {
+	async handleInteraction(
+		client: Client,
+		interaction: Interaction,
+	): Promise<void> {
 		if (!this.isLoaded) {
 			await this.loadComponents();
 		}
@@ -51,7 +66,10 @@ export class ComponentManager {
 	/**
 	 * Handle button interactions
 	 */
-	private async handleButton(client: Client, interaction: ButtonInteraction): Promise<void> {
+	private async handleButton(
+		client: Client,
+		interaction: ButtonInteraction,
+	): Promise<void> {
 		const button = this.buttons.get(interaction.customId);
 		if (!button) {
 			console.warn(`Button not found: ${interaction.customId}`.yellow);
@@ -69,7 +87,10 @@ export class ComponentManager {
 	/**
 	 * Handle select menu interactions
 	 */
-	private async handleSelect(client: Client, interaction: StringSelectMenuInteraction): Promise<void> {
+	private async handleSelect(
+		client: Client,
+		interaction: StringSelectMenuInteraction,
+	): Promise<void> {
 		const select = this.selects.get(interaction.customId);
 		if (!select) {
 			console.warn(`Select menu not found: ${interaction.customId}`.yellow);
@@ -87,7 +108,10 @@ export class ComponentManager {
 	/**
 	 * Handle modal interactions
 	 */
-	private async handleModal(client: Client, interaction: ModalSubmitInteraction): Promise<void> {
+	private async handleModal(
+		client: Client,
+		interaction: ModalSubmitInteraction,
+	): Promise<void> {
 		const modal = this.modals.get(interaction.customId);
 		if (!modal) {
 			console.warn(`Modal not found: ${interaction.customId}`.yellow);
@@ -105,7 +129,10 @@ export class ComponentManager {
 	/**
 	 * Get a component by customId and type
 	 */
-	getComponent(customId: string, type: ComponentType): Button | SelectMenu | Modal | undefined {
+	getComponent(
+		customId: string,
+		type: ComponentType,
+	): Button | SelectMenu | Modal | undefined {
 		switch (type) {
 			case 'buttons':
 				return this.buttons.get(customId);
@@ -143,7 +170,7 @@ export class ComponentManager {
 			selects: this.selects.size,
 			modals: this.modals.size,
 			total: this.buttons.size + this.selects.size + this.modals.size,
-			loaded: this.isLoaded
+			loaded: this.isLoaded,
 		};
 	}
 }

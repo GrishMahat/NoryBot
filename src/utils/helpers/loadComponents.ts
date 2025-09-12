@@ -19,7 +19,13 @@ export async function loadComponents<T extends Component>(
 	exceptions: string[] = [],
 ): Promise<T[]> {
 	const components: T[] = [];
-	const componentDir = path.resolve(__dirname, '..', '..', 'components', componentType);
+	const componentDir = path.resolve(
+		__dirname,
+		'..',
+		'..',
+		'components',
+		componentType,
+	);
 
 	try {
 		// Get all files in the component directory
@@ -69,7 +75,12 @@ export async function loadComponents<T extends Component>(
  * @returns boolean - True if valid, false otherwise
  */
 function isValidComponent(obj: any, componentType: ComponentType): boolean {
-	if (!obj || typeof obj !== 'object' || !obj.customId || typeof obj.run !== 'function') {
+	if (
+		!obj ||
+		typeof obj !== 'object' ||
+		!obj.customId ||
+		typeof obj.run !== 'function'
+	) {
 		return false;
 	}
 
@@ -80,13 +91,13 @@ function isValidComponent(obj: any, componentType: ComponentType): boolean {
 /**
  * Convenience functions for loading specific component types
  */
-export const loadButtons = (exceptions: string[] = []) => 
+export const loadButtons = (exceptions: string[] = []) =>
 	loadComponents<Button>('buttons', exceptions);
 
-export const loadSelects = (exceptions: string[] = []) => 
+export const loadSelects = (exceptions: string[] = []) =>
 	loadComponents<SelectMenu>('selects', exceptions);
 
-export const loadModals = (exceptions: string[] = []) => 
+export const loadModals = (exceptions: string[] = []) =>
 	loadComponents<Modal>('modals', exceptions);
 
 /**

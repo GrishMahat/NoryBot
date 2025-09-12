@@ -31,24 +31,24 @@ const compareCommands = (
 	local: LocalCommand,
 ): boolean => {
 	// const commandName = local.data.name;
-	
+
 	// Quick checks for basic properties with early returns
 	if (existing.name !== local.data.name) {
 		return true;
 	}
-	
+
 	if (existing.description !== (local.data.description ?? '')) {
 		return true;
 	}
-	
+
 	if (existing.type !== (local.data.type ?? 1)) {
 		return true;
 	}
-	
+
 	if (existing.nsfw !== (local.data.nsfw ?? false)) {
 		return true;
 	}
-	
+
 	if (existing.dmPermission !== (local.data.dm_permission ?? true)) {
 		return true;
 	}
@@ -62,8 +62,12 @@ const compareCommands = (
 	}
 
 	// Check integration types with normalized comparison
-	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
-	const localIntegrationTypes = normalizeIntegrationTypes(local.data.integration_types);
+	const existingIntegrationTypes = normalizeIntegrationTypes(
+		existing.integrationTypes,
+	);
+	const localIntegrationTypes = normalizeIntegrationTypes(
+		local.data.integration_types,
+	);
 	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
 		return true;
 	}
@@ -78,11 +82,11 @@ const compareCommands = (
 	// Check options only if they exist (most expensive operation)
 	const existingOptions = existing.options || [];
 	const localOptions = local.data.options || [];
-	
+
 	if (existingOptions.length !== localOptions.length) {
 		return true;
 	}
-	
+
 	// Only do deep comparison if options exist
 	if (existingOptions.length > 0) {
 		const existingOptionsArray = optionsArray(existing);
@@ -111,7 +115,9 @@ function normalizeContexts(contexts: number[] | undefined): number[] {
  * @param {number[] | undefined} integrationTypes - The integration types array
  * @returns {number[]} - Normalized integration types array
  */
-function normalizeIntegrationTypes(integrationTypes: number[] | undefined): number[] {
+function normalizeIntegrationTypes(
+	integrationTypes: number[] | undefined,
+): number[] {
 	if (!integrationTypes || integrationTypes.length === 0) {
 		return [0, 1]; // Default: Guild Install, User Install
 	}

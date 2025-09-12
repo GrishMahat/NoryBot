@@ -1,7 +1,5 @@
 import type { EmbedBuilder, CommandInteraction, Message } from 'discord.js';
 
-
-
 /**
  * Settings for the pagination v2
  * this is the same as the PaginationSettings type but for the v2 display component
@@ -59,7 +57,9 @@ function getV2Builders() {
 		!MessageFlags ||
 		!ComponentType
 	) {
-		throw new Error('Display Components V2 are not available in this discord.js version');
+		throw new Error(
+			'Display Components V2 are not available in this discord.js version',
+		);
 	}
 	return {
 		TextDisplayBuilder,
@@ -122,10 +122,10 @@ export async function createPaginationV2(
 	const buildControls = (): any[] => {
 		const first = settings.buttonEmojis?.first
 			? new ButtonBuilder()
-				.setCustomId(ids.first)
-				.setStyle(ButtonStyle.Primary)
-				.setEmoji(settings.buttonEmojis.first)
-				.setDisabled(current === 0)
+					.setCustomId(ids.first)
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji(settings.buttonEmojis.first)
+					.setDisabled(current === 0)
 			: null;
 
 		const prev = new ButtonBuilder()
@@ -136,9 +136,9 @@ export async function createPaginationV2(
 
 		const stop = settings.buttonEmojis?.stop
 			? new ButtonBuilder()
-				.setCustomId(ids.stop)
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji(settings.buttonEmojis.stop)
+					.setCustomId(ids.stop)
+					.setStyle(ButtonStyle.Danger)
+					.setEmoji(settings.buttonEmojis.stop)
 			: null;
 
 		const next = new ButtonBuilder()
@@ -149,14 +149,14 @@ export async function createPaginationV2(
 
 		const last = settings.buttonEmojis?.last
 			? new ButtonBuilder()
-				.setCustomId(ids.last)
-				.setStyle(ButtonStyle.Primary)
-				.setEmoji(settings.buttonEmojis.last)
-				.setDisabled(current === pages.length - 1)
+					.setCustomId(ids.last)
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji(settings.buttonEmojis.last)
+					.setDisabled(current === pages.length - 1)
 			: null;
 
 		const row = new ActionRowBuilder().setComponents(
-			...[first, prev, stop, next, last].filter(Boolean) as any[],
+			...([first, prev, stop, next, last].filter(Boolean) as any[]),
 		);
 		return [row];
 	};
@@ -164,7 +164,9 @@ export async function createPaginationV2(
 	let message: Message;
 	message = await interaction.reply({
 		components: [...buildBody(), ...buildControls()],
-		flags: settings.ephemeral ? [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral] : [MessageFlags.IsComponentsV2],
+		flags: settings.ephemeral
+			? [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral]
+			: [MessageFlags.IsComponentsV2],
 		fetchReply: true,
 	});
 
@@ -197,7 +199,10 @@ export async function createPaginationV2(
 			await i.update({ components: [...buildBody(), ...buildControls()] });
 		} catch (err) {
 			if (!i.deferred && !i.replied) {
-				await i.reply({ content: 'Failed to update view', flags: [MessageFlags.Ephemeral] });
+				await i.reply({
+					content: 'Failed to update view',
+					flags: [MessageFlags.Ephemeral],
+				});
 			}
 		}
 	});
@@ -208,5 +213,3 @@ export async function createPaginationV2(
 		} catch {}
 	});
 }
-
-

@@ -12,12 +12,14 @@ import { LocalCommand } from '../../types/index';
 const componentsTestCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('components-test')
-		.setDescription('Send test components to verify buttons, selects and modals work')
+		.setDescription(
+			'Send test components to verify buttons, selects and modals work',
+		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
 		.toJSON(),
 	devOnly: false,
-	testMode: false,
+	testMode: true,
 	cooldown: 3,
 
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
@@ -53,5 +55,3 @@ const componentsTestCommand: LocalCommand = {
 };
 
 export default componentsTestCommand;
-
-

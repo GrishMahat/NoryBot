@@ -12,7 +12,9 @@ import { Button } from '../../../types/index';
 const openModalButton: Button = {
 	customId: 'open-modal',
 	run: async (client: Client, interaction: ButtonInteraction) => {
-		const modal = new ModalBuilder().setCustomId('test-modal').setTitle('Test Modal');
+		const modal = new ModalBuilder()
+			.setCustomId('test-modal')
+			.setTitle('Test Modal');
 
 		const input = new TextInputBuilder()
 			.setCustomId('test-input')
@@ -20,9 +22,10 @@ const openModalButton: Button = {
 			.setStyle(TextInputStyle.Short)
 			.setRequired(true);
 
-		const row = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-			input,
-		);
+		const row =
+			new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+				input,
+			);
 
 		modal.addComponents(row);
 
@@ -31,5 +34,3 @@ const openModalButton: Button = {
 };
 
 export default openModalButton;
-
-

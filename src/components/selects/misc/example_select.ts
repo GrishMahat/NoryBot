@@ -14,5 +14,3 @@ const exampleSelectMenu: SelectMenu = {
 	},
 };
 export default exampleSelectMenu;
-
-

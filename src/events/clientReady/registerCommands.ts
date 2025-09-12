@@ -30,7 +30,6 @@ import { LocalCommand } from '../../types/index';
  */
 export default async (client: Client): Promise<void> => {
 	try {
-		
 		// Measure data fetching time
 		const fetchStartTime = process.hrtime.bigint();
 		const [localCommands, applicationCommands] = await Promise.all([
@@ -162,16 +161,12 @@ async function updateOrCreateCommands(
 ): Promise<void> {
 	// Filter valid commands first
 	const validCommands = localCommands.filter(
-		(cmd) =>
-			cmd &&
-			cmd.data &&
-			cmd.data.name &&
-			cmd.deleted !== true
+		(cmd) => cmd && cmd.data && cmd.data.name && cmd.deleted !== true,
 	);
 
 	// Create a map for faster lookup of existing commands
 	const existingCommandsMap = new Map(
-		applicationCommands.map(cmd => [cmd.name, cmd])
+		applicationCommands.map((cmd) => [cmd.name, cmd]),
 	);
 
 	// Process all commands in parallel

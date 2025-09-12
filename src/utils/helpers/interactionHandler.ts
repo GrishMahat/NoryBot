@@ -44,7 +44,9 @@ export async function safeDefer(
 ): Promise<void> {
 	try {
 		if (!interaction.deferred && !interaction.replied) {
-			await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
+			await interaction.deferReply({
+				flags: isEphemeral ? MessageFlags.Ephemeral : undefined,
+			});
 		}
 	} catch (error) {
 		console.error('Failed to defer reply:', error);
