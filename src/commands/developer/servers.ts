@@ -236,7 +236,13 @@ const serversCommand: LocalCommand = {
 					break;
 			}
 		} catch (error) {
-      errorHandler.handleError(error, "Servers Command", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
+			errorHandler.handleError(
+				error,
+				'Servers Command',
+				interaction.guild?.id,
+				interaction.channel?.id,
+				interaction.user.id,
+			);
 
 			// console.error(`Error executing servers command (${subcommand}):`, error);
 			// Ensure reply is edited safely
@@ -677,7 +683,7 @@ async function handleInfoSubcommand(
 
 		await interaction.editReply({ embeds: [embed] });
 	} catch (error) {
-    // errorHandler.handleError(error, "Servers Command - Info Subcommand", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
+		// errorHandler.handleError(error, "Servers Command - Info Subcommand", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
 		console.error(`Error fetching server info for ${serverId}:`, error);
 		await interaction.editReply({
 			content: '❌ An error occurred while fetching server information.',

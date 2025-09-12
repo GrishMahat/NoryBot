@@ -30,7 +30,8 @@ import { formatTimeAgo } from '../../utils/helpers/misc';
 const REDDIT_BASE_URL = 'https://www.reddit.com';
 const USER_AGENT = 'NoryBot/1.0 (Discord Bot)';
 const DEFAULT_EMBED_COLOR: ColorResolvable = '#FF4500';
-const REDDIT_ICON_URL = 'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png';
+const REDDIT_ICON_URL =
+	'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png';
 const MAX_POST_LIMIT = 50;
 const API_TIMEOUT = 10000;
 const COMPONENT_TIMEOUT = 300000; // 5 minutes
@@ -44,7 +45,7 @@ const REDDIT_COLORS = {
 	top: '#FFD700',
 	rising: '#FF8C00',
 	controversial: '#DC143C',
-	default: '#FF4500'
+	default: '#FF4500',
 };
 
 // Sort option configurations with enhanced styling
@@ -53,7 +54,11 @@ const SORT_OPTIONS = {
 	new: { name: '✨ New', description: 'Most recent posts', emoji: '✨' },
 	top: { name: '🏆 Top', description: 'Highest voted posts', emoji: '🏆' },
 	rising: { name: '📈 Rising', description: 'Fast growing posts', emoji: '📈' },
-	controversial: { name: '⚡ Controversial', description: 'Most debated posts', emoji: '⚡' }
+	controversial: {
+		name: '⚡ Controversial',
+		description: 'Most debated posts',
+		emoji: '⚡',
+	},
 };
 
 const TIME_OPTIONS = {
@@ -62,7 +67,7 @@ const TIME_OPTIONS = {
 	week: { name: '📊 Week', description: 'Past 7 days', emoji: '📊' },
 	month: { name: '📆 Month', description: 'Past 30 days', emoji: '📆' },
 	year: { name: '🗓️ Year', description: 'Past 365 days', emoji: '🗓️' },
-	all: { name: '♾️ All Time', description: 'Since Reddit began', emoji: '♾️' }
+	all: { name: '♾️ All Time', description: 'Since Reddit began', emoji: '♾️' },
 };
 
 interface RedditSession {
@@ -80,16 +85,22 @@ const activeSessions = new Map<string, RedditSession>();
 /**
  * Creates an enhanced Discord Embed for a Reddit post with better styling
  */
-const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts: number, sort: string): EmbedBuilder => {
+const createPostEmbed = (
+	post: RedditPostData,
+	currentIndex: number,
+	totalPosts: number,
+	sort: string,
+): EmbedBuilder => {
 	const timeString = formatTimeAgo(post.created_utc * 1000);
-	const sortColor = REDDIT_COLORS[sort as keyof typeof REDDIT_COLORS] || REDDIT_COLORS.default;
+	const sortColor =
+		REDDIT_COLORS[sort as keyof typeof REDDIT_COLORS] || REDDIT_COLORS.default;
 
 	const embed = new EmbedBuilder()
 		.setColor(sortColor as ColorResolvable)
 		.setTitle(
 			post.title.length > MAX_TITLE_LENGTH
 				? post.title.substring(0, MAX_TITLE_LENGTH - 3) + '...'
-				: post.title
+				: post.title,
 		)
 		.setURL(`${REDDIT_BASE_URL}${post.permalink}`)
 		.setAuthor({
@@ -102,9 +113,10 @@ const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts:
 	let description = '';
 
 	if (post.selftext && post.selftext.trim()) {
-		description = post.selftext.length > MAX_DESCRIPTION_LENGTH - 100
-			? post.selftext.substring(0, MAX_DESCRIPTION_LENGTH - 103) + '...'
-			: post.selftext;
+		description =
+			post.selftext.length > MAX_DESCRIPTION_LENGTH - 100
+				? post.selftext.substring(0, MAX_DESCRIPTION_LENGTH - 103) + '...'
+				: post.selftext;
 	}
 
 	// Media handling with better formatting
@@ -118,7 +130,10 @@ const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts:
 		}
 	} else if (post.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
 		embed.setImage(post.url);
-	} else if (post.thumbnail && !['self', 'default', 'nsfw', ''].includes(post.thumbnail)) {
+	} else if (
+		post.thumbnail &&
+		!['self', 'default', 'nsfw', ''].includes(post.thumbnail)
+	) {
 		embed.setImage(post.thumbnail);
 	}
 
@@ -140,7 +155,7 @@ const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts:
 
 	embed.setFooter({
 		text: `${tagString}${stats} • ${postInfo} • ${pageInfo}`,
-		iconURL: REDDIT_ICON_URL
+		iconURL: REDDIT_ICON_URL,
 	});
 
 	// Add fields for better organization
@@ -148,7 +163,7 @@ const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts:
 		embed.addFields({
 			name: '🏷️ Flair',
 			value: post.link_flair_text,
-			inline: true
+			inline: true,
 		});
 	}
 
@@ -158,70 +173,71 @@ const createPostEmbed = (post: RedditPostData, currentIndex: number, totalPosts:
 /**
  * Creates navigation components with enhanced styling
  */
-const createNavigationComponents = (session: RedditSession, interaction: ChatInputCommandInteraction): ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] => {
+const createNavigationComponents = (
+	session: RedditSession,
+	interaction: ChatInputCommandInteraction,
+): ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] => {
 	const { currentIndex, posts, sort, subreddit } = session;
 	const isFirst = currentIndex === 0;
 	const isLast = currentIndex === posts.length - 1;
 
 	// Navigation buttons row
-	const navigationRow = new ActionRowBuilder<ButtonBuilder>()
-		.addComponents(
-			new ButtonBuilder()
-				.setCustomId('reddit_first')
-				.setLabel('First')
-				.setEmoji('⏮️')
-				.setStyle(ButtonStyle.Secondary)
-				.setDisabled(isFirst),
-			new ButtonBuilder()
-				.setCustomId('reddit_prev')
-				.setLabel('Previous')
-				.setEmoji('◀️')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(isFirst),
-			new ButtonBuilder()
-				.setCustomId('reddit_random')
-				.setLabel('Random')
-				.setEmoji('🎲')
-				.setStyle(ButtonStyle.Success),
-			new ButtonBuilder()
-				.setCustomId('reddit_next')
-				.setLabel('Next')
-				.setEmoji('▶️')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(isLast),
-			new ButtonBuilder()
-				.setCustomId('reddit_last')
-				.setLabel('Last')
-				.setEmoji('⏭️')
-				.setStyle(ButtonStyle.Secondary)
-				.setDisabled(isLast)
-		);
+	const navigationRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+		new ButtonBuilder()
+			.setCustomId('reddit_first')
+			.setLabel('First')
+			.setEmoji('⏮️')
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(isFirst),
+		new ButtonBuilder()
+			.setCustomId('reddit_prev')
+			.setLabel('Previous')
+			.setEmoji('◀️')
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(isFirst),
+		new ButtonBuilder()
+			.setCustomId('reddit_random')
+			.setLabel('Random')
+			.setEmoji('🎲')
+			.setStyle(ButtonStyle.Success),
+		new ButtonBuilder()
+			.setCustomId('reddit_next')
+			.setLabel('Next')
+			.setEmoji('▶️')
+			.setStyle(ButtonStyle.Primary)
+			.setDisabled(isLast),
+		new ButtonBuilder()
+			.setCustomId('reddit_last')
+			.setLabel('Last')
+			.setEmoji('⏭️')
+			.setStyle(ButtonStyle.Secondary)
+			.setDisabled(isLast),
+	);
 
 	// Action buttons row
-	const actionRow = new ActionRowBuilder<ButtonBuilder>()
-		.addComponents(
-			new ButtonBuilder()
-				.setCustomId('reddit_refresh')
-				.setLabel('Refresh')
-				.setEmoji('🔄')
-				.setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder()
-				.setCustomId('reddit_open')
-				.setLabel('Open in Reddit')
-				.setEmoji('📱')
-				.setStyle(ButtonStyle.Link)
-				.setURL(`${REDDIT_BASE_URL}${posts[currentIndex].permalink}`),
-			new ButtonBuilder()
-				.setCustomId('reddit_share')
-				.setLabel('Share Post')
-				.setEmoji('📤')
-				.setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder()
-				.setCustomId('reddit_info')
-				.setLabel('Post Info')
-				.setEmoji('ℹ️')
-				.setStyle(ButtonStyle.Secondary)
-		);
+	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+		new ButtonBuilder()
+			.setCustomId('reddit_refresh')
+			.setLabel('Refresh')
+			.setEmoji('🔄')
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId('reddit_open')
+			.setLabel('Open in Reddit')
+			.setEmoji('📱')
+			.setStyle(ButtonStyle.Link)
+			.setURL(`${REDDIT_BASE_URL}${posts[currentIndex].permalink}`),
+		new ButtonBuilder()
+			.setCustomId('reddit_share')
+			.setLabel('Share Post')
+			.setEmoji('📤')
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId('reddit_info')
+			.setLabel('Post Info')
+			.setEmoji('ℹ️')
+			.setStyle(ButtonStyle.Secondary),
+	);
 
 	// Sort selector
 	const sortOptions = Object.entries(SORT_OPTIONS).map(([value, config]) =>
@@ -230,16 +246,15 @@ const createNavigationComponents = (session: RedditSession, interaction: ChatInp
 			.setDescription(config.description)
 			.setEmoji(config.emoji)
 			.setValue(value)
-			.setDefault(value === sort)
+			.setDefault(value === sort),
 	);
 
-	const sortRow = new ActionRowBuilder<StringSelectMenuBuilder>()
-		.addComponents(
-			new StringSelectMenuBuilder()
-				.setCustomId('reddit_sort')
-				.setPlaceholder('🔄 Change sorting method')
-				.addOptions(sortOptions)
-		);
+	const sortRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+		new StringSelectMenuBuilder()
+			.setCustomId('reddit_sort')
+			.setPlaceholder('🔄 Change sorting method')
+			.addOptions(sortOptions),
+	);
 
 	return [navigationRow, actionRow, sortRow];
 };
@@ -247,7 +262,9 @@ const createNavigationComponents = (session: RedditSession, interaction: ChatInp
 /**
  * Creates time filter component for top/controversial sorts
  */
-const createTimeFilterComponent = (session: RedditSession): ActionRowBuilder<StringSelectMenuBuilder> | null => {
+const createTimeFilterComponent = (
+	session: RedditSession,
+): ActionRowBuilder<StringSelectMenuBuilder> | null => {
 	const { sort, time } = session;
 
 	if (sort !== 'top' && sort !== 'controversial') {
@@ -260,28 +277,31 @@ const createTimeFilterComponent = (session: RedditSession): ActionRowBuilder<Str
 			.setDescription(config.description)
 			.setEmoji(config.emoji)
 			.setValue(value)
-			.setDefault(value === time)
+			.setDefault(value === time),
 	);
 
-	return new ActionRowBuilder<StringSelectMenuBuilder>()
-		.addComponents(
-			new StringSelectMenuBuilder()
-				.setCustomId('reddit_time')
-				.setPlaceholder('📅 Select time period')
-				.addOptions(timeOptions)
-		);
+	return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+		new StringSelectMenuBuilder()
+			.setCustomId('reddit_time')
+			.setPlaceholder('📅 Select time period')
+			.addOptions(timeOptions),
+	);
 };
 
 /**
  * Safe reply function with better error handling
  */
 const safeReply = async (
-	interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
+	interaction:
+		| ChatInputCommandInteraction
+		| ButtonInteraction
+		| StringSelectMenuInteraction,
 	options: string | InteractionReplyOptions | InteractionEditReplyOptions,
-	isEphemeral = false
+	isEphemeral = false,
 ): Promise<void> => {
 	try {
-		const replyOptions = typeof options === 'string' ? { content: options } : options;
+		const replyOptions =
+			typeof options === 'string' ? { content: options } : options;
 
 		if (interaction.deferred || interaction.replied) {
 			await interaction.editReply(replyOptions as InteractionEditReplyOptions);
@@ -299,7 +319,11 @@ const safeReply = async (
 /**
  * Fetches Reddit posts with enhanced error handling
  */
-const fetchRedditPosts = async (subreddit: string, sort: string, time: string): Promise<RedditPostData[]> => {
+const fetchRedditPosts = async (
+	subreddit: string,
+	sort: string,
+	time: string,
+): Promise<RedditPostData[]> => {
 	const encodedSubreddit = encodeURIComponent(subreddit);
 	const encodedSort = encodeURIComponent(sort);
 	const baseUrl = `${REDDIT_BASE_URL}/r/${encodedSubreddit}/${encodedSort}.json`;
@@ -331,7 +355,7 @@ const fetchRedditPosts = async (subreddit: string, sort: string, time: string): 
 	}
 
 	const posts = response.data?.data?.children?.filter(
-		(p) => p?.data && !p.data.stickied
+		(p) => p?.data && !p.data.stickied,
 	);
 
 	if (!posts || posts.length === 0) {
@@ -345,14 +369,20 @@ const fetchRedditPosts = async (subreddit: string, sort: string, time: string): 
  * Updates the display with current post and components
  */
 const updateDisplay = async (
-	interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
-	session: RedditSession
+	interaction:
+		| ChatInputCommandInteraction
+		| ButtonInteraction
+		| StringSelectMenuInteraction,
+	session: RedditSession,
 ): Promise<void> => {
 	const { posts, currentIndex, sort } = session;
 	const currentPost = posts[currentIndex];
 
 	const embed = createPostEmbed(currentPost, currentIndex, posts.length, sort);
-	const components = createNavigationComponents(session, interaction as ChatInputCommandInteraction);
+	const components = createNavigationComponents(
+		session,
+		interaction as ChatInputCommandInteraction,
+	);
 
 	// Add time filter if applicable
 	const timeFilter = createTimeFilterComponent(session);
@@ -362,7 +392,7 @@ const updateDisplay = async (
 
 	await safeReply(interaction, {
 		embeds: [embed],
-		components
+		components,
 	});
 };
 
@@ -377,7 +407,7 @@ const redditCommand: Command = {
 			option
 				.setName('subreddit')
 				.setDescription('Subreddit name (without r/)')
-				.setRequired(true)
+				.setRequired(true),
 		)
 		.addStringOption((option) =>
 			option
@@ -387,9 +417,9 @@ const redditCommand: Command = {
 				.addChoices(
 					...Object.entries(SORT_OPTIONS).map(([value, config]) => ({
 						name: config.name,
-						value
-					}))
-				)
+						value,
+					})),
+				),
 		)
 		.addStringOption((option) =>
 			option
@@ -399,9 +429,9 @@ const redditCommand: Command = {
 				.addChoices(
 					...Object.entries(TIME_OPTIONS).map(([value, config]) => ({
 						name: config.name,
-						value
-					}))
-				)
+						value,
+					})),
+				),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -418,7 +448,7 @@ const redditCommand: Command = {
 
 	run: async (
 		client: Client<boolean>,
-		interaction: ChatInputCommandInteraction<CacheType>
+		interaction: ChatInputCommandInteraction<CacheType>,
 	): Promise<void> => {
 		if (!interaction.deferred && !interaction.replied) {
 			await interaction.deferReply();
@@ -438,7 +468,7 @@ const redditCommand: Command = {
 				currentIndex: 0,
 				sort,
 				time,
-				userId: interaction.user.id
+				userId: interaction.user.id,
 			};
 
 			activeSessions.set(sessionId, session);
@@ -448,19 +478,21 @@ const redditCommand: Command = {
 			// Component interaction collector
 			const collector = interaction.channel?.createMessageComponentCollector({
 				componentType: ComponentType.Button,
-				time: COMPONENT_TIMEOUT
+				time: COMPONENT_TIMEOUT,
 			});
 
-			const selectCollector = interaction.channel?.createMessageComponentCollector({
-				componentType: ComponentType.StringSelect,
-				time: COMPONENT_TIMEOUT
-			});
+			const selectCollector =
+				interaction.channel?.createMessageComponentCollector({
+					componentType: ComponentType.StringSelect,
+					time: COMPONENT_TIMEOUT,
+				});
 
 			collector?.on('collect', async (buttonInteraction) => {
 				if (buttonInteraction.user.id !== interaction.user.id) {
 					await buttonInteraction.reply({
-						content: '❌ Only the command user can interact with these buttons.',
-						flags: [MessageFlags.Ephemeral]
+						content:
+							'❌ Only the command user can interact with these buttons.',
+						flags: [MessageFlags.Ephemeral],
 					});
 					return;
 				}
@@ -487,17 +519,23 @@ const redditCommand: Command = {
 						currentSession.currentIndex = currentSession.posts.length - 1;
 						break;
 					case 'reddit_random':
-						currentSession.currentIndex = Math.floor(Math.random() * currentSession.posts.length);
+						currentSession.currentIndex = Math.floor(
+							Math.random() * currentSession.posts.length,
+						);
 						break;
 					case 'reddit_refresh':
 						try {
-							const newPosts = await fetchRedditPosts(currentSession.subreddit, currentSession.sort, currentSession.time);
+							const newPosts = await fetchRedditPosts(
+								currentSession.subreddit,
+								currentSession.sort,
+								currentSession.time,
+							);
 							currentSession.posts = newPosts;
 							currentSession.currentIndex = 0;
 						} catch (error) {
 							await buttonInteraction.followUp({
 								content: '❌ Failed to refresh posts.',
-								flags: [MessageFlags.Ephemeral]
+								flags: [MessageFlags.Ephemeral],
 							});
 							return;
 						}
@@ -506,7 +544,7 @@ const redditCommand: Command = {
 						const sharePost = currentSession.posts[currentSession.currentIndex];
 						await buttonInteraction.followUp({
 							content: `📤 **Share this post:**\n${REDDIT_BASE_URL}${sharePost.permalink}`,
-							flags: [MessageFlags.Ephemeral]
+							flags: [MessageFlags.Ephemeral],
 						});
 						return;
 					case 'reddit_info':
@@ -515,18 +553,46 @@ const redditCommand: Command = {
 							.setTitle('📊 Post Statistics')
 							// .setColor(REDDIT_COLORS[currentSession.sort as keyof typeof REDDIT_COLORS])
 							.addFields(
-								{ name: '👍 Score', value: infoPost.ups.toLocaleString(), inline: true },
-								{ name: '👎 Downvotes', value: Math.round(infoPost.ups / infoPost.upvote_ratio - infoPost.ups).toLocaleString(), inline: true },
-								{ name: '📊 Upvote Ratio', value: `${Math.round(infoPost.upvote_ratio * 100)}%`, inline: true },
-								{ name: '💬 Comments', value: infoPost.num_comments.toLocaleString(), inline: true },
-								{ name: '👤 Author', value: `u/${infoPost.author}`, inline: true },
-								{ name: '🏷️ Flair', value: infoPost.link_flair_text || 'None', inline: true }
+								{
+									name: '👍 Score',
+									value: infoPost.ups.toLocaleString(),
+									inline: true,
+								},
+								{
+									name: '👎 Downvotes',
+									value: Math.round(
+										infoPost.ups / infoPost.upvote_ratio - infoPost.ups,
+									).toLocaleString(),
+									inline: true,
+								},
+								{
+									name: '📊 Upvote Ratio',
+									value: `${Math.round(infoPost.upvote_ratio * 100)}%`,
+									inline: true,
+								},
+								{
+									name: '💬 Comments',
+									value: infoPost.num_comments.toLocaleString(),
+									inline: true,
+								},
+								{
+									name: '👤 Author',
+									value: `u/${infoPost.author}`,
+									inline: true,
+								},
+								{
+									name: '🏷️ Flair',
+									value: infoPost.link_flair_text || 'None',
+									inline: true,
+								},
 							)
-							.setFooter({ text: `Posted in ${infoPost.subreddit_name_prefixed}` });
+							.setFooter({
+								text: `Posted in ${infoPost.subreddit_name_prefixed}`,
+							});
 
 						await buttonInteraction.followUp({
 							embeds: [infoEmbed],
-							flags: [MessageFlags.Ephemeral]
+							flags: [MessageFlags.Ephemeral],
 						});
 						return;
 				}
@@ -538,7 +604,7 @@ const redditCommand: Command = {
 				if (selectInteraction.user.id !== interaction.user.id) {
 					await selectInteraction.reply({
 						content: '❌ Only the command user can interact with these menus.',
-						flags: [MessageFlags.Ephemeral]
+						flags: [MessageFlags.Ephemeral],
 					});
 					return;
 				}
@@ -552,26 +618,34 @@ const redditCommand: Command = {
 				if (selectInteraction.customId === 'reddit_sort') {
 					currentSession.sort = selectedValue;
 					try {
-						const newPosts = await fetchRedditPosts(currentSession.subreddit, currentSession.sort, currentSession.time);
+						const newPosts = await fetchRedditPosts(
+							currentSession.subreddit,
+							currentSession.sort,
+							currentSession.time,
+						);
 						currentSession.posts = newPosts;
 						currentSession.currentIndex = 0;
 					} catch (error) {
 						await selectInteraction.followUp({
 							content: '❌ Failed to load posts with new sort.',
-							flags: [MessageFlags.Ephemeral]
+							flags: [MessageFlags.Ephemeral],
 						});
 						return;
 					}
 				} else if (selectInteraction.customId === 'reddit_time') {
 					currentSession.time = selectedValue;
 					try {
-						const newPosts = await fetchRedditPosts(currentSession.subreddit, currentSession.sort, currentSession.time);
+						const newPosts = await fetchRedditPosts(
+							currentSession.subreddit,
+							currentSession.sort,
+							currentSession.time,
+						);
 						currentSession.posts = newPosts;
 						currentSession.currentIndex = 0;
 					} catch (error) {
 						await selectInteraction.followUp({
 							content: '❌ Failed to load posts with new time filter.',
-							flags: [MessageFlags.Ephemeral]
+							flags: [MessageFlags.Ephemeral],
 						});
 						return;
 					}
@@ -586,7 +660,6 @@ const redditCommand: Command = {
 				collector?.stop();
 				selectCollector?.stop();
 			}, COMPONENT_TIMEOUT);
-
 		} catch (error) {
 			console.error('Reddit Command Error:', error);
 			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}`;
@@ -603,7 +676,7 @@ const redditCommand: Command = {
 
 			await safeReply(interaction, errorMessage);
 		}
-	}
+	},
 };
 
 export default redditCommand;
