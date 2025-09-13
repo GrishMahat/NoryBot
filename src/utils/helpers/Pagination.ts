@@ -11,15 +11,11 @@ import {
 	MessageFlags,
 	ComponentType,
 	Message,
-	// v2 display components
-	TextDisplayBuilder,
-	SectionBuilder,
-	ContainerBuilder,
 } from 'discord.js';
 
-export type PaginationType = 'button' | 'select' | 'both';
+type PaginationType = 'button' | 'select' | 'both';
 
-export interface PaginationSettings {
+interface PaginationSettings {
 	type: PaginationType;
 	time?: number;
 	buttonEmojis?: {
@@ -43,14 +39,6 @@ export interface PaginationSettings {
 	deleteOnTimeout?: boolean;
 	autoDelete?: boolean;
 	autoDeleteTime?: number;
-	labels?: {
-		first?: string;
-		prev?: string;
-		next?: string;
-		last?: string;
-		stop?: string;
-	};
-	selectLabelFormatter?: (index: number) => string;
 }
 
 const createButtonRow = (
@@ -167,23 +155,6 @@ export default async function createPagination(
 	pages: EmbedBuilder[],
 	settings: Partial<PaginationSettings> = { type: 'button' },
 ): Promise<void> {
-	// Prefer V2 display components if available; fall back to V1 embeds
-	try {
-		const { createPaginationV2 } = await import('./PaginationV2');
-		await createPaginationV2(interaction, pages, {
-			buttonEmojis: {
-				prev: settings.buttonEmojis?.prev ?? '⬅️',
-				next: settings.buttonEmojis?.next ?? '➡️',
-				first: settings.buttonEmojis?.first,
-				last: settings.buttonEmojis?.last,
-				stop: settings.buttonEmojis?.stop,
-			},
-			time: settings.time,
-			accentColor: settings.customColor,
-			ephemeral: settings.ephemeral,
-		});
-		return;
-	} catch {}
 	if (!interaction) {
 		console.error('Invalid interaction provided to pagination');
 		return;
@@ -197,7 +168,7 @@ export default async function createPagination(
 			} else if (!interaction.replied) {
 				await interaction.reply({
 					content: 'No content to display.',
-					flags: [MessageFlags.Ephemeral],
+					ephemeral: true,
 				});
 			}
 		} catch (error) {
@@ -247,12 +218,12 @@ export default async function createPagination(
 	let initialMessage: Message;
 	try {
 		if (!interaction.deferred && !interaction.replied) {
-			initialMessage = (await interaction.reply({
+			initialMessage = await interaction.reply({
 				embeds: [pages[currentPage]],
 				components,
-				withResponse: true,
-				flags: defaultSettings.ephemeral ? MessageFlags.Ephemeral : undefined,
-			})) as unknown as Message;
+				fetchReply: true,
+				ephemeral: defaultSettings.ephemeral,
+			});
 		} else {
 			initialMessage = await interaction.editReply({
 				embeds: [pages[currentPage]],
@@ -350,7 +321,7 @@ export default async function createPagination(
 						await i.reply({
 							content:
 								'An error occurred while changing pages. Please try again.',
-							flags: [MessageFlags.Ephemeral],
+							flags: MessageFlags.Ephemeral,
 						});
 					}
 				} catch (replyError) {
@@ -372,7 +343,7 @@ export default async function createPagination(
 						await i.reply({
 							content:
 								'An error occurred while changing pages. Please try again.',
-							flags: [MessageFlags.Ephemeral],
+							flags: MessageFlags.Ephemeral,
 						});
 					}
 				} catch (replyError) {

@@ -80,6 +80,24 @@ async function generateInvite(guild: Guild): Promise<string | null> {
 	}
 }
 
+/**
+ * @name servers
+ * @description Manage and view information about servers the bot is in.
+ * @category Developer
+ * @devOnly true
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ *
+ * @example
+ * /servers list
+ * /servers leave <server-id>
+ * /servers check <server-ids>
+ * /servers user <user>
+ * /servers info <server-id>
+ * /servers stats
+ * /servers search <query>
+ */
 const serversCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('servers')
@@ -262,6 +280,14 @@ const serversCommand: LocalCommand = {
 	},
 };
 
+/**
+ * @name handleListSubcommand
+ * @description Handles the 'list' subcommand.
+ * Lists all servers the bot is in, with optional detailed view and sorting.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleListSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -340,6 +366,17 @@ async function handleListSubcommand(
 	await paginateEmbeds(interaction, embeds, { type: 'button' });
 }
 
+/**
+ * @name createServerListEmbeds
+ * @description Creates an array of embeds for the server list.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ * @param {EnrichedGuildInfo[]} guilds An array of enriched guild information.
+ * @param {boolean} isDetailed Whether to show detailed information.
+ * @param {string} sortOption The sorting option.
+ * @returns {EmbedBuilder[]} An array of embed builders.
+ */
 function createServerListEmbeds(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -407,6 +444,14 @@ function createServerListEmbeds(
 	return embeds;
 }
 
+/**
+ * @name handleLeaveSubcommand
+ * @description Handles the 'leave' subcommand.
+ * Makes the bot leave a specified server.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleLeaveSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -487,6 +532,14 @@ async function handleLeaveSubcommand(
 	}
 }
 
+/**
+ * @name handleCheckSubcommand
+ * @description Handles the 'check' subcommand.
+ * Checks if the bot is in a list of specified servers.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleCheckSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -577,6 +630,14 @@ async function handleCheckSubcommand(
 	await interaction.editReply({ embeds: embeds.slice(0, 10) }); // Discord allows max 10 embeds per message
 }
 
+/**
+ * @name handleUserSubcommand
+ * @description Handles the 'user' subcommand.
+ * Shows a list of servers a user owns that the bot is also in.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleUserSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -621,6 +682,14 @@ async function handleUserSubcommand(
 	await interaction.editReply({ embeds: [embed] });
 }
 
+/**
+ * @name handleInfoSubcommand
+ * @description Handles the 'info' subcommand.
+ * Shows detailed information about a specific server.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleInfoSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -692,6 +761,14 @@ async function handleInfoSubcommand(
 	}
 }
 
+/**
+ * @name handleStatsSubcommand
+ * @description Handles the 'stats' subcommand.
+ * Shows statistics about all servers the bot is in.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleStatsSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
@@ -797,6 +874,14 @@ async function handleStatsSubcommand(
 	await interaction.editReply({ embeds: [embed] });
 }
 
+/**
+ * @name handleSearchSubcommand
+ * @description Handles the 'search' subcommand.
+ * Searches for servers by name or ID.
+ *
+ * @param {Client} client The Discord client.
+ * @param {ChatInputCommandInteraction} interaction The command interaction.
+ */
 async function handleSearchSubcommand(
 	client: Client,
 	interaction: ChatInputCommandInteraction,
