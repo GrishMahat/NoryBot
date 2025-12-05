@@ -1,6 +1,6 @@
 import path from 'path';
+import type { Button, Modal, SelectMenu } from '../../types/index';
 import getAllFiles from './getAllFiles';
-import { Button, SelectMenu, Modal } from '../../types/index';
 
 /**
  * Component type definitions for unified loading
@@ -19,13 +19,7 @@ export async function loadComponents<T extends Component>(
 	exceptions: string[] = [],
 ): Promise<T[]> {
 	const components: T[] = [];
-	const componentDir = path.resolve(
-		__dirname,
-		'..',
-		'..',
-		'components',
-		componentType,
-	);
+	const componentDir = path.resolve(__dirname, '..', '..', 'components', componentType);
 
 	try {
 		// Get all files in the component directory
@@ -54,9 +48,7 @@ export async function loadComponents<T extends Component>(
 
 				components.push(componentObject);
 			} catch (error) {
-				console.error(
-					`Failed to import ${componentFile}: ${(error as Error).message}`,
-				);
+				console.error(`Failed to import ${componentFile}: ${(error as Error).message}`);
 			}
 		}
 
@@ -75,12 +67,7 @@ export async function loadComponents<T extends Component>(
  * @returns boolean - True if valid, false otherwise
  */
 function isValidComponent(obj: any, componentType: ComponentType): boolean {
-	if (
-		!obj ||
-		typeof obj !== 'object' ||
-		!obj.customId ||
-		typeof obj.run !== 'function'
-	) {
+	if (!obj || typeof obj !== 'object' || !obj.customId || typeof obj.run !== 'function') {
 		return false;
 	}
 

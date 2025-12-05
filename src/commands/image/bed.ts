@@ -1,23 +1,20 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	MessageFlags,
-	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import { bed } from 'discord-image-utils';
+import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
+import type { LocalCommand } from '../../types/index';
 
 const bedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('bed')
 		.setDescription('Create a "Dad, there\'s a monster under my bed" meme')
 		.addUserOption((option) =>
-			option
-				.setName('target')
-				.setDescription('The user under the bed')
-				.setRequired(true),
+			option.setName('target').setDescription('The user under the bed').setRequired(true),
 		)
 		.addUserOption((option) =>
 			option
@@ -36,14 +33,10 @@ const bedCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			const targetUser = interaction.options.get('target')?.user;
-			const scaredUser =
-				interaction.options.get('scared')?.user || interaction.user;
+			const scaredUser = interaction.options.get('scared')?.user || interaction.user;
 
 			if (!targetUser) {
 				// For required parameter errors, respond immediately without deferring

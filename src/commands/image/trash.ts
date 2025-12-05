@@ -1,22 +1,19 @@
+import { trash } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { trash } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 
 const trashCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('trash')
 		.setDescription("Put someone's avatar in the trash")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user to throw in the trash')
-				.setRequired(false),
+			option.setName('user').setDescription('The user to throw in the trash').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -29,15 +26,11 @@ const trashCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -79,9 +72,7 @@ const trashCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the trash image. Please try again later.',
-				)
+				.setDescription('Failed to generate the trash image. Please try again later.')
 				.setTimestamp();
 
 			await interaction.editReply({

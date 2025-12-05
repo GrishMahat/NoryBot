@@ -1,5 +1,5 @@
+import type { Button } from '../../types/index';
 import { loadButtons } from './loadComponents';
-import { Button } from '../../types/index';
 
 /**
  * Dynamically imports and returns an array of button objects from files in the 'components/buttons' directory.
@@ -15,8 +15,6 @@ import { Button } from '../../types/index';
  *   console.error('Error importing buttons:', error);
  * });
  */
-export default async function importButtons(
-	exceptions: string[] = [],
-): Promise<Button[]> {
+export default async function importButtons(exceptions: string[] = []): Promise<Button[]> {
 	return loadButtons(exceptions);
 }

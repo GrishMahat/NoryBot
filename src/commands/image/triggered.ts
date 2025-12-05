@@ -1,21 +1,18 @@
+import { triggered } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { triggered } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 const triggeredCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('triggered')
 		.setDescription("Generate a triggered version of user's avatar")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user to trigger')
-				.setRequired(false),
+			option.setName('user').setDescription('The user to trigger').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -28,15 +25,11 @@ const triggeredCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const userOption =
-				interaction.options.get('user')?.user || interaction.user;
+			const userOption = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = userOption.displayAvatarURL({
 				extension: 'png',
@@ -81,9 +74,7 @@ const triggeredCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the triggered image. Please try again later.',
-				)
+				.setDescription('Failed to generate the triggered image. Please try again later.')
 				.setTimestamp();
 
 			await interaction.editReply({

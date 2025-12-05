@@ -1,5 +1,5 @@
 import 'colors';
-import { Client } from 'discord.js';
+import type { Client } from 'discord.js';
 import { MongoService } from '../../database/services/MongoService';
 
 const SEPARATOR = {
@@ -112,4 +112,3 @@ const consoleLog = async (client: Client): Promise<void> => {
 export default consoleLog;
 
 consoleLog.priority = -1; // Lower priority to ensure it runs last
-

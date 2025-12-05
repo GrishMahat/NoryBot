@@ -1,22 +1,19 @@
+import { facepalm } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { facepalm } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 
 const facepalmCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('facepalm')
 		.setDescription("Generate a facepalm image with someone's avatar")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user doing the facepalm')
-				.setRequired(false),
+			option.setName('user').setDescription('The user doing the facepalm').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -29,15 +26,11 @@ const facepalmCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -81,9 +74,7 @@ const facepalmCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the facepalm image. Please try again later.',
-				)
+				.setDescription('Failed to generate the facepalm image. Please try again later.')
 				.setTimestamp();
 
 			await interaction.editReply({

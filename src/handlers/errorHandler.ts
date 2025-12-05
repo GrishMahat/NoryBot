@@ -1,28 +1,22 @@
-import {
-	WebhookClient,
-	EmbedBuilder,
-	Events,
-	Client,
-	DiscordAPIError,
-} from 'discord.js';
 import { createHash } from 'crypto';
-import {
-	ErrorSeverity,
-	ErrorHandlerConfig,
-	ErrorDetails,
-	ErrorInfo,
-	ErrorGroup,
-	PerformanceMetrics,
-	ErrorMetrics,
-	ErrorContext,
-} from '../types/index';
-import determineSeverity from '../services/error/determineSeverity';
-import determineErrorCategory from '../services/error/determineErrorCategory';
-import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
-import { PerformanceMonitor } from '../services/error/performanceMonitor';
-import { MetricsFormatter } from '../services/error/metricsFormatter';
-import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
 import os from 'os';
+import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
+import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
+import determineErrorCategory from '../services/error/determineErrorCategory';
+import determineSeverity from '../services/error/determineSeverity';
+import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
+import { MetricsFormatter } from '../services/error/metricsFormatter';
+import { PerformanceMonitor } from '../services/error/performanceMonitor';
+import {
+	type ErrorContext,
+	type ErrorDetails,
+	type ErrorGroup,
+	type ErrorHandlerConfig,
+	type ErrorInfo,
+	type ErrorMetrics,
+	ErrorSeverity,
+	type PerformanceMetrics,
+} from '../types/index';
 
 // Interface for Discord rate limit errors
 interface DiscordRateLimitError extends Error {
@@ -103,9 +97,7 @@ class ErrorHandler {
 	private setupWebhook(): void {
 		try {
 			if (!this.config.webhook || this.config.webhook.trim() === '') {
-				console.error(
-					'ErrorHandler: Attempted to set up webhook, but no valid URL was provided.',
-				);
+				console.error('ErrorHandler: Attempted to set up webhook, but no valid URL was provided.');
 				this.webhook = null;
 				return;
 			}
@@ -129,16 +121,11 @@ class ErrorHandler {
 	 */
 	public initialize(client: Client): void {
 		if (!client) {
-			console.error(
-				'ErrorHandler: Initialization failed - Discord client instance is required.',
-			);
+			console.error('ErrorHandler: Initialization failed - Discord client instance is required.');
 			return;
 		}
 		this.client = client;
-		this.performanceMonitor = new PerformanceMonitor(
-			client,
-			this.config.performanceThresholds,
-		);
+		this.performanceMonitor = new PerformanceMonitor(client, this.config.performanceThresholds);
 		this.metricsService = new ErrorMetricsService(this.config.cacheExpiration);
 		this.setupEventListeners();
 		this.startPerformanceMonitoring();
@@ -150,31 +137,19 @@ class ErrorHandler {
 	 */
 	private setupEventListeners(): void {
 		if (!this.client) {
-			console.error(
-				'ErrorHandler: Cannot setup event listeners without a client.',
-			);
+			console.error('ErrorHandler: Cannot setup event listeners without a client.');
 			return;
 		}
-		this.client.on(Events.Error, (error) =>
-			this.handleError(error, 'ClientError'),
-		);
+		this.client.on(Events.Error, (error) => this.handleError(error, 'ClientError'));
 		process.on('unhandledRejection', (reason, promise) => {
-			console.error(
-				'ErrorHandler: Unhandled Rejection at:',
-				promise,
-				'reason:',
-				reason,
-			);
+			console.error('ErrorHandler: Unhandled Rejection at:', promise, 'reason:', reason);
 			this.handleError(
 				reason instanceof Error ? reason : new Error(String(reason)),
 				'UnhandledRejection',
 			);
 		});
 		process.on('uncaughtException', (error, origin) => {
-			console.error(
-				`ErrorHandler: Uncaught Exception origin: ${origin}`,
-				error,
-			);
+			console.error(`ErrorHandler: Uncaught Exception origin: ${origin}`, error);
 			this.handleError(error, 'UncaughtException');
 			// According to Node.js docs, process should exit after uncaughtException
 			// Consider if graceful shutdown is needed here.
@@ -187,10 +162,7 @@ class ErrorHandler {
 	 * Starts periodic performance checks and metrics reporting in production environment.
 	 */
 	private startPerformanceMonitoring(): void {
-		if (
-			this.config.environment === 'production' &&
-			this.config.production.metricsInterval > 0
-		) {
+		if (this.config.environment === 'production' && this.config.production.metricsInterval > 0) {
 			console.log(
 				`ErrorHandler: Starting performance monitoring and metrics reporting every ${this.config.production.metricsInterval / 1000} seconds.`,
 			);
@@ -210,15 +182,11 @@ class ErrorHandler {
 	 */
 	private async generateMetricsReport(): Promise<void> {
 		if (!this.metricsService) {
-			console.warn(
-				'ErrorHandler: Metrics service not available for generating report.',
-			);
+			console.warn('ErrorHandler: Metrics service not available for generating report.');
 			return;
 		}
 		if (!this.webhook) {
-			console.warn(
-				'ErrorHandler: Webhook not available for sending metrics report.',
-			);
+			console.warn('ErrorHandler: Webhook not available for sending metrics report.');
 			return;
 		}
 
@@ -295,11 +263,7 @@ class ErrorHandler {
 	 * @param type A string indicating the source/type of the error (e.g., 'ClientError').
 	 * @param context Optional additional context about the error.
 	 */
-	public async handleError(
-		error: unknown,
-		type: string,
-		context?: ErrorContext,
-	): Promise<void> {
+	public async handleError(error: unknown, type: string, context?: ErrorContext): Promise<void> {
 		try {
 			const errorDetails = await this.formatError(error, type, context);
 
@@ -309,10 +273,7 @@ class ErrorHandler {
 			}
 
 			// Handle development logging separately
-			if (
-				this.config.environment === 'development' &&
-				this.config.development.logToConsole
-			) {
+			if (this.config.environment === 'development' && this.config.development.logToConsole) {
 				console.error(`\n--- Development Error Captured [${type}] ---`);
 				console.error(`Time: ${errorDetails.timestamp}`);
 				console.error(`Severity: ${errorDetails.severity}`);
@@ -333,10 +294,7 @@ class ErrorHandler {
 			await this.processError(errorDetails);
 		} catch (processingError) {
 			// Catch errors within the error handler itself
-			console.error(
-				'ErrorHandler: CRITICAL - Error occurred within handleError:',
-				processingError,
-			);
+			console.error('ErrorHandler: CRITICAL - Error occurred within handleError:', processingError);
 			// Attempt a fallback log to console
 			console.error('Original Error Type:', type);
 			console.error('Original Error:', error);
@@ -356,10 +314,7 @@ class ErrorHandler {
 		context: ErrorContext = {},
 	): Promise<ErrorDetails> {
 		// Ensure we're working with an Error object
-		const err =
-			error instanceof Error
-				? error
-				: new Error(String(error ?? 'Unknown error'));
+		const err = error instanceof Error ? error : new Error(String(error ?? 'Unknown error'));
 
 		const isDiscordError = err instanceof DiscordAPIError;
 		const category = determineErrorCategory(isDiscordError ? err : undefined);
@@ -484,10 +439,7 @@ class ErrorHandler {
 			// Consider recoverable if it's a Discord error AND its code is NOT in the non-recoverable list.
 			// This assumes server errors (5xx), rate limits (429), and potentially overloaded errors (130000)
 			// are potentially recoverable by retrying later.
-			return (
-				typeof error.code === 'number' &&
-				!nonRecoverableDiscordApiCodes.includes(error.code)
-			);
+			return typeof error.code === 'number' && !nonRecoverableDiscordApiCodes.includes(error.code);
 		}
 
 		// Default assumption for non-Discord errors (e.g., network issues like ECONNRESET, timeout)
@@ -531,9 +483,7 @@ class ErrorHandler {
 
 		// Check if webhook is available, attempt setup if not
 		if (!this.webhook) {
-			console.warn(
-				'ErrorHandler: Webhook client not available. Attempting reinitialization...',
-			);
+			console.warn('ErrorHandler: Webhook client not available. Attempting reinitialization...');
 			this.setupWebhook();
 			if (!this.webhook) {
 				console.error(
@@ -550,11 +500,7 @@ class ErrorHandler {
 
 		// Check if we should send a group summary based on threshold
 		const group = this.errorGroups.get(errorKey);
-		if (
-			group &&
-			group.count >= this.config.groupingThreshold &&
-			!group.reportSent
-		) {
+		if (group && group.count >= this.config.groupingThreshold && !group.reportSent) {
 			await this.sendErrorGroupSummary(group);
 		}
 	}
@@ -570,11 +516,7 @@ class ErrorHandler {
 		// Start retrying from the stored retry count (if exists) or from the beginning
 		const startAttempt = (errorInfo?.retryCount || 0) + 1;
 
-		for (
-			let attempt = startAttempt;
-			attempt <= this.config.retryAttempts;
-			attempt++
-		) {
+		for (let attempt = startAttempt; attempt <= this.config.retryAttempts; attempt++) {
 			try {
 				await this.sendErrorToWebhook(errorDetails);
 				console.log(
@@ -594,8 +536,7 @@ class ErrorHandler {
 				// Check if it's a rate limit error from Discord
 				const isRateLimit =
 					sendError instanceof Error &&
-					((sendError as DiscordAPIError).code === 429 ||
-						sendError.message.includes('rate limit'));
+					((sendError as DiscordAPIError).code === 429 || sendError.message.includes('rate limit'));
 
 				if (isRateLimit) {
 					const rateLimitError = sendError as DiscordRateLimitError;
@@ -603,9 +544,7 @@ class ErrorHandler {
 						? rateLimitError.retry_after * 1000
 						: this.config.retryDelay * 2;
 
-					console.log(
-						`ErrorHandler: Rate limited. Retrying in ${retryAfter / 1000} seconds...`,
-					);
+					console.log(`ErrorHandler: Rate limited. Retrying in ${retryAfter / 1000} seconds...`);
 					await new Promise((resolve) => setTimeout(resolve, retryAfter));
 				} else if (attempt < this.config.retryAttempts) {
 					// Use exponential backoff for non-rate-limit errors
@@ -687,7 +626,7 @@ class ErrorHandler {
 		// Enforce cache size limit - evict least recently seen
 		if (this.errorCache.size > this.config.maxCacheSize) {
 			let oldestKey: string | undefined = undefined;
-			let oldestTime = Infinity;
+			let oldestTime = Number.POSITIVE_INFINITY;
 
 			for (const [k, v] of this.errorCache.entries()) {
 				if (v.lastOccurrence < oldestTime) {
@@ -698,9 +637,7 @@ class ErrorHandler {
 
 			if (oldestKey) {
 				this.errorCache.delete(oldestKey);
-				console.log(
-					`ErrorHandler: Cache limit reached. Evicted oldest error group: ${oldestKey}`,
-				);
+				console.log(`ErrorHandler: Cache limit reached. Evicted oldest error group: ${oldestKey}`);
 			}
 		}
 	}
@@ -726,16 +663,13 @@ class ErrorHandler {
 	private async sendErrorToWebhook(errorDetails: ErrorDetails): Promise<void> {
 		if (!this.webhook) {
 			// This check is technically redundant due to processError, but good for safety
-			throw new Error(
-				'ErrorHandler: Cannot send error, webhook is not available.',
-			);
+			throw new Error('ErrorHandler: Cannot send error, webhook is not available.');
 		}
 
 		try {
 			// Capture fresh performance metrics at the time of sending
 			const performanceMetrics = await this.capturePerformanceMetrics();
-			const formattedMetrics =
-				MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
+			const formattedMetrics = MetricsFormatter.formatPerformanceMetrics(performanceMetrics);
 
 			const embed = new EmbedBuilder()
 				.setColor(this.getSeverityColor(errorDetails.severity))
@@ -772,10 +706,7 @@ class ErrorHandler {
 				.setTimestamp(new Date(errorDetails.timestamp)); // Set timestamp of the error occurrence
 
 			// Add Context if available
-			if (
-				errorDetails.context &&
-				Object.keys(errorDetails.context).length > 0
-			) {
+			if (errorDetails.context && Object.keys(errorDetails.context).length > 0) {
 				// Format context nicely, limit length
 				let contextString = '';
 				try {
@@ -792,10 +723,7 @@ class ErrorHandler {
 			}
 
 			// Add Recovery Suggestions if available
-			if (
-				errorDetails.recoverySuggestions &&
-				errorDetails.recoverySuggestions.length > 0
-			) {
+			if (errorDetails.recoverySuggestions && errorDetails.recoverySuggestions.length > 0) {
 				embed.addFields({
 					name: '💡 Recovery Suggestions',
 					value: errorDetails.recoverySuggestions
@@ -821,10 +749,7 @@ class ErrorHandler {
 			await this.webhook.send({ embeds: [embed] });
 		} catch (error) {
 			// Log the error during sending, but re-throw to allow retry logic to catch it
-			console.error(
-				'ErrorHandler: Error occurred within sendErrorToWebhook:',
-				error,
-			);
+			console.error('ErrorHandler: Error occurred within sendErrorToWebhook:', error);
 			throw error; // Re-throw the error to be caught by sendWithRetry
 		}
 	}
@@ -858,8 +783,7 @@ class ErrorHandler {
 	private generateErrorHash(error: Error, context: ErrorContext): string {
 		const errorName = error.name || 'UnknownError';
 		// Use a smaller portion of the message to avoid minor variations splitting groups
-		const errorMessageSignature =
-			error.message.substring(0, 150) || 'No message';
+		const errorMessageSignature = error.message.substring(0, 150) || 'No message';
 
 		// Use top 2-3 stack frames relevant to the application code if possible
 		const stackLines = (error.stack || '').split('\n').slice(1, 4); // Look at first 3 frames after message
@@ -871,7 +795,7 @@ class ErrorHandler {
 					const filePath = match[1].replace(/\\/g, '/');
 					// Use filename and line number range
 					const fileName = filePath.split('/').pop() || filePath;
-					const lineNum = parseInt(match[2], 10);
+					const lineNum = Number.parseInt(match[2], 10);
 					const lineRange = Math.floor(lineNum / 10) * 10; // Group lines in blocks of 10
 					return `${fileName}#${lineRange}`;
 				}
@@ -881,27 +805,18 @@ class ErrorHandler {
 			.join('|');
 
 		// Include relevant context keys for grouping
-		const relevantContextKeys = [
-			'command',
-			'module',
-			'guildId',
-			'channelId',
-			'userId',
-		];
+		const relevantContextKeys = ['command', 'module', 'guildId', 'channelId', 'userId'];
 		const contextSignature = Object.entries(context)
 			.filter(
 				([key]) =>
-					relevantContextKeys.includes(key) &&
-					context[key] !== null &&
-					context[key] !== undefined,
+					relevantContextKeys.includes(key) && context[key] !== null && context[key] !== undefined,
 			) // Ensure key is relevant and value exists
 			.map(([key, value]) => `${key}:${String(value)}`) // Simple string conversion
 			.sort() // Ensure consistent order
 			.join('&');
 
 		// Include Discord API error code if applicable
-		const apiErrorCode =
-			error instanceof DiscordAPIError ? `DAPI:${error.code}:` : '';
+		const apiErrorCode = error instanceof DiscordAPIError ? `DAPI:${error.code}:` : '';
 
 		// Combine components into the final string for hashing
 		const hashInput = `${apiErrorCode}${errorName}|${errorMessageSignature}|${stackSignature}|${contextSignature}`;
@@ -920,9 +835,7 @@ class ErrorHandler {
 			}
 
 			// Fallback if performance monitor is not initialized
-			console.warn(
-				'ErrorHandler: PerformanceMonitor not available, using basic process metrics.',
-			);
+			console.warn('ErrorHandler: PerformanceMonitor not available, using basic process metrics.');
 			const memUsage = process.memoryUsage();
 			const metrics: PerformanceMetrics = {
 				memoryUsage: {
@@ -939,10 +852,7 @@ class ErrorHandler {
 			};
 			return metrics;
 		} catch (error) {
-			console.error(
-				'ErrorHandler: Failed to capture performance metrics',
-				error,
-			);
+			console.error('ErrorHandler: Failed to capture performance metrics', error);
 			// Return minimal metrics if everything fails
 			return {
 				memoryUsage: { heapUsed: 0, heapTotal: 0, external: 0 },
@@ -962,9 +872,7 @@ class ErrorHandler {
 			return;
 		}
 		if (!this.webhook) {
-			console.warn(
-				'ErrorHandler: Webhook not available for sending performance alerts.',
-			);
+			console.warn('ErrorHandler: Webhook not available for sending performance alerts.');
 			return;
 		}
 
@@ -972,14 +880,11 @@ class ErrorHandler {
 			const alerts = await this.performanceMonitor.checkThresholds();
 
 			if (alerts.length > 0) {
-				console.warn(
-					`ErrorHandler: Performance thresholds exceeded: ${alerts.join(', ')}`,
-				);
+				console.warn(`ErrorHandler: Performance thresholds exceeded: ${alerts.join(', ')}`);
 
 				// Capture current metrics to include in the alert
 				const metrics = await this.performanceMonitor.captureMetrics();
-				const formattedMetrics =
-					MetricsFormatter.formatPerformanceMetrics(metrics);
+				const formattedMetrics = MetricsFormatter.formatPerformanceMetrics(metrics);
 
 				const embed = new EmbedBuilder()
 					.setColor(0xff9900) // Orange for warning
@@ -1082,9 +987,7 @@ class ErrorHandler {
 	 */
 	private async sendErrorGroupSummary(group: ErrorGroup): Promise<void> {
 		if (!this.webhook) {
-			console.warn(
-				'ErrorHandler: Cannot send group summary, webhook not available',
-			);
+			console.warn('ErrorHandler: Cannot send group summary, webhook not available');
 			return;
 		}
 
@@ -1220,9 +1123,7 @@ class ErrorHandler {
 			group.reportSent = false;
 			this.errorGroups.set(hash, group);
 		}
-		console.log(
-			`ErrorHandler: Reset report flags for ${this.errorGroups.size} error groups`,
-		);
+		console.log(`ErrorHandler: Reset report flags for ${this.errorGroups.size} error groups`);
 	}
 }
 

@@ -1,12 +1,12 @@
+import { gay } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { gay } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 const gayCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('gay')
@@ -28,15 +28,11 @@ const gayCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',

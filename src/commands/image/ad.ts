@@ -1,12 +1,12 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	MessageFlags,
-	ChatInputCommandInteraction,
-} from 'discord.js';
 import { ad } from 'discord-image-utils';
+import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
 const admixCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('admix')
@@ -29,15 +29,11 @@ const admixCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const userOption =
-				interaction.options.get('user')?.user || interaction.user;
+			const userOption = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = userOption.displayAvatarURL({
 				extension: 'png',
@@ -93,9 +89,7 @@ const admixCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the Admix image. Please try again later.',
-				)
+				.setDescription('Failed to generate the Admix image. Please try again later.')
 				.setTimestamp();
 
 			// Ensure to handle the error properly

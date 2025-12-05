@@ -1,20 +1,17 @@
+import { Batslap } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { Batslap } from 'discord-image-utils';
 const batslapCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('batslap')
 		.setDescription('Generate a batslap image with two users')
 		.addUserOption((option) =>
-			option
-				.setName('target')
-				.setDescription('The user who gets slapped')
-				.setRequired(true),
+			option.setName('target').setDescription('The user who gets slapped').setRequired(true),
 		)
 		.addUserOption((option) =>
 			option
@@ -33,16 +30,12 @@ const batslapCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
 			const targetUser = interaction.options.get('target').user;
-			const slapperUser =
-				interaction.options.get('slapper')?.user || interaction.user;
+			const slapperUser = interaction.options.get('slapper')?.user || interaction.user;
 
 			if (!targetUser) {
 				return;

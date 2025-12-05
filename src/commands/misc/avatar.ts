@@ -1,45 +1,36 @@
 import {
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
+	type GuildMember,
 	SlashCommandBuilder,
-	ChatInputCommandInteraction,
-	Client,
-	GuildMember,
-	User,
+	type User,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
+import type { LocalCommand } from '../../types/index';
 
 const avatarCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('avatar')
 		.setDescription('Show and interact with user avatars')
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('User whose avatar you want to see')
-				.setRequired(false),
+			option.setName('user').setDescription('User whose avatar you want to see').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
 		.toJSON(),
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.getUser('user') || interaction.user;
+			const targetUser = interaction.options.getUser('user') || interaction.user;
 
 			if (!interaction.guild) {
 				await handleDMAvatar(interaction, targetUser);
 				return;
 			}
 
-			const targetMember = await interaction.guild.members
-				.fetch(targetUser.id)
-				.catch(() => null);
+			const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
 			if (!targetMember) {
 				await interaction.editReply({
 					content: '❌ Could not fetch member information.',
@@ -129,10 +120,7 @@ function getAvatarData(
 	allAvatars: Array<{ format: string; url: string; type: string }>;
 } {
 	const formats = ['png', 'jpg', 'webp'];
-	if (
-		targetUser.avatar?.startsWith('a_') ||
-		targetMember.avatar?.startsWith('a_')
-	) {
+	if (targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_')) {
 		formats.push('gif');
 	}
 

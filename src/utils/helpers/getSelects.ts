@@ -1,5 +1,5 @@
+import type { SelectMenu } from '../../types/index';
 import { loadSelects } from './loadComponents';
-import { SelectMenu } from '../../types/index';
 
 /**
  * Dynamically imports and returns an array of select menu objects from files in the 'components/selects' directory.
@@ -15,9 +15,7 @@ import { SelectMenu } from '../../types/index';
  *   console.error('Error importing select menus:', error);
  * });
  */
-const importSelectMenus = async (
-	exceptions: string[] = [],
-): Promise<SelectMenu[]> => {
+const importSelectMenus = async (exceptions: string[] = []): Promise<SelectMenu[]> => {
 	return loadSelects(exceptions);
 };
 

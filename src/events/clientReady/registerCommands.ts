@@ -1,16 +1,16 @@
 import 'colors';
 import {
-	ApplicationCommand,
-	Client,
+	type ApplicationCommand,
+	type ApplicationCommandOptionData,
 	ApplicationCommandType,
-	ApplicationCommandOptionData,
+	type Client,
+	type PermissionResolvable,
 	PermissionsBitField,
-	PermissionResolvable,
 } from 'discord.js';
-import getLocalCommands from '../../utils/helpers/getLocalCommands';
+import type { LocalCommand } from '../../types/index';
 import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
+import getLocalCommands from '../../utils/helpers/getLocalCommands';
 import compareCommands from '../../utils/validators/commandComparing';
-import { LocalCommand } from '../../types/index';
 
 /**
  * Synchronizes local command definitions with the Discord application's registered commands.
@@ -51,11 +51,7 @@ export default async (client: Client): Promise<void> => {
 		const processStartTime = process.hrtime.bigint();
 
 		// Delete commands that either no longer exist locally or are marked as deleted
-		await deleteObsoleteCommands(
-			applicationCommands,
-			localCommands,
-			deletedCommands,
-		);
+		await deleteObsoleteCommands(applicationCommands, localCommands, deletedCommands);
 
 		// Process the valid (non-deleted) commands for update or creation
 		await updateOrCreateCommands(
@@ -119,9 +115,7 @@ async function deleteObsoleteCommands(
 	// - Their name is not present in the validCommandNames set.
 	const commandsToDelete = applicationCommands.filter(
 		(cmd) =>
-			cmd.type === ApplicationCommandType.ChatInput &&
-			cmd.name &&
-			!validCommandNames.has(cmd.name),
+			cmd.type === ApplicationCommandType.ChatInput && cmd.name && !validCommandNames.has(cmd.name),
 	);
 
 	await Promise.all(
@@ -165,9 +159,7 @@ async function updateOrCreateCommands(
 	);
 
 	// Create a map for faster lookup of existing commands
-	const existingCommandsMap = new Map(
-		applicationCommands.map((cmd) => [cmd.name, cmd]),
-	);
+	const existingCommandsMap = new Map(applicationCommands.map((cmd) => [cmd.name, cmd]));
 
 	// Process all commands in parallel
 	const commandPromises = validCommands.map(async (localCommand, index) => {
@@ -177,10 +169,7 @@ async function updateOrCreateCommands(
 			const existingCommand = existingCommandsMap.get(commandName);
 
 			if (existingCommand) {
-				const isUpdated = await handleExistingCommand(
-					existingCommand,
-					localCommand,
-				);
+				const isUpdated = await handleExistingCommand(existingCommand, localCommand);
 				if (isUpdated) {
 					updatedCommands.push(commandName);
 				}
@@ -217,11 +206,9 @@ async function handleExistingCommand(
 
 	if (needsUpdate) {
 		try {
-			const defaultMemberPermissions = localCommand.data
-				.default_member_permissions
+			const defaultMemberPermissions = localCommand.data.default_member_permissions
 				? new PermissionsBitField(
-						localCommand.data
-							.default_member_permissions as PermissionResolvable,
+						localCommand.data.default_member_permissions as PermissionResolvable,
 					)
 				: null;
 
@@ -230,8 +217,7 @@ async function handleExistingCommand(
 				description: localCommand.data.description ?? '',
 				contexts: localCommand.data.contexts ?? [0, 1, 2],
 				integrationTypes: localCommand.data.integration_types ?? [0, 1],
-				options:
-					(localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
+				options: (localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
 				dmPermission: localCommand.data.dm_permission ?? true,
 				defaultMemberPermissions,
 			});
@@ -256,19 +242,14 @@ async function handleExistingCommand(
  * @param {LocalCommand['data']} data - The local command definition data.
  * @returns {Promise<void>}
  */
-async function createCommand(
-	client: Client,
-	data: LocalCommand['data'],
-): Promise<void> {
+async function createCommand(client: Client, data: LocalCommand['data']): Promise<void> {
 	if (!data || !data.name) {
 		return;
 	}
 
 	try {
 		const defaultMemberPermissions = data.default_member_permissions
-			? new PermissionsBitField(
-					data.default_member_permissions as PermissionResolvable,
-				)
+			? new PermissionsBitField(data.default_member_permissions as PermissionResolvable)
 			: null;
 
 		await client.application?.commands.create({
@@ -310,10 +291,8 @@ function logCommandChanges(
 	totalTime: number,
 ): void {
 	const header = '╔════════════════ Command Sync Report ════════════════╗'.cyan;
-	const footer = '╚══════════════════════════════════════════════════════╝'
-		.cyan;
-	const divider = '╟──────────────────────────────────────────────────────╢'
-		.cyan;
+	const footer = '╚══════════════════════════════════════════════════════╝'.cyan;
+	const divider = '╟──────────────────────────────────────────────────────╢'.cyan;
 
 	console.log(header);
 	console.log(

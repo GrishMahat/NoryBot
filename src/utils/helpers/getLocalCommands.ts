@@ -1,6 +1,6 @@
 import path from 'path';
+import type { LocalCommand } from '../../types/index';
 import getAllFiles from './getAllFiles';
-import { LocalCommand } from '../../types/index';
 
 /**
  * Dynamically imports a single command file and returns the command object if it is valid.
@@ -35,9 +35,7 @@ async function importCommandFile(
 		const commandModule = await import(commandFile);
 
 		if (!commandModule?.default) {
-			console.error(
-				`Command module at ${commandFile} is missing a default export.`,
-			);
+			console.error(`Command module at ${commandFile} is missing a default export.`);
 			return null;
 		}
 
@@ -45,16 +43,12 @@ async function importCommandFile(
 
 		// Validate the command file by checking if it exports a default object with a 'name' property.
 		if (!commandObject?.data?.name) {
-			throw new Error(
-				`Command file ${commandFile} is invalid or missing a 'name' property.`,
-			);
+			throw new Error(`Command file ${commandFile} is invalid or missing a 'name' property.`);
 		}
 
 		// Check if the command name is in the list of exceptions provided.
 		if (exceptions.includes(commandObject.data.name)) {
-			throw new Error(
-				`Command ${commandObject.data.name} is in the exception list.`,
-			);
+			throw new Error(`Command ${commandObject.data.name} is in the exception list.`);
 		}
 
 		// Make sure we're not returning the toJSON function as a command
@@ -72,9 +66,7 @@ async function importCommandFile(
 	}
 }
 
-export default async function loadCommands(
-	exceptions: string[] = [],
-): Promise<LocalCommand[]> {
+export default async function loadCommands(exceptions: string[] = []): Promise<LocalCommand[]> {
 	// Update path to point to the src/commands directory
 	const commandsPath = path.join(__dirname, '..', '..', 'commands');
 
@@ -89,9 +81,7 @@ export default async function loadCommands(
 		const commandResults = await Promise.all(commandPromises);
 
 		// Filter out null results and return valid commands
-		return commandResults.filter(
-			(command): command is LocalCommand => command !== null,
-		);
+		return commandResults.filter((command): command is LocalCommand => command !== null);
 	} catch (error) {
 		console.error('Error loading commands:'.red, error);
 		return [];

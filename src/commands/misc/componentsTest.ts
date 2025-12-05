@@ -1,20 +1,18 @@
 import {
-	SlashCommandBuilder,
-	Client,
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	type ChatInputCommandInteraction,
+	type Client,
+	SlashCommandBuilder,
 	StringSelectMenuBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
+import type { LocalCommand } from '../../types/index';
 
 const componentsTestCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('components-test')
-		.setDescription(
-			'Send test components to verify buttons, selects and modals work',
-		)
+		.setDescription('Send test components to verify buttons, selects and modals work')
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
 		.toJSON(),
@@ -39,16 +37,11 @@ const componentsTestCommand: LocalCommand = {
 				{ label: 'Option C', value: 'C' },
 			]);
 
-		const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			openModalButton,
-		);
-		const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			testSelect,
-		);
+		const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(openModalButton);
+		const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(testSelect);
 
 		await interaction.reply({
-			content:
-				'Components test: click the button to open a modal and try the select menu.',
+			content: 'Components test: click the button to open a modal and try the select menu.',
 			components: [row1, row2],
 		});
 	},

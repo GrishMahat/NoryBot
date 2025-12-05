@@ -284,15 +284,11 @@ export default function determineErrorCategory(error: Error): string {
 	if (message.includes('timeout')) return 'Timeout Error';
 	if (message.includes('not found')) return 'Not Found Error';
 	if (message.includes('database')) return 'Database Error';
-	if (message.includes('auth') || message.includes('token'))
-		return 'Authentication Error';
-	if (message.includes('connect') || message.includes('connection'))
-		return 'Connection Error';
-	if (message.includes('parse') || message.includes('syntax'))
-		return 'Parsing Error';
+	if (message.includes('auth') || message.includes('token')) return 'Authentication Error';
+	if (message.includes('connect') || message.includes('connection')) return 'Connection Error';
+	if (message.includes('parse') || message.includes('syntax')) return 'Parsing Error';
 	if (message.includes('memory')) return 'Memory Error';
-	if (message.includes('disk') || message.includes('storage'))
-		return 'Disk Error';
+	if (message.includes('disk') || message.includes('storage')) return 'Disk Error';
 	if (message.includes('timeout')) return 'Timeout Error';
 	if (message.includes('format')) return 'Format Error';
 	if (message.includes('range')) return 'Range Error';

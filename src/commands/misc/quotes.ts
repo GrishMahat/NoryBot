@@ -1,21 +1,21 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	ChatInputCommandInteraction,
-	Client,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ComponentType,
-	ButtonInteraction,
-	AttachmentBuilder,
-	MessageFlags,
-} from 'discord.js';
-import { LocalCommand, QuoteResponse } from '../../types/index';
-import { Quote } from 'discord-image-utils';
-import emojiConfig from '../../config/emoji';
-import { writeFileSync, unlinkSync } from 'fs';
+import { unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { Quote } from 'discord-image-utils';
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	type ButtonInteraction,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	type Client,
+	ComponentType,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
+import emojiConfig from '../../config/emoji';
+import type { LocalCommand, QuoteResponse } from '../../types/index';
 
 const quotesCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -98,10 +98,7 @@ const quotesCommand: LocalCommand = {
 							author: newQuote.author,
 						});
 
-						const newTempPath = join(
-							process.cwd(),
-							`temp_quote_${Date.now()}.png`,
-						);
+						const newTempPath = join(process.cwd(), `temp_quote_${Date.now()}.png`);
 						writeFileSync(newTempPath, newImageBuffer);
 
 						const newAttachment = new AttachmentBuilder(newTempPath, {
@@ -180,10 +177,7 @@ async function fetchQuote(): Promise<QuoteResponse> {
 	}
 }
 
-function createQuoteEmbed(
-	client: Client,
-	attachment: AttachmentBuilder,
-): EmbedBuilder {
+function createQuoteEmbed(client: Client, attachment: AttachmentBuilder): EmbedBuilder {
 	return new EmbedBuilder()
 		.setColor('#2b2d31')
 		.setTitle(`${emojiConfig.statistics} Random Quote`)

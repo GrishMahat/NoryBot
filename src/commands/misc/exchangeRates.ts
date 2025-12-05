@@ -1,23 +1,19 @@
+import path from 'path';
+import axios from 'axios';
 import {
+	type CacheType,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	ChatInputCommandInteraction,
-	CacheType,
 	time,
 } from 'discord.js';
-import axios from 'axios';
 import fs from 'fs/promises';
-import path from 'path';
 import emojiConfig from '../../config/emoji';
-import { Currency, commonCurrencies, allCurrencies } from '../../types/index';
+import { type Currency, allCurrencies, commonCurrencies } from '../../types/index';
 
-const apiUrl =
-	'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
-const CACHE_FILE = path.join(
-	process.cwd(),
-	'src/assets/json/exchangeRates.json',
-);
+const apiUrl = 'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
+const CACHE_FILE = path.join(process.cwd(), 'src/assets/json/exchangeRates.json');
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
 const currencyCommand: LocalCommand = {
@@ -41,18 +37,14 @@ const currencyCommand: LocalCommand = {
 		.addStringOption((option) =>
 			option
 				.setName('target_currency')
-				.setDescription(
-					'The currency you want to convert to (e.g., EUR,GBP,JPY)',
-				)
+				.setDescription('The currency you want to convert to (e.g., EUR,GBP,JPY)')
 				.setRequired(true)
 				.setAutocomplete(true),
 		)
 		.addBooleanOption((option) =>
 			option
 				.setName('show_details')
-				.setDescription(
-					'Show additional details like exchange rate trends and currency info',
-				)
+				.setDescription('Show additional details like exchange rate trends and currency info')
 				.setRequired(false),
 		)
 		.addBooleanOption((option) =>
@@ -82,16 +74,13 @@ const currencyCommand: LocalCommand = {
 			}
 
 			const amount = interaction.options.getNumber('amount', true);
-			const sourceCurrency = interaction.options
-				.getString('source_currency', true)
-				.toUpperCase();
+			const sourceCurrency = interaction.options.getString('source_currency', true).toUpperCase();
 			const targetCurrencies = interaction.options
 				.getString('target_currency', true)
 				.toUpperCase()
 				.split(',')
 				.map((c) => c.trim());
-			const showDetails =
-				interaction.options.getBoolean('show_details') ?? false;
+			const showDetails = interaction.options.getBoolean('show_details') ?? false;
 			const showReverse = interaction.options.getBoolean('reverse') ?? false;
 
 			const exchangeRates = await getExchangeRates();
@@ -113,9 +102,7 @@ const currencyCommand: LocalCommand = {
 			// Get currency names
 			const currencyNames = {
 				[sourceCurrency]: getCurrencyName(sourceCurrency),
-				...Object.fromEntries(
-					targetCurrencies.map((c) => [c, getCurrencyName(c)]),
-				),
+				...Object.fromEntries(targetCurrencies.map((c) => [c, getCurrencyName(c)])),
 			};
 
 			const embed = new EmbedBuilder()
@@ -157,15 +144,12 @@ const currencyCommand: LocalCommand = {
 
 				if (showReverse) {
 					const reverseAmount = amount / rate;
-					fieldValue += `\n💱 Reverse: ${reverseAmount.toLocaleString(
-						undefined,
-						{
-							style: 'currency',
-							currency: sourceCurrency,
-							minimumFractionDigits: 2,
-							maximumFractionDigits: 2,
-						},
-					)}`;
+					fieldValue += `\n💱 Reverse: ${reverseAmount.toLocaleString(undefined, {
+						style: 'currency',
+						currency: sourceCurrency,
+						minimumFractionDigits: 2,
+						maximumFractionDigits: 2,
+					})}`;
 				}
 
 				if (showDetails) {
@@ -220,10 +204,7 @@ const currencyCommand: LocalCommand = {
 			const focusedOption = interaction.options.getFocused(true);
 			const searchTerm = focusedOption.value.toString().toUpperCase();
 
-			if (
-				focusedOption.name === 'source_currency' ||
-				focusedOption.name === 'target_currency'
-			) {
+			if (focusedOption.name === 'source_currency' || focusedOption.name === 'target_currency') {
 				let filtered: { name: string; value: Currency }[] = [];
 
 				if (searchTerm.length === 0) {

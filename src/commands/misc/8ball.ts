@@ -1,11 +1,11 @@
 import {
-	SlashCommandBuilder,
-	Client,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	MessageFlags,
-	ChatInputCommandInteraction,
+	SlashCommandBuilder,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
+import type { LocalCommand } from '../../types/index';
 
 const responses = [
 	'It is certain.',
@@ -35,10 +35,7 @@ const eightBallCommand: LocalCommand = {
 		.setName('8ball')
 		.setDescription('Ask the Magic 8 Ball a question')
 		.addStringOption((option) =>
-			option
-				.setName('question')
-				.setDescription('The question you want to ask')
-				.setRequired(true),
+			option.setName('question').setDescription('The question you want to ask').setRequired(true),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -53,10 +50,7 @@ const eightBallCommand: LocalCommand = {
 			const embed = new EmbedBuilder()
 				.setColor('#0099ff')
 				.setTitle('🎱 Magic 8 Ball')
-				.addFields(
-					{ name: 'Question', value: question },
-					{ name: 'Answer', value: response },
-				)
+				.addFields({ name: 'Question', value: question }, { name: 'Answer', value: response })
 				.setTimestamp();
 
 			await interaction.reply({ embeds: [embed] });

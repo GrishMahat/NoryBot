@@ -1,7 +1,7 @@
-import { Client } from 'discord.js';
 import os from 'os';
+import type { Client } from 'discord.js';
 import { performance } from 'perf_hooks';
-import {
+import type {
 	PerformanceMetrics,
 	PerformanceThresholds,
 	ShardStats,
@@ -25,10 +25,7 @@ export class PerformanceMonitor {
 	public async captureMetrics(): Promise<PerformanceMetrics> {
 		// Return cached metrics if within TTL
 		const now = Date.now();
-		if (
-			this.cachedMetrics &&
-			now - this.lastMetricsTimestamp < this.CACHE_TTL
-		) {
+		if (this.cachedMetrics && now - this.lastMetricsTimestamp < this.CACHE_TTL) {
 			return this.cachedMetrics;
 		}
 
@@ -65,8 +62,7 @@ export class PerformanceMonitor {
 		const metrics = await this.captureMetrics();
 		const alerts: string[] = [];
 
-		const memoryUsagePercent =
-			metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal;
+		const memoryUsagePercent = metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal;
 		if (memoryUsagePercent > this.thresholds.memory) {
 			alerts.push(
 				`Critical: Memory usage at ${(memoryUsagePercent * 100).toFixed(2)}% (${this.formatBytes(metrics.memoryUsage.heapUsed)}/${this.formatBytes(metrics.memoryUsage.heapTotal)})`,

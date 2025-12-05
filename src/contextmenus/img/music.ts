@@ -1,12 +1,12 @@
+import { Music } from 'discord-image-utils';
 import {
-	ContextMenuCommandBuilder,
 	ApplicationCommandType,
-	ContextMenuCommandInteraction,
-	Client,
 	AttachmentBuilder,
+	type Client,
+	ContextMenuCommandBuilder,
+	type ContextMenuCommandInteraction,
 	// MessageFlags,
 } from 'discord.js';
-import { Music } from 'discord-image-utils';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()
@@ -23,8 +23,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
 
 			// Get the first image attachment or avatar as fallback
 			const imageUrl =
-				message.attachments.find((a) => a.contentType?.startsWith('image/'))
-					?.url ||
+				message.attachments.find((a) => a.contentType?.startsWith('image/'))?.url ||
 				message.author.displayAvatarURL({ size: 512, extension: 'png' });
 
 			// Split message content into title and artist

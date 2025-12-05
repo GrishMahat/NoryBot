@@ -1,5 +1,5 @@
+import type { Modal } from '../../types/index';
 import { loadModals } from './loadComponents';
-import { Modal } from '../../types/index';
 
 /**
  * Dynamically imports and returns an array of modal objects from files in the 'components/modals' directory.

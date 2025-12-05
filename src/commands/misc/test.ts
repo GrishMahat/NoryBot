@@ -1,37 +1,28 @@
 import {
-	SlashCommandBuilder,
-	ButtonBuilder,
 	ActionRowBuilder,
+	ButtonBuilder,
 	ButtonStyle,
-	TextInputBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	ModalBuilder,
-	TextInputStyle,
+	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	Client,
-	ChatInputCommandInteraction,
+	TextInputBuilder,
+	TextInputStyle,
 } from 'discord.js';
 
 const testCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('test')
 		.setDescription('Test command')
-		.addSubcommand((subcommand) =>
-			subcommand.setName('button').setDescription('Test button'),
-		)
-		.addSubcommand((subcommand) =>
-			subcommand.setName('modal').setDescription('Test modal'),
-		)
-		.addSubcommand((subcommand) =>
-			subcommand.setName('select').setDescription('Test select'),
-		)
+		.addSubcommand((subcommand) => subcommand.setName('button').setDescription('Test button'))
+		.addSubcommand((subcommand) => subcommand.setName('modal').setDescription('Test modal'))
+		.addSubcommand((subcommand) => subcommand.setName('select').setDescription('Test select'))
 		.toJSON(),
 	testMode: false,
 	deleted: true,
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		const subcommand = interaction.options.getSubcommand();
 		switch (subcommand) {
 			case 'button': {
@@ -65,17 +56,14 @@ const testCommand: Command = {
 				break;
 			}
 			case 'select': {
-				const selectRow =
-					new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-						new StringSelectMenuBuilder()
-							.setCustomId('test-select')
-							.setPlaceholder('Select an option')
-							.addOptions(
-								new StringSelectMenuOptionBuilder()
-									.setLabel('Test Option')
-									.setValue('test-option'),
-							),
-					);
+				const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+					new StringSelectMenuBuilder()
+						.setCustomId('test-select')
+						.setPlaceholder('Select an option')
+						.addOptions(
+							new StringSelectMenuOptionBuilder().setLabel('Test Option').setValue('test-option'),
+						),
+				);
 				await interaction.reply({
 					content: 'Select test',
 					components: [selectRow],

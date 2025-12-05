@@ -1,4 +1,4 @@
-import { PerformanceMetrics } from '../../types/index';
+import type { PerformanceMetrics } from '../../types/index';
 
 export class MetricsFormatter {
 	public static formatPerformanceMetrics(metrics: PerformanceMetrics): string {
@@ -21,8 +21,7 @@ export class MetricsFormatter {
 				'',
 				'Shard Stats:',
 				...metrics.shardStats.map(
-					(shard) =>
-						`  Shard ${shard.id}: ${shard.status} (Latency: ${shard.ping}ms)`,
+					(shard) => `  Shard ${shard.id}: ${shard.status} (Latency: ${shard.ping}ms)`,
 				),
 			);
 		}

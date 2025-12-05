@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose';
+import { type Document, Schema, model } from 'mongoose';
 
 export interface ICustomOption {
 	label: string;

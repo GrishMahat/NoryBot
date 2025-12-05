@@ -1,20 +1,18 @@
+import os from 'os';
 import {
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
 	version as discordVersion,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import os from 'os';
 import emojiConfig from '../../config/emoji';
+import type { LocalCommand } from '../../types/index';
 
 const pingCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
-		.setDescription(
-			'Shows detailed system statistics and bot performance metrics',
-		)
+		.setDescription('Shows detailed system statistics and bot performance metrics')
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
 		.toJSON(),

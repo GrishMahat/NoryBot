@@ -1,0 +1,88 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"files": {
+		"ignore": [
+			"node_modules",
+			"dist",
+			"build",
+			"*.min.js",
+			".vscode",
+			"pnpm-lock.yaml",
+			"bun.lock",
+			"docs",
+			".github"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSpacing": true
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"noUnusedVariables": "off",
+				"noUnusedImports": "warn",
+				"useExhaustiveDependencies": "off",
+				"noSwitchDeclarations": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noAsyncPromiseExecutor": "error",
+				"noGlobalIsNan": "off",
+				"noAssignInExpressions": "off",
+				"noImplicitAnyLet": "off"
+			},
+			"style": {
+				"useConst": "error",
+				"noVar": "error",
+				"useShorthandFunctionType": "off",
+				"useTemplate": "off",
+				"useNodejsImportProtocol": "off",
+				"useImportType": "warn",
+				"noParameterAssign": "off",
+				"noUnusedTemplateLiteral": "off",
+				"noUselessElse": "off",
+				"useExponentiationOperator": "off"
+			},
+			"complexity": {
+				"noBannedTypes": "off",
+				"noForEach": "off",
+				"useOptionalChain": "off",
+				"noStaticOnlyClass": "off",
+				"noThisInStatic": "off",
+				"noUselessSwitchCase": "off"
+			},
+			"performance": {
+				"noDelete": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"include": ["src/config/*", "src/types/*"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		}
+	]
+}

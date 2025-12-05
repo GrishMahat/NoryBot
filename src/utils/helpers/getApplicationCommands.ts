@@ -1,8 +1,8 @@
-import {
+import type {
+	ApplicationCommand,
+	ApplicationCommandManager,
 	Client,
 	GuildApplicationCommandManager,
-	ApplicationCommandManager,
-	ApplicationCommand,
 } from 'discord.js';
 
 /**
@@ -36,9 +36,7 @@ const fetchApplicationCommands = async (
 	client: Client,
 	guildId?: string,
 ): Promise<Array<ApplicationCommand>> => {
-	let applicationCommands:
-		| GuildApplicationCommandManager
-		| ApplicationCommandManager;
+	let applicationCommands: GuildApplicationCommandManager | ApplicationCommandManager;
 
 	// Determine whether to fetch guild-specific or global commands
 	if (guildId) {

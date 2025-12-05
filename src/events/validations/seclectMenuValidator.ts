@@ -1,18 +1,18 @@
 import 'colors';
 import {
+	type Client,
+	type ColorResolvable,
 	EmbedBuilder,
-	PermissionsBitField,
-	Client,
-	StringSelectMenuInteraction,
-	GuildMember,
-	ColorResolvable,
-	PermissionResolvable,
+	type GuildMember,
 	MessageFlags,
+	type PermissionResolvable,
+	PermissionsBitField,
+	type StringSelectMenuInteraction,
 } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
+import type { SelectMenu } from '../../types/index';
 import getSelects from '../../utils/helpers/getSelects';
-import { SelectMenu } from '../../types/index';
 
 class LRUCache<K, V> {
 	private capacity: number;
@@ -50,7 +50,7 @@ const sendEmbedReply = async (
 	interaction: StringSelectMenuInteraction,
 	color: ColorResolvable,
 	description: string,
-	ephemeral: boolean = true,
+	ephemeral = true,
 ): Promise<void> => {
 	try {
 		const embed = new EmbedBuilder()
@@ -71,19 +71,14 @@ const sendEmbedReply = async (
 	}
 };
 
-const checkPermissions = (
-	member: GuildMember,
-	permissions: PermissionResolvable[],
-): boolean =>
+const checkPermissions = (member: GuildMember, permissions: PermissionResolvable[]): boolean =>
 	permissions.every((permission) =>
 		member.permissions.has(
-			PermissionsBitField.Flags[
-				permission as keyof typeof PermissionsBitField.Flags
-			],
+			PermissionsBitField.Flags[permission as keyof typeof PermissionsBitField.Flags],
 		),
 	);
 
-const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
+const loadSelectMenus = async (retryCount = 0): Promise<void> => {
 	try {
 		// Load select menus from external source
 		const selectMenuFiles: SelectMenu[] = await getSelects();
@@ -93,10 +88,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
 			selectMenu.compiledChecks = {
 				userPermissions: selectMenu.userPermissions
 					? (interaction: StringSelectMenuInteraction): boolean =>
-							checkPermissions(
-								interaction.member as GuildMember,
-								selectMenu.userPermissions || [],
-							)
+							checkPermissions(interaction.member as GuildMember, selectMenu.userPermissions || [])
 					: (): boolean => true,
 
 				botPermissions: selectMenu.botPermissions
@@ -107,10 +99,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
 								console.error('Bot member not found in the guild');
 								return false;
 							}
-							return checkPermissions(
-								botMember,
-								selectMenu.botPermissions || [],
-							);
+							return checkPermissions(botMember, selectMenu.botPermissions || []);
 						}
 					: (): boolean => true,
 			};
@@ -124,9 +113,7 @@ const loadSelectMenus = async (retryCount: number = 0): Promise<void> => {
 		await global.errorHandler.handleError(error, 'SelectMenuLoadError');
 
 		if (retryCount < 3) {
-			console.log(
-				`Retrying select menu load... (Attempt ${retryCount + 1})`.yellow,
-			);
+			console.log(`Retrying select menu load... (Attempt ${retryCount + 1})`.yellow);
 			await new Promise((resolve) => setTimeout(resolve, 5000));
 			await loadSelectMenus(retryCount + 1);
 		} else {
@@ -197,9 +184,7 @@ const handleSelectMenu = async (
 	}
 
 	try {
-		console.log(
-			`Executing select menu ${customId} for user ${interaction.user.tag}`.cyan,
-		);
+		console.log(`Executing select menu ${customId} for user ${interaction.user.tag}`.cyan);
 		await selectMenu.run(client, interaction);
 	} catch (error) {
 		await global.errorHandler.handleError(error, 'SelectMenuExecutionError');
@@ -213,10 +198,7 @@ const handleSelectMenu = async (
 	}
 };
 
-export default async (
-	client: Client,
-	interaction: StringSelectMenuInteraction,
-): Promise<void> => {
+export default async (client: Client, interaction: StringSelectMenuInteraction): Promise<void> => {
 	if (!interaction.isStringSelectMenu()) return;
 
 	if (!selectMenusLoaded) {

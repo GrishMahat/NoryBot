@@ -1,11 +1,11 @@
+import { sepia } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { sepia } from 'discord-image-utils';
 
 const sepiaCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -28,15 +28,11 @@ const sepiaCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -52,9 +48,7 @@ const sepiaCommand: LocalCommand = {
 
 			const embed = new EmbedBuilder()
 				.setColor('#8B4513')
-				.setDescription(
-					`${targetUser.toString()}'s avatar with a vintage effect`,
-				)
+				.setDescription(`${targetUser.toString()}'s avatar with a vintage effect`)
 				.setImage('attachment://sepia.png')
 				.setTimestamp();
 

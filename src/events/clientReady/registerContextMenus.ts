@@ -1,14 +1,14 @@
 import 'colors';
 import {
-	ApplicationCommand,
-	Client,
+	type ApplicationCommand,
 	ApplicationCommandType,
-	ContextMenuCommandBuilder,
+	type Client,
+	type ContextMenuCommandBuilder,
 } from 'discord.js';
-import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus';
+import type { LocalContextMenu } from '../../types/index';
 import getApplicationCommands from '../../utils/helpers/getApplicationCommands';
+import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus';
 import compareContextMenus from '../../utils/validators/contextmenusComparing';
-import { LocalContextMenu } from '../../types/index';
 
 export default async (client: Client): Promise<void> => {
 	try {
@@ -25,11 +25,7 @@ export default async (client: Client): Promise<void> => {
 		const updatedContextMenus: string[] = [];
 		const newContextMenus: string[] = [];
 
-		await deleteUnusedContextMenus(
-			applicationCommands,
-			localContextMenus,
-			deletedContextMenus,
-		);
+		await deleteUnusedContextMenus(applicationCommands, localContextMenus, deletedContextMenus);
 
 		await updateOrCreateContextMenus(
 			applicationCommands,
@@ -65,8 +61,7 @@ async function deleteUnusedContextMenus(
 	);
 	const contextMenusToDelete = applicationCommands.filter(
 		(cmd) =>
-			(cmd.type === ApplicationCommandType.User ||
-				cmd.type === ApplicationCommandType.Message) &&
+			(cmd.type === ApplicationCommandType.User || cmd.type === ApplicationCommandType.Message) &&
 			cmd.name &&
 			!localContextMenuNames.has(cmd.name),
 	);
@@ -90,11 +85,7 @@ async function updateOrCreateContextMenus(
 ): Promise<void> {
 	for (const localContextMenu of localContextMenus) {
 		try {
-			if (
-				!localContextMenu ||
-				!localContextMenu.data ||
-				!localContextMenu.data.name
-			) {
+			if (!localContextMenu || !localContextMenu.data || !localContextMenu.data.name) {
 				continue;
 			}
 
@@ -103,15 +94,11 @@ async function updateOrCreateContextMenus(
 
 			const existingContextMenu = applicationCommands.find(
 				(cmd) =>
-					cmd.name === contextMenuName &&
-					(cmd.type === 1 || cmd.type === 2 || cmd.type === 3), // 1 for ChatInput, 2 for User, 3 for Message
+					cmd.name === contextMenuName && (cmd.type === 1 || cmd.type === 2 || cmd.type === 3), // 1 for ChatInput, 2 for User, 3 for Message
 			);
 
 			if (existingContextMenu) {
-				const isUpdated = await handleExistingContextMenu(
-					existingContextMenu,
-					localContextMenu,
-				);
+				const isUpdated = await handleExistingContextMenu(existingContextMenu, localContextMenu);
 				if (isUpdated) updatedContextMenus.push(contextMenuName);
 			} else {
 				await createContextMenu(client, data);
@@ -131,10 +118,7 @@ async function handleExistingContextMenu(
 	existingContextMenu: ApplicationCommand,
 	localContextMenu: LocalContextMenu,
 ): Promise<boolean> {
-	const needsUpdate = compareContextMenus(
-		existingContextMenu,
-		localContextMenu,
-	);
+	const needsUpdate = compareContextMenus(existingContextMenu, localContextMenu);
 
 	if (needsUpdate) {
 		try {
@@ -152,10 +136,7 @@ async function handleExistingContextMenu(
 	return false;
 }
 
-async function createContextMenu(
-	client: Client,
-	data: ContextMenuCommandBuilder,
-): Promise<void> {
+async function createContextMenu(client: Client, data: ContextMenuCommandBuilder): Promise<void> {
 	if (!data || !data.name) {
 		return;
 	}
@@ -188,9 +169,7 @@ function logContextMenuChanges(
 	const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
 
 	console.log(header);
-	console.log(
-		`║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan,
-	);
+	console.log(`║ Context Menu Status${' '.repeat(SEPARATOR.LENGTH - 19)} ║`.cyan);
 	console.log(divider);
 	console.log(
 		`║ Total Menus: ${localContextMenus.length.toString().yellow}${' '.repeat(SEPARATOR.LENGTH - 15 - localContextMenus.length.toString().length)} ║`
@@ -201,10 +180,7 @@ function logContextMenuChanges(
 		console.log(divider);
 		console.log(`║ Updated Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
 		updatedContextMenus.forEach((menu) =>
-			console.log(
-				`║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-					.cyan,
-			),
+			console.log(`║  • ${menu.yellow}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan),
 		);
 	}
 
@@ -212,10 +188,7 @@ function logContextMenuChanges(
 		console.log(divider);
 		console.log(`║ New Menus:${' '.repeat(SEPARATOR.LENGTH - 11)} ║`.cyan);
 		newContextMenus.forEach((menu) =>
-			console.log(
-				`║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-					.cyan,
-			),
+			console.log(`║  • ${menu.green}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan),
 		);
 	}
 
@@ -223,10 +196,7 @@ function logContextMenuChanges(
 		console.log(divider);
 		console.log(`║ Deleted Menus:${' '.repeat(SEPARATOR.LENGTH - 14)} ║`.cyan);
 		deletedContextMenus.forEach((menu) =>
-			console.log(
-				`║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`
-					.cyan,
-			),
+			console.log(`║  • ${menu.red}${' '.repeat(SEPARATOR.LENGTH - menu.length - 4)} ║`.cyan),
 		);
 	}
 

@@ -142,14 +142,17 @@ export interface RedditPostData {
 			id: number;
 		}>;
 	};
-	media_metadata?: Record<string, {
-		status: string;
-		e: string;
-		m: string;
-		p: Array<{ y: number; x: number; u: string }>;
-		s: { y: number; x: number; u: string };
-		id: string;
-	}>;
+	media_metadata?: Record<
+		string,
+		{
+			status: string;
+			e: string;
+			m: string;
+			p: Array<{ y: number; x: number; u: string }>;
+			s: { y: number; x: number; u: string };
+			id: string;
+		}
+	>;
 }
 
 /**

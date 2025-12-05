@@ -1,22 +1,19 @@
+import { Delete } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { Delete } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 
 const deleteCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('delete')
 		.setDescription('Generate a "Delete This" meme with someone\'s avatar')
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user to delete')
-				.setRequired(false),
+			option.setName('user').setDescription('The user to delete').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -29,15 +26,11 @@ const deleteCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -85,9 +78,7 @@ const deleteCommand: LocalCommand = {
 					new EmbedBuilder()
 						.setColor('#FF0000')
 						.setTitle('❌ Error')
-						.setDescription(
-							'Failed to generate the delete image. Please try again later.',
-						)
+						.setDescription('Failed to generate the delete image. Please try again later.')
 						.setTimestamp(),
 				],
 			});

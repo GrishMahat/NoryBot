@@ -1,12 +1,12 @@
-import {
+import type {
 	ApplicationCommand,
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
 } from 'discord.js';
-import {
-	LocalCommand,
+import type {
 	ApplicationCommandOption,
 	ApplicationCommandOptionChoice,
+	LocalCommand,
 } from '../../types/index';
 
 /**
@@ -26,10 +26,7 @@ import {
  * @note
  * This function checks for differences in name, description, type, contexts, integration types, nsfw status, dm permission, default member permissions, and options.
  */
-const compareCommands = (
-	existing: ApplicationCommand,
-	local: LocalCommand,
-): boolean => {
+const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boolean => {
 	// const commandName = local.data.name;
 
 	// Quick checks for basic properties with early returns
@@ -62,12 +59,8 @@ const compareCommands = (
 	}
 
 	// Check integration types with normalized comparison
-	const existingIntegrationTypes = normalizeIntegrationTypes(
-		existing.integrationTypes,
-	);
-	const localIntegrationTypes = normalizeIntegrationTypes(
-		local.data.integration_types,
-	);
+	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
+	const localIntegrationTypes = normalizeIntegrationTypes(local.data.integration_types);
 	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
 		return true;
 	}
@@ -115,9 +108,7 @@ function normalizeContexts(contexts: number[] | undefined): number[] {
  * @param {number[] | undefined} integrationTypes - The integration types array
  * @returns {number[]} - Normalized integration types array
  */
-function normalizeIntegrationTypes(
-	integrationTypes: number[] | undefined,
-): number[] {
+function normalizeIntegrationTypes(integrationTypes: number[] | undefined): number[] {
 	if (!integrationTypes || integrationTypes.length === 0) {
 		return [0, 1]; // Default: Guild Install, User Install
 	}
@@ -166,9 +157,7 @@ function normalizeObject(
 	input: ApplicationCommandOption | ApplicationCommandOption[],
 ): Partial<ApplicationCommandOption> | Partial<ApplicationCommandOption>[] {
 	if (Array.isArray(input)) {
-		return input.map(
-			(item) => normalizeObject(item) as Partial<ApplicationCommandOption>,
-		);
+		return input.map((item) => normalizeObject(item) as Partial<ApplicationCommandOption>);
 	}
 	return {
 		type: input.type,
@@ -187,19 +176,13 @@ function normalizeObject(
  * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
-function optionsArray(
-	cmd: ApplicationCommand | LocalCommand['data'],
-): unknown[] {
+function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): unknown[] {
 	return (cmd.options || []).map((option) => {
-		const cleanedOption = normalizeObject(
-			option,
-		) as Partial<ApplicationCommandOption>;
+		const cleanedOption = normalizeObject(option) as Partial<ApplicationCommandOption>;
 		cleanObject(cleanedOption);
 		return {
 			...cleanedOption,
-			choices: cleanedOption.choices
-				? stringifyChoices(cleanedOption.choices)
-				: null,
+			choices: cleanedOption.choices ? stringifyChoices(cleanedOption.choices) : null,
 		};
 	});
 }

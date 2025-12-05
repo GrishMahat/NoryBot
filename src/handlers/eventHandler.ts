@@ -5,12 +5,12 @@
  */
 
 import path from 'path';
+import { EventError, type EventInfo, type EventRegistry } from '@/types';
+import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
-import { Client, ClientEvents } from 'discord.js';
-import { EventInfo, EventRegistry, EventError } from '@/types';
 import LRUCache from '../services/manager/LRUCache';
-import { isValidEventName } from '../utils/validators/isValidEventName';
 import getAllFiles from '../utils/helpers/getAllFiles';
+import { isValidEventName } from '../utils/validators/isValidEventName';
 
 /**
  * Cache to store loaded event modules to prevent redundant imports
@@ -99,8 +99,7 @@ const processEventFolder = async (
 	try {
 		const files = await fs.readdir(eventFolder);
 		const folderName = path.basename(eventFolder);
-		const eventName =
-			folderName === 'validations' ? 'interactionCreate' : folderName;
+		const eventName = folderName === 'validations' ? 'interactionCreate' : folderName;
 
 		// Validate event name is a valid Discord.js event
 		if (!isValidEventName(eventName)) {
@@ -158,14 +157,9 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
 	const loadedEvents = new Set<keyof ClientEvents>();
 
 	try {
-		const eventFolders = getAllFiles(
-			path.join(__dirname, '..', 'events'),
-			true,
-		);
+		const eventFolders = getAllFiles(path.join(__dirname, '..', 'events'), true);
 
-		await Promise.all(
-			eventFolders.map((folder) => processEventFolder(folder, eventRegistry)),
-		);
+		await Promise.all(eventFolders.map((folder) => processEventFolder(folder, eventRegistry)));
 
 		for (const [eventName, handlers] of eventRegistry.entries()) {
 			const typedEventName = eventName as keyof ClientEvents;
@@ -178,15 +172,11 @@ const loadEventHandlers = async (client: Client): Promise<void> => {
 					try {
 						await Promise.resolve(handler(client, ...args));
 					} catch (error) {
-						await global.errorHandler.handleError(
-							error,
-							'EventHandlerExecutionError',
-							{
-								eventName: typedEventName,
-								fileName,
-								handler: handler.name,
-							},
-						);
+						await global.errorHandler.handleError(error, 'EventHandlerExecutionError', {
+							eventName: typedEventName,
+							fileName,
+							handler: handler.name,
+						});
 					}
 				}
 			});

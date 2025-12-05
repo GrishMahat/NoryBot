@@ -1,16 +1,16 @@
+import axios from 'axios';
 import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
-	ButtonInteraction,
+	type ChatInputCommandInteraction,
+	type Client,
 	ComponentType,
+	EmbedBuilder,
 	MessageFlags,
-	ChatInputCommandInteraction,
+	SlashCommandBuilder,
 } from 'discord.js';
-import axios from 'axios';
 import emojiConfig from '../../config/emoji';
 
 const factCommand: LocalCommand = {
@@ -46,8 +46,7 @@ const factCommand: LocalCommand = {
 		await interaction.deferReply();
 
 		try {
-			const category =
-				(interaction.options.get('category')?.value as string) || 'random';
+			const category = (interaction.options.get('category')?.value as string) || 'random';
 			const fact = await getFact(category);
 			const embed = createFactEmbed(fact, category, client);
 			const row = createButtonRow();
@@ -60,8 +59,7 @@ const factCommand: LocalCommand = {
 			const collector = reply.createMessageComponentCollector({
 				componentType: ComponentType.Button,
 				filter: (i: ButtonInteraction) =>
-					(i.customId === 'regenerate_fact' &&
-						i.user.id === interaction.user.id) ||
+					(i.customId === 'regenerate_fact' && i.user.id === interaction.user.id) ||
 					(i.customId === 'share_fact' && i.user.id === interaction.user.id),
 				time: 120000,
 			});
@@ -70,11 +68,7 @@ const factCommand: LocalCommand = {
 				try {
 					if (i.customId === 'regenerate_fact') {
 						const newFact = await getFact(category);
-						const newEmbed = createFactEmbed(
-							newFact,
-							category,
-							interaction.client,
-						);
+						const newEmbed = createFactEmbed(newFact, category, interaction.client);
 						await i.update({ embeds: [newEmbed], components: [row] });
 					} else if (i.customId === 'share_fact') {
 						await i.reply({
@@ -126,10 +120,8 @@ async function getFact(category: string): Promise<string> {
 	const urls: Record<string, string> = {
 		today: 'https://uselessfacts.jsph.pl/today.json?language=en',
 		year: `https://numbersapi.com/${new Date().getFullYear()}/year`,
-		science:
-			'https://uselessfacts.jsph.pl/random.json?language=en&category=science',
-		history:
-			'https://uselessfacts.jsph.pl/random.json?language=en&category=history',
+		science: 'https://uselessfacts.jsph.pl/random.json?language=en&category=science',
+		history: 'https://uselessfacts.jsph.pl/random.json?language=en&category=history',
 		math: 'https://numbersapi.com/random/math',
 		animal: 'https://api.some-random-api.com/facts/animal',
 		random: 'https://uselessfacts.jsph.pl/random.json?language=en',
@@ -148,17 +140,11 @@ async function getFact(category: string): Promise<string> {
 		}
 	} catch (error) {
 		console.error(`Error fetching fact from ${url}:`, error);
-		throw new Error(
-			'Unable to fetch a fact at this time. Please try again later.',
-		);
+		throw new Error('Unable to fetch a fact at this time. Please try again later.');
 	}
 }
 
-function createFactEmbed(
-	fact: string,
-	category: string,
-	client: Client,
-): EmbedBuilder {
+function createFactEmbed(fact: string, category: string, client: Client): EmbedBuilder {
 	const categoryIcons: Record<string, string> = {
 		random: emojiConfig.statistics,
 		today: emojiConfig.chart_increasing,

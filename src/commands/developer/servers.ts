@@ -1,27 +1,27 @@
 /** @format */
 
 import {
-	SlashCommandBuilder,
-	EmbedBuilder,
-	PermissionFlagsBits,
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
-	Client,
-	Guild,
-	GuildMember,
-	ButtonInteraction,
-	ComponentType,
-	ChatInputCommandInteraction,
-	TextChannel,
 	ChannelType,
+	type ChatInputCommandInteraction,
+	type Client,
+	type Collection,
+	type ColorResolvable,
+	ComponentType,
+	EmbedBuilder,
+	type Guild,
+	type GuildMember,
 	GuildPremiumTier,
-	User,
-	Collection,
-	ColorResolvable,
+	PermissionFlagsBits,
+	SlashCommandBuilder,
+	type TextChannel,
+	type User,
 } from 'discord.js';
+import type { LocalCommand } from '../../types/index';
 import { Pagination } from '../../utils/helpers/Pagination';
-import { LocalCommand } from '../../types/index';
 import { formatTimestamp } from '../../utils/helpers/misc'; // Assuming a helper for timestamp formatting
 
 // Constants
@@ -48,9 +48,7 @@ const safeAvatarURL = (user: User | null): string | null =>
 
 // Helper function to generate invite link
 async function generateInvite(guild: Guild): Promise<string | null> {
-	if (
-		!guild.members.me?.permissions.has(PermissionFlagsBits.CreateInstantInvite)
-	) {
+	if (!guild.members.me?.permissions.has(PermissionFlagsBits.CreateInstantInvite)) {
 		// console.warn(`Missing CreateInstantInvite permission in guild ${guild.id}`);
 		return null; // Bot lacks permission
 	}
@@ -138,15 +136,11 @@ const serversCommand: LocalCommand = {
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('check')
-				.setDescription(
-					'Check if the bot is in specified servers by their IDs.',
-				)
+				.setDescription('Check if the bot is in specified servers by their IDs.')
 				.addStringOption((option) =>
 					option
 						.setName('server-ids')
-						.setDescription(
-							`Comma-separated IDs (max ${MAX_CHECK_IDS}) of the servers to check.`,
-						)
+						.setDescription(`Comma-separated IDs (max ${MAX_CHECK_IDS}) of the servers to check.`)
 						.setRequired(true),
 				),
 		)
@@ -155,10 +149,7 @@ const serversCommand: LocalCommand = {
 				.setName('user')
 				.setDescription('Show servers owned by a user that the bot is also in.')
 				.addUserOption((option) =>
-					option
-						.setName('user')
-						.setDescription('The user to check.')
-						.setRequired(true),
+					option.setName('user').setDescription('The user to check.').setRequired(true),
 				),
 		)
 		.addSubcommand((subcommand) =>
@@ -179,9 +170,7 @@ const serversCommand: LocalCommand = {
 				.addBooleanOption((option) =>
 					option
 						.setName('detailed')
-						.setDescription(
-							'Show detailed statistics including member counts and boost levels.',
-						)
+						.setDescription('Show detailed statistics including member counts and boost levels.')
 						.setRequired(false),
 				),
 		)
@@ -205,10 +194,7 @@ const serversCommand: LocalCommand = {
 	devOnly: true,
 	category: 'Developer',
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		// Ensure interaction is deferred or replied to
 		if (interaction.deferred || interaction.replied) {
 			console.warn('Interaction already deferred or replied to.');
@@ -245,9 +231,7 @@ const serversCommand: LocalCommand = {
 					break;
 				default:
 					// This should technically be unreachable due to SlashCommandBuilder structure
-					console.error(
-						`Reached default case with unknown subcommand: ${subcommand}`,
-					);
+					console.error(`Reached default case with unknown subcommand: ${subcommand}`);
 					await interaction.editReply({
 						content: '❌ An unexpected error occurred: Unknown subcommand.',
 					});
@@ -265,8 +249,7 @@ const serversCommand: LocalCommand = {
 			// console.error(`Error executing servers command (${subcommand}):`, error);
 			// Ensure reply is edited safely
 			const replyOptions = {
-				content:
-					'❌ An error occurred while processing your request. Please try again later.',
+				content: '❌ An error occurred while processing your request. Please try again later.',
 				embeds: [],
 				components: [],
 			};
@@ -297,38 +280,33 @@ async function handleListSubcommand(
 
 	// Fetch guild data concurrently
 	const guildInfos = await Promise.all(
-		client.guilds.cache.map(
-			async (guild: Guild): Promise<EnrichedGuildInfo> => {
-				// Fetch owner only if detailed view is requested
-				let owner: GuildMember | undefined;
-				if (isDetailed) {
-					try {
-						owner = await guild.fetchOwner();
-					} catch (fetchError) {
-						console.error(
-							`Failed to fetch owner for guild ${guild.id}:`,
-							fetchError,
-						);
-						// Proceed without owner info if fetching fails
-					}
+		client.guilds.cache.map(async (guild: Guild): Promise<EnrichedGuildInfo> => {
+			// Fetch owner only if detailed view is requested
+			let owner: GuildMember | undefined;
+			if (isDetailed) {
+				try {
+					owner = await guild.fetchOwner();
+				} catch (fetchError) {
+					console.error(`Failed to fetch owner for guild ${guild.id}:`, fetchError);
+					// Proceed without owner info if fetching fails
 				}
+			}
 
-				// Generate invite link (handles permissions and errors internally)
-				const inviteLink = await generateInvite(guild);
+			// Generate invite link (handles permissions and errors internally)
+			const inviteLink = await generateInvite(guild);
 
-				const enrichedGuild = {
-					name: guild.name,
-					memberCount: guild.memberCount,
-					id: guild.id,
-					inviteLink,
-					owner, // Will be undefined if not detailed or fetch failed
-					createdAt: guild.createdAt,
-					boostLevel: guild.premiumTier,
-				};
+			const enrichedGuild = {
+				name: guild.name,
+				memberCount: guild.memberCount,
+				id: guild.id,
+				inviteLink,
+				owner, // Will be undefined if not detailed or fetch failed
+				createdAt: guild.createdAt,
+				boostLevel: guild.premiumTier,
+			};
 
-				return enrichedGuild;
-			},
-		),
+			return enrichedGuild;
+		}),
 	);
 
 	// Sort guilds based on the chosen option
@@ -349,13 +327,7 @@ async function handleListSubcommand(
 		return;
 	}
 
-	const embeds = createServerListEmbeds(
-		client,
-		interaction,
-		guildInfos,
-		isDetailed,
-		sortOption,
-	);
+	const embeds = createServerListEmbeds(client, interaction, guildInfos, isDetailed, sortOption);
 
 	if (embeds.length === 0) {
 		// Should not happen if guildInfos is not empty, but as a safeguard
@@ -419,19 +391,12 @@ function createServerListEmbeds(
 			});
 
 		currentGuilds.forEach((guild) => {
-			const inviteText = guild.inviteLink
-				? `[Invite Link](${guild.inviteLink})`
-				: 'Invite N/A';
+			const inviteText = guild.inviteLink ? `[Invite Link](${guild.inviteLink})` : 'Invite N/A';
 			let fieldValue = `🆔 ID: ${guild.id}\n👥 Members: ${guild.memberCount.toLocaleString()}`;
 
 			if (isDetailed) {
-				const ownerTag = guild.owner
-					? guild.owner.user.tag
-					: 'Unknown/Fetch Failed';
-				const createdTimestamp = formatTimestamp(
-					guild.createdAt.getTime(),
-					'short',
-				); // e.g., "MM/DD/YY"
+				const ownerTag = guild.owner ? guild.owner.user.tag : 'Unknown/Fetch Failed';
+				const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'short'); // e.g., "MM/DD/YY"
 				fieldValue += `\n👑 Owner: ${ownerTag}\n📅 Created: ${createdTimestamp}\n✨ Boost: Tier ${guild.boostLevel} (${GuildPremiumTier[guild.boostLevel]})\n🔗 ${inviteText}`;
 			} else {
 				fieldValue += `\n🔗 ${inviteText}`;
@@ -487,10 +452,7 @@ async function handleLeaveSubcommand(
 		.setLabel('Cancel')
 		.setStyle(ButtonStyle.Secondary);
 
-	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-		confirmButton,
-		cancelButton,
-	);
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, cancelButton);
 
 	const response = await interaction.editReply({
 		content: `❓ Are you sure you want me to leave the server **${guild.name}** (ID: \`${serverId}\`)?`,
@@ -526,10 +488,7 @@ async function handleLeaveSubcommand(
 	} catch (error) {
 		// Handle timeout or other errors during awaitMessageComponent
 
-		console.error(
-			`Error or timeout waiting for leave confirmation for guild ${serverId}:`,
-			error,
-		);
+		console.error(`Error or timeout waiting for leave confirmation for guild ${serverId}:`, error);
 		await interaction.editReply({
 			content: `⏱️ No response received within ${CONFIRMATION_TIMEOUT / 1000} seconds, cancelling server leave.`,
 			components: [], // Remove buttons after timeout
@@ -580,16 +539,10 @@ async function handleCheckSubcommand(
 					const owner = await guild.fetchOwner();
 					ownerTag = owner.user.tag;
 				} catch (fetchError) {
-					console.error(
-						`Failed to fetch owner for guild ${guild.id} during check:`,
-						fetchError,
-					);
+					console.error(`Failed to fetch owner for guild ${guild.id} during check:`, fetchError);
 					ownerTag = 'Fetch Failed';
 				}
-				const createdTimestamp = formatTimestamp(
-					guild.createdAt.getTime(),
-					'relative',
-				); // Relative time
+				const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'relative'); // Relative time
 
 				embeds.push(
 					new EmbedBuilder()
@@ -622,9 +575,7 @@ async function handleCheckSubcommand(
 				embeds.push(
 					new EmbedBuilder()
 						.setTitle(`❌ Server Not Found`)
-						.setDescription(
-							`The bot is **not** in a server with the ID \`${serverId}\`.`,
-						)
+						.setDescription(`The bot is **not** in a server with the ID \`${serverId}\`.`)
 						.setColor(ERROR_EMBED_COLOR)
 						.setTimestamp(),
 				);
@@ -673,10 +624,7 @@ async function handleUserSubcommand(
 		.setColor(DEFAULT_EMBED_COLOR)
 		.addFields({
 			name: 'Server List',
-			value:
-				serverCount > 0
-					? serverList
-					: 'No servers found where this user is the owner.',
+			value: serverCount > 0 ? serverList : 'No servers found where this user is the owner.',
 		})
 		.setThumbnail(safeAvatarURL(user))
 		.setFooter({
@@ -714,11 +662,9 @@ async function handleInfoSubcommand(
 	try {
 		// Fetch owner and other data
 		const owner = await guild.fetchOwner();
-		const createdTimestamp = formatTimestamp(
-			guild.createdAt.getTime(),
-			'full',
-			{ includeTime: true },
-		);
+		const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'full', {
+			includeTime: true,
+		});
 		// Remove premiumTierTimestamp since it's not available
 		const boostInfo =
 			guild.premiumTier > 0
@@ -897,8 +843,7 @@ async function handleSearchSubcommand(
 
 	// Search by name or ID
 	const results = guilds.filter(
-		(guild) =>
-			guild.name.toLowerCase().includes(query) || guild.id.includes(query),
+		(guild) => guild.name.toLowerCase().includes(query) || guild.id.includes(query),
 	);
 
 	if (results.size === 0) {
@@ -920,9 +865,7 @@ async function handleSearchSubcommand(
 			embeds.push(
 				new EmbedBuilder()
 					.setTitle('🔍 Server Search Results')
-					.setDescription(
-						`Found **${results.size}** server(s) matching \`${query}\``,
-					)
+					.setDescription(`Found **${results.size}** server(s) matching \`${query}\``)
 					.setColor(DEFAULT_EMBED_COLOR)
 					.setFooter({
 						text: `Page ${pageIndex + 1}/${totalPages} • Requested by ${interaction.user.username}`,

@@ -1,19 +1,17 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	MessageFlags,
-	ChatInputCommandInteraction,
-} from 'discord.js';
 import { affect } from 'discord-image-utils';
+import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
 
 const affectCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('affect')
-		.setDescription(
-			"Use the 'This won't affect my baby' meme template with a user's avatar",
-		)
+		.setDescription("Use the 'This won't affect my baby' meme template with a user's avatar")
 		.addUserOption((option) =>
 			option
 				.setName('user')
@@ -32,16 +30,12 @@ const affectCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
 			// Retrieve the target user, default to the interaction user
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -91,9 +85,7 @@ const affectCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000') // Red color for errors
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the affect meme. Please try again later.',
-				)
+				.setDescription('Failed to generate the affect meme. Please try again later.')
 				.setTimestamp();
 
 			// Send the error message

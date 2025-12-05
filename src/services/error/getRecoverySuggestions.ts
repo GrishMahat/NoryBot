@@ -16,14 +16,11 @@ interface APIError extends Error {
 function isAPIError(error: unknown): error is APIError {
 	return (
 		error instanceof Error &&
-		((error as APIError).response !== undefined ||
-			(error as APIError).code !== undefined)
+		((error as APIError).response !== undefined || (error as APIError).code !== undefined)
 	);
 }
 
-export default function getRecoverySuggestions(
-	error: Error | DiscordAPIError | unknown,
-): string[] {
+export default function getRecoverySuggestions(error: Error | DiscordAPIError | unknown): string[] {
 	if (error instanceof DiscordAPIError) {
 		switch (error.code) {
 			case 50001:
@@ -31,25 +28,19 @@ export default function getRecoverySuggestions(
 					'Check bot permissions. Ensure the bot has the necessary permissions in the server and channel.',
 				];
 			case 50013:
-				return [
-					"Bot is missing permissions. Review and update the bot's role permissions.",
-				];
+				return ["Bot is missing permissions. Review and update the bot's role permissions."];
 			case 50007:
 				return [
 					'Cannot send messages to this user. The user may have DMs disabled or has blocked the bot.',
 				];
 			case 10003:
-				return [
-					'Unknown channel. Verify the channel ID and ensure the bot has access to it.',
-				];
+				return ['Unknown channel. Verify the channel ID and ensure the bot has access to it.'];
 			case 10004:
 				return [
 					'Unknown guild. Check if the bot is still in the server or if the server ID is correct.',
 				];
 			case 10008:
-				return [
-					'Unknown message. The message may have been deleted or the ID is incorrect.',
-				];
+				return ['Unknown message. The message may have been deleted or the ID is incorrect.'];
 			case 30001:
 				return [
 					'Maximum number of guilds reached. Consider upgrading the bot or removing it from unused servers.',
@@ -61,9 +52,7 @@ export default function getRecoverySuggestions(
 			case 10001:
 				return ['Unknown account. Verify the account ID and ensure it exists.'];
 			case 10006:
-				return [
-					'Unknown invite. Check if the invite code is correct and still valid.',
-				];
+				return ['Unknown invite. Check if the invite code is correct and still valid.'];
 			case 50005:
 				return [
 					'Cannot edit a message authored by another user. Ensure the bot only tries to edit its own messages.',
@@ -73,25 +62,17 @@ export default function getRecoverySuggestions(
 					'A message can only be pinned to the channel it was sent in. Verify the channel ID and message ID.',
 				];
 			case 40001:
-				return [
-					'Unauthorized. Ensure the bot token is valid and has not expired.',
-				];
+				return ['Unauthorized. Ensure the bot token is valid and has not expired.'];
 			case 40002:
 				return [
 					'You need to verify your account in order to perform this action. Check your email for a verification link from Discord.',
 				];
 			case 10011:
-				return [
-					'Unknown role. Ensure the role ID is correct and the role exists in the server.',
-				];
+				return ['Unknown role. Ensure the role ID is correct and the role exists in the server.'];
 			case 10012:
-				return [
-					'Unknown token. Verify the token and ensure it is still valid.',
-				];
+				return ['Unknown token. Verify the token and ensure it is still valid.'];
 			case 10014:
-				return [
-					'Unknown webhook. Check if the webhook URL is correct and active.',
-				];
+				return ['Unknown webhook. Check if the webhook URL is correct and active.'];
 			case 20012:
 				return [
 					'You are not authorized to perform this action on this application. Ensure you have the right permissions.',
@@ -101,35 +82,25 @@ export default function getRecoverySuggestions(
 					'Cannot send messages in a voice channel. Ensure the bot is trying to send messages in a text channel.',
 				];
 			case 50033:
-				return [
-					'Invalid recipients. Verify the recipient IDs and ensure they are correct.',
-				];
+				return ['Invalid recipients. Verify the recipient IDs and ensure they are correct.'];
 			case 50036:
 				return ['Invalid file uploaded. Check the file format and size.'];
 			case 60003:
-				return [
-					'Two-factor authentication is required. Ensure 2FA is enabled for the account.',
-				];
+				return ['Two-factor authentication is required. Ensure 2FA is enabled for the account.'];
 			case 130000:
-				return [
-					'API resource is currently overloaded. Try again later or reduce the load.',
-				];
+				return ['API resource is currently overloaded. Try again later or reduce the load.'];
 			case 160002:
 				return [
 					"Cannot reply without permission to read message history. Ensure the bot has the 'Read Message History' permission.",
 				];
 			case 10005:
-				return [
-					'Unknown integration. Verify the integration ID and ensure it exists.',
-				];
+				return ['Unknown integration. Verify the integration ID and ensure it exists.'];
 			case 10007:
 				return [
 					'Unknown member. Check if the member ID is correct and the member is still in the server.',
 				];
 			case 10009:
-				return [
-					'Unknown permission overwrite. Verify the overwrite ID and ensure it exists.',
-				];
+				return ['Unknown permission overwrite. Verify the overwrite ID and ensure it exists.'];
 			case 10010:
 				return [
 					'Unknown provider. Check if the provider ID is correct and the provider is still available.',
@@ -141,13 +112,9 @@ export default function getRecoverySuggestions(
 					'Unknown webhook. Check if the webhook ID is correct and the webhook is still active.',
 				];
 			case 20001:
-				return [
-					'Bots cannot use this endpoint. Ensure the endpoint is intended for bot use.',
-				];
+				return ['Bots cannot use this endpoint. Ensure the endpoint is intended for bot use.'];
 			case 20002:
-				return [
-					'Only bots can use this endpoint. Ensure the endpoint is intended for bot use.',
-				];
+				return ['Only bots can use this endpoint. Ensure the endpoint is intended for bot use.'];
 			case 20009:
 				return [
 					"Explicit content cannot be sent to the desired recipient(s). Ensure the content complies with Discord's guidelines.",
@@ -165,9 +132,7 @@ export default function getRecoverySuggestions(
 					'This message cannot be edited due to announcement rate limits. Wait for the rate limit to reset before retrying.',
 				];
 			case 20024:
-				return [
-					'Under minimum age. Ensure the user meets the minimum age requirement.',
-				];
+				return ['Under minimum age. Ensure the user meets the minimum age requirement.'];
 			case 20028:
 				return [
 					'The channel you are writing has hit the write rate limit. Wait for the rate limit to reset before retrying.',
@@ -184,14 +149,10 @@ export default function getRecoverySuggestions(
 	}
 	if (error instanceof Error) {
 		if (error.name === 'ReferenceError') {
-			return [
-				'Reference error: Ensure that all variables and functions are defined before use.',
-			];
+			return ['Reference error: Ensure that all variables and functions are defined before use.'];
 		}
 		if (error.name === 'TypeError') {
-			return [
-				'Type error: Verify the data types of variables and function parameters.',
-			];
+			return ['Type error: Verify the data types of variables and function parameters.'];
 		}
 		if (error.name === 'SyntaxError') {
 			return [
@@ -204,53 +165,34 @@ export default function getRecoverySuggestions(
 			];
 		}
 		if (error.name === 'EvalError') {
-			return [
-				'Eval error: Avoid using `eval()` and ensure code being evaluated is correct.',
-			];
+			return ['Eval error: Avoid using `eval()` and ensure code being evaluated is correct.'];
 		}
 		if (error.name === 'URIError') {
-			return [
-				'URI error: Check the encoding of URIs and ensure they are correctly formatted.',
-			];
+			return ['URI error: Check the encoding of URIs and ensure they are correctly formatted.'];
 		}
 		if (error.name === 'ValidationError') {
-			return [
-				'Validation error: Check the input data for correctness and completeness.',
-			];
+			return ['Validation error: Check the input data for correctness and completeness.'];
 		}
 		if (error.name === 'DatabaseError') {
-			return [
-				'Database error: Check your database connection and queries for issues.',
-			];
+			return ['Database error: Check your database connection and queries for issues.'];
 		}
 		if (error.name === 'AuthError') {
-			return [
-				'Authorization error: Verify user permissions and authentication methods.',
-			];
+			return ['Authorization error: Verify user permissions and authentication methods.'];
 		}
 		if (error.name === 'MongoNetworkError') {
-			return [
-				'MongoDB network error: Check your MongoDB connection string and network settings.',
-			];
+			return ['MongoDB network error: Check your MongoDB connection string and network settings.'];
 		}
 	}
 
 	// For API errors with rate limit headers
-	if (
-		isAPIError(error) &&
-		error.response?.headers &&
-		error.response.headers['x-ratelimit-reset']
-	) {
-		const retryAfter =
-			parseInt(error.response.headers['x-ratelimit-reset'], 10) * 1000;
+	if (isAPIError(error) && error.response?.headers && error.response.headers['x-ratelimit-reset']) {
+		const retryAfter = Number.parseInt(error.response.headers['x-ratelimit-reset'], 10) * 1000;
 		return [`Rate limit exceeded. Retry after ${retryAfter} milliseconds.`];
 	}
 
 	// For file size limit errors
 	if (isAPIError(error) && error.code === 'LIMIT_FILE_SIZE') {
-		return [
-			'File too large: Ensure the file size does not exceed the allowed limit.',
-		];
+		return ['File too large: Ensure the file size does not exceed the allowed limit.'];
 	}
 	if (isAPIError(error) && error.code === 'LIMIT_FILE_TYPES') {
 		return ['Invalid file type: Ensure the file type is allowed.'];
@@ -361,9 +303,7 @@ export default function getRecoverySuggestions(
 			];
 		}
 		if (error.message.includes('ENOTFOUND')) {
-			return [
-				'DNS lookup failed. Check your internet connection and DNS settings.',
-			];
+			return ['DNS lookup failed. Check your internet connection and DNS settings.'];
 		}
 		if (error.message.includes('ECONNRESET')) {
 			return [

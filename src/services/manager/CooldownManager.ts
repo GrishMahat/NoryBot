@@ -3,7 +3,7 @@ export class CooldownManager {
 	private cleanupInterval: NodeJS.Timeout;
 	private readonly maxCooldowns: number;
 
-	constructor(cleanupIntervalMs: number = 300000, maxCooldowns: number = 1000) {
+	constructor(cleanupIntervalMs = 300000, maxCooldowns = 1000) {
 		this.cooldowns = new Map();
 		this.maxCooldowns = maxCooldowns;
 		this.cleanupInterval = setInterval(() => this.cleanup(), cleanupIntervalMs);
@@ -47,9 +47,7 @@ export class CooldownManager {
 	 * @param targetId The ID of the command/button/etc
 	 */
 	isOnCooldown(userId: string, targetId: string): boolean {
-		const cooldownTime = this.cooldowns.get(
-			this.getCooldownKey(userId, targetId),
-		);
+		const cooldownTime = this.cooldowns.get(this.getCooldownKey(userId, targetId));
 		return Boolean(cooldownTime && Date.now() < cooldownTime);
 	}
 
@@ -59,9 +57,7 @@ export class CooldownManager {
 	 * @param targetId The ID of the command/button/etc
 	 */
 	getRemainingTime(userId: string, targetId: string): number {
-		const cooldownTime = this.cooldowns.get(
-			this.getCooldownKey(userId, targetId),
-		);
+		const cooldownTime = this.cooldowns.get(this.getCooldownKey(userId, targetId));
 		return cooldownTime ? Math.ceil((cooldownTime - Date.now()) / 1000) : 0;
 	}
 

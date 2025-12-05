@@ -1,12 +1,12 @@
+import { wanted } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { LocalCommand } from '../../types/index';
-import { wanted } from 'discord-image-utils';
+import type { LocalCommand } from '../../types/index';
 
 const wantedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -48,13 +48,10 @@ const wantedCommand: LocalCommand = {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
-			const currency =
-				interaction.options.get('currency')?.value?.toString() || '$';
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
+			const currency = interaction.options.get('currency')?.value?.toString() || '$';
 			const amount =
-				(interaction.options.get('amount')?.value as number) ||
-				Math.floor(Math.random() * 1000000);
+				(interaction.options.get('amount')?.value as number) || Math.floor(Math.random() * 1000000);
 
 			if (currency.length > 1) {
 				interaction.editReply({

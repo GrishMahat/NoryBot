@@ -1,15 +1,12 @@
-import {
+import type {
+	ButtonInteraction,
 	Client,
 	Interaction,
-	ButtonInteraction,
-	StringSelectMenuInteraction,
 	ModalSubmitInteraction,
+	StringSelectMenuInteraction,
 } from 'discord.js';
-import { Button, SelectMenu, Modal } from '../types/index';
-import {
-	loadAllComponents,
-	ComponentType,
-} from '../utils/helpers/loadComponents';
+import type { Button, Modal, SelectMenu } from '../types/index';
+import { type ComponentType, loadAllComponents } from '../utils/helpers/loadComponents';
 
 /**
  * Unified component manager that handles all component types
@@ -18,7 +15,7 @@ export class ComponentManager {
 	private buttons: Map<string, Button> = new Map();
 	private selects: Map<string, SelectMenu> = new Map();
 	private modals: Map<string, Modal> = new Map();
-	private isLoaded: boolean = false;
+	private isLoaded = false;
 
 	/**
 	 * Load all components from the components directory
@@ -46,10 +43,7 @@ export class ComponentManager {
 	/**
 	 * Handle any interaction that might be a component
 	 */
-	async handleInteraction(
-		client: Client,
-		interaction: Interaction,
-	): Promise<void> {
+	async handleInteraction(client: Client, interaction: Interaction): Promise<void> {
 		if (!this.isLoaded) {
 			await this.loadComponents();
 		}
@@ -66,10 +60,7 @@ export class ComponentManager {
 	/**
 	 * Handle button interactions
 	 */
-	private async handleButton(
-		client: Client,
-		interaction: ButtonInteraction,
-	): Promise<void> {
+	private async handleButton(client: Client, interaction: ButtonInteraction): Promise<void> {
 		const button = this.buttons.get(interaction.customId);
 		if (!button) {
 			console.warn(`Button not found: ${interaction.customId}`.yellow);
@@ -108,10 +99,7 @@ export class ComponentManager {
 	/**
 	 * Handle modal interactions
 	 */
-	private async handleModal(
-		client: Client,
-		interaction: ModalSubmitInteraction,
-	): Promise<void> {
+	private async handleModal(client: Client, interaction: ModalSubmitInteraction): Promise<void> {
 		const modal = this.modals.get(interaction.customId);
 		if (!modal) {
 			console.warn(`Modal not found: ${interaction.customId}`.yellow);
@@ -129,10 +117,7 @@ export class ComponentManager {
 	/**
 	 * Get a component by customId and type
 	 */
-	getComponent(
-		customId: string,
-		type: ComponentType,
-	): Button | SelectMenu | Modal | undefined {
+	getComponent(customId: string, type: ComponentType): Button | SelectMenu | Modal | undefined {
 		switch (type) {
 			case 'buttons':
 				return this.buttons.get(customId);

@@ -1,8 +1,8 @@
 import {
-	SlashCommandBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
-	Client,
-	ChatInputCommandInteraction,
+	SlashCommandBuilder,
 } from 'discord.js';
 import emojiConfig from '../../config/emoji';
 
@@ -13,9 +13,7 @@ const timestampCommand: Command = {
 		.addStringOption((option) =>
 			option
 				.setName('date')
-				.setDescription(
-					'Date to convert (e.g., 2024-03-25, now, tomorrow, next week)',
-				)
+				.setDescription('Date to convert (e.g., 2024-03-25, now, tomorrow, next week)')
 				.setRequired(true),
 		)
 		.addStringOption((option) =>
@@ -74,8 +72,8 @@ const timestampCommand: Command = {
 				const timeParts = timeInput.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
 				if (timeParts) {
 					const [, hours, minutes, meridiem] = timeParts;
-					let hrs = parseInt(hours);
-					const mins = parseInt(minutes);
+					let hrs = Number.parseInt(hours);
+					const mins = Number.parseInt(minutes);
 
 					// Convert 12-hour to 24-hour format if needed
 					if (meridiem) {

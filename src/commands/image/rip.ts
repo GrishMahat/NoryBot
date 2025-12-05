@@ -1,23 +1,20 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	MessageFlags,
-	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import { rip } from 'discord-image-utils';
+import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
+import type { LocalCommand } from '../../types/index';
 
 const ripCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('rip')
 		.setDescription("Create a memorial tombstone with a user's avatar")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user to memorialize')
-				.setRequired(false),
+			option.setName('user').setDescription('The user to memorialize').setRequired(false),
 		)
 		.toJSON(),
 	userPermissions: [],
@@ -28,13 +25,9 @@ const ripCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			// Start processing
 			await interaction.deferReply();
@@ -64,8 +57,7 @@ const ripCommand: LocalCommand = {
 			];
 
 			// Select a random memorial message
-			const randomMemorial =
-				memorials[Math.floor(Math.random() * memorials.length)];
+			const randomMemorial = memorials[Math.floor(Math.random() * memorials.length)];
 
 			// Create the embed
 			const embed = new EmbedBuilder()
@@ -112,9 +104,7 @@ const ripCommand: LocalCommand = {
 						new EmbedBuilder()
 							.setColor('#FF0000')
 							.setTitle('❌ Memorial Error')
-							.setDescription(
-								'Unable to create the memorial at this time. Please try again later.',
-							)
+							.setDescription('Unable to create the memorial at this time. Please try again later.')
 							.setTimestamp(),
 					],
 				});
@@ -125,9 +115,7 @@ const ripCommand: LocalCommand = {
 						new EmbedBuilder()
 							.setColor('#FF0000')
 							.setTitle('❌ Memorial Error')
-							.setDescription(
-								'Unable to create the memorial at this time. Please try again later.',
-							)
+							.setDescription('Unable to create the memorial at this time. Please try again later.')
 							.setTimestamp(),
 					],
 					flags: MessageFlags.Ephemeral,

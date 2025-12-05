@@ -4,8 +4,8 @@ import { EventEmitter } from 'events';
 
 export class MongoService extends EventEmitter {
 	private static instance: MongoService;
-	private isConnected: boolean = false;
-	private reconnectAttempts: number = 0;
+	private isConnected = false;
+	private reconnectAttempts = 0;
 	private readonly MAX_RECONNECT_ATTEMPTS = 5;
 	private readonly RECONNECT_INTERVAL = 5000;
 
@@ -43,10 +43,7 @@ export class MongoService extends EventEmitter {
 
 	private handleReconnect(): void {
 		if (this.reconnectAttempts >= this.MAX_RECONNECT_ATTEMPTS) {
-			console.error(
-				'Max reconnection attempts reached. Please check your MongoDB connection.'
-					.red,
-			);
+			console.error('Max reconnection attempts reached. Please check your MongoDB connection.'.red);
 			this.emit('maxReconnectAttemptsReached');
 			return;
 		}
@@ -60,10 +57,7 @@ export class MongoService extends EventEmitter {
 			try {
 				await this.connect();
 			} catch (error) {
-				console.error(
-					`Reconnection attempt ${this.reconnectAttempts} failed:`.red,
-					error,
-				);
+				console.error(`Reconnection attempt ${this.reconnectAttempts} failed:`.red, error);
 			}
 		}, this.RECONNECT_INTERVAL);
 	}
@@ -75,9 +69,7 @@ export class MongoService extends EventEmitter {
 
 		const mongoURI = process.env.MONGODB_TOKEN;
 		if (!mongoURI) {
-			throw new Error(
-				'MongoDB connection string is not defined in environment variables',
-			);
+			throw new Error('MongoDB connection string is not defined in environment variables');
 		}
 
 		try {

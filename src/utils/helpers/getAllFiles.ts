@@ -9,10 +9,7 @@ import path from 'path';
  * @param {boolean} [foldersOnly=false] - If true, returns only folder paths.
  * @returns {string[]} - An array of file paths.
  */
-const getAllFiles = (
-	directory: string,
-	foldersOnly: boolean = false,
-): string[] => {
+const getAllFiles = (directory: string, foldersOnly = false): string[] => {
 	const stack: string[] = [directory];
 	const result: string[] = [];
 

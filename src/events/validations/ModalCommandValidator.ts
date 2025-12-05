@@ -1,22 +1,22 @@
 import 'colors';
 import {
-	EmbedBuilder,
-	Client,
-	ModalSubmitInteraction,
-	GuildMember,
-	ColorResolvable,
-	PermissionResolvable,
-	InteractionReplyOptions,
+	type Client,
+	type ColorResolvable,
 	Colors,
-	PermissionsBitField,
-	Interaction,
+	EmbedBuilder,
+	GuildMember,
+	type Interaction,
+	type InteractionReplyOptions,
 	MessageFlags,
+	type ModalSubmitInteraction,
+	type PermissionResolvable,
+	PermissionsBitField,
 } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
-import getModals from '../../utils/helpers/getModals';
-import LRUCache from '../../services/manager/LRUCache';
 import cooldownManager from '../../services/manager/CooldownManager';
+import LRUCache from '../../services/manager/LRUCache';
+import getModals from '../../utils/helpers/getModals';
 
 // Interface for Modal definition
 export interface Modal {
@@ -122,11 +122,7 @@ class ModalValidator {
 	 * @param responseTime The time taken to process the modal in milliseconds.
 	 * @param failed Whether the modal execution resulted in an error.
 	 */
-	private updateMetrics(
-		customId: string,
-		responseTime: number,
-		failed: boolean = false,
-	): void {
+	private updateMetrics(customId: string, responseTime: number, failed = false): void {
 		const metrics = this.metrics.get(customId) || {
 			uses: 0,
 			lastUsed: new Date(),
@@ -138,8 +134,7 @@ class ModalValidator {
 		metrics.lastUsed = new Date();
 		// Calculate rolling average response time
 		metrics.averageResponseTime =
-			(metrics.averageResponseTime * (metrics.uses - 1) + responseTime) /
-			metrics.uses;
+			(metrics.averageResponseTime * (metrics.uses - 1) + responseTime) / metrics.uses;
 		if (failed) {
 			metrics.failures++;
 		}
@@ -161,9 +156,7 @@ class ModalValidator {
 		// Ensure permissions is a PermissionsBitField object
 		if (!(member.permissions instanceof PermissionsBitField)) return false;
 		// Check if the member has all specified permissions
-		return permissions.every((permission) =>
-			member.permissions.has(permission),
-		);
+		return permissions.every((permission) => member.permissions.has(permission));
 	}
 
 	/**
@@ -171,7 +164,7 @@ class ModalValidator {
 	 * This is called lazily on the first relevant interaction.
 	 * @param retryCount The current retry attempt number.
 	 */
-	private async initializeModals(retryCount: number = 0): Promise<void> {
+	private async initializeModals(retryCount = 0): Promise<void> {
 		if (this.isInitialized) return;
 
 		try {
@@ -187,20 +180,14 @@ class ModalValidator {
 								// Modals are often guild-based, but check just in case
 								const member = interaction.member;
 								if (!(member instanceof GuildMember)) return false; // Cannot check permissions outside a guild context
-								return this.checkPermissions(
-									member,
-									modal.userPermissions || [],
-								);
+								return this.checkPermissions(member, modal.userPermissions || []);
 							}
 						: (): boolean => true, // No permissions required
 					botPermissions: modal.botPermissions
 						? (interaction: ModalSubmitInteraction): boolean => {
 								const guild = interaction.guild;
 								if (!guild?.members.me) return false; // Bot isn't in the guild or member object unavailable
-								return this.checkPermissions(
-									guild.members.me,
-									modal.botPermissions || [],
-								);
+								return this.checkPermissions(guild.members.me, modal.botPermissions || []);
 							}
 						: (): boolean => true, // No permissions required
 				};
@@ -214,16 +201,12 @@ class ModalValidator {
 			console.error('Failed to load modals:'.red, error);
 
 			if (retryCount < 3) {
-				console.log(
-					`Retrying modal load in 5 seconds... (Attempt ${retryCount + 1})`
-						.yellow,
-				);
+				console.log(`Retrying modal load in 5 seconds... (Attempt ${retryCount + 1})`.yellow);
 				await new Promise((resolve) => setTimeout(resolve, 5000));
 				await this.initializeModals(retryCount + 1); // Retry loading
 			} else {
 				console.error(
-					'Failed to load modals after multiple attempts. Modals will not be available.'
-						.red,
+					'Failed to load modals after multiple attempts. Modals will not be available.'.red,
 				);
 				// Optionally, notify admin or take other actions
 				await global.errorHandler?.handleError(
@@ -281,27 +264,13 @@ class ModalValidator {
 		}
 
 		// 5. User Permissions Check (using compiled check)
-		if (
-			modal.compiledChecks &&
-			!modal.compiledChecks.userPermissions(interaction)
-		) {
-			return this.createEmbed(
-				interaction,
-				Colors.Red,
-				mConfig.userNoPermissions,
-			);
+		if (modal.compiledChecks && !modal.compiledChecks.userPermissions(interaction)) {
+			return this.createEmbed(interaction, Colors.Red, mConfig.userNoPermissions);
 		}
 
 		// 6. Bot Permissions Check (using compiled check)
-		if (
-			modal.compiledChecks &&
-			!modal.compiledChecks.botPermissions(interaction)
-		) {
-			return this.createEmbed(
-				interaction,
-				Colors.Red,
-				mConfig.botNoPermissions,
-			);
+		if (modal.compiledChecks && !modal.compiledChecks.botPermissions(interaction)) {
+			return this.createEmbed(interaction, Colors.Red, mConfig.botNoPermissions);
 		}
 
 		// All checks passed
@@ -313,10 +282,7 @@ class ModalValidator {
 	 * @param client The Discord client instance.
 	 * @param interaction The interaction object.
 	 */
-	public async handleInteraction(
-		client: Client,
-		interaction: Interaction,
-	): Promise<void> {
+	public async handleInteraction(client: Client, interaction: Interaction): Promise<void> {
 		// Ensure it's a modal submission
 		if (!interaction.isModalSubmit()) return;
 
@@ -326,9 +292,7 @@ class ModalValidator {
 			// If initialization failed after retries, isInitialized might still be false.
 			// We should probably stop processing if modals aren't loaded.
 			if (!this.isInitialized) {
-				console.warn(
-					'Modal interaction received, but modals are not loaded.'.yellow,
-				);
+				console.warn('Modal interaction received, but modals are not loaded.'.yellow);
 				try {
 					await interaction.reply(
 						this.createEmbed(
@@ -338,10 +302,7 @@ class ModalValidator {
 						),
 					);
 				} catch (replyError) {
-					console.error(
-						'Failed to send modal unavailable reply:'.red,
-						replyError,
-					);
+					console.error('Failed to send modal unavailable reply:'.red, replyError);
 				}
 				return;
 			}
@@ -363,9 +324,7 @@ class ModalValidator {
 
 			// Modal Not Found
 			if (!modal) {
-				console.warn(
-					`Modal handler not found for customId: ${customId}`.yellow,
-				);
+				console.warn(`Modal handler not found for customId: ${customId}`.yellow);
 				// Optionally reply to the user, though often modals are internal
 				// await interaction.reply(this.createEmbed(interaction, Colors.Red, 'Unknown modal interaction.'));
 				return; // Stop processing if modal definition doesn't exist
@@ -387,9 +346,7 @@ class ModalValidator {
 			);
 
 			// Execute Modal Logic
-			console.log(
-				`Executing modal ${customId} for user ${interaction.user.tag}`.cyan,
-			);
+			console.log(`Executing modal ${customId} for user ${interaction.user.tag}`.cyan);
 			await modal.run(client, interaction);
 		} catch (error) {
 			failed = true; // Mark as failed on execution error

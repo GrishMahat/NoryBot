@@ -1,5 +1,5 @@
-import { ApplicationCommand, ApplicationCommandType } from 'discord.js';
-import { LocalContextMenu } from '../../types/index';
+import { type ApplicationCommand, ApplicationCommandType } from 'discord.js';
+import type { LocalContextMenu } from '../../types/index';
 
 /**
  * Compares an existing context menu command with a local command to determine if there are any differences.
@@ -34,10 +34,7 @@ const compareContextMenuCommands = (
 		defaultValue: T | null = null,
 	): boolean => {
 		// Special handling for dmPermission
-		if (
-			existingValue === true &&
-			(localValue === undefined || localValue === true)
-		) {
+		if (existingValue === true && (localValue === undefined || localValue === true)) {
 			// Both are effectively true (existing is true, local is undefined or true)
 			return false;
 		}
@@ -66,9 +63,7 @@ const compareContextMenuCommands = (
 		(local.data.type !== ApplicationCommandType.User &&
 			local.data.type !== ApplicationCommandType.Message)
 	) {
-		throw new Error(
-			'Invalid context menu command type. Must be either USER (2) or MESSAGE (3)',
-		);
+		throw new Error('Invalid context menu command type. Must be either USER (2) or MESSAGE (3)');
 	}
 
 	// Define comparison structure with type safety
@@ -122,9 +117,7 @@ const compareContextMenuCommands = (
 	];
 
 	// Check for name localizations with detailed logging
-	if (
-		changed(existing.nameLocalizations, local.data.name_localizations, null)
-	) {
+	if (changed(existing.nameLocalizations, local.data.name_localizations, null)) {
 		return true;
 	}
 
@@ -150,10 +143,7 @@ const compareContextMenuCommands = (
 		}
 
 		// For other properties, handle normally
-		const localValue =
-			comparison.local === undefined
-				? comparison.defaultValue
-				: comparison.local;
+		const localValue = comparison.local === undefined ? comparison.defaultValue : comparison.local;
 
 		if (changed(comparison.existing, localValue, comparison.defaultValue)) {
 			// Log differences with context

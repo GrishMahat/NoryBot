@@ -1,4 +1,4 @@
-import { ErrorMetrics, ErrorDetails, ErrorSeverity } from '../../types/index';
+import { type ErrorDetails, type ErrorMetrics, ErrorSeverity } from '../../types/index';
 
 export class ErrorMetricsService {
 	private metrics: Map<string, ErrorMetrics>;
@@ -39,9 +39,7 @@ export class ErrorMetricsService {
 		const dayKey = this.getDayKey();
 		const metrics = this.metrics.get(dayKey) || this.createNewMetrics();
 
-		const existingError = metrics.topErrors.find(
-			(e) => e.message === error.message,
-		);
+		const existingError = metrics.topErrors.find((e) => e.message === error.message);
 		if (existingError) {
 			existingError.count++;
 			existingError.lastOccurrence = new Date();
@@ -115,7 +113,7 @@ export class ErrorMetricsService {
 	private cleanupOldMetrics(): void {
 		const cutoff = Date.now() - this.retentionPeriod;
 		for (const [key] of this.metrics) {
-			const timestamp = parseInt(key.split(':')[1]);
+			const timestamp = Number.parseInt(key.split(':')[1]);
 			if (timestamp < cutoff) {
 				this.metrics.delete(key);
 			}

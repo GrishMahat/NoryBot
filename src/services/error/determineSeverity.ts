@@ -1,5 +1,5 @@
 import { DiscordAPIError } from 'discord.js';
-import { ErrorSeverity, PerformanceMetrics } from '../../types/index';
+import { ErrorSeverity, type PerformanceMetrics } from '../../types/index';
 
 export default function determineSeverity(
 	error: Error,
@@ -9,33 +9,22 @@ export default function determineSeverity(
 	if (error instanceof DiscordAPIError) {
 		const code = (error as DiscordAPIError).code;
 		// Critical Discord API errors
-		if (
-			[50001, 50013, 50007, 40007, 10003, 10008, 10011, 10026].includes(
-				code as number,
-			)
-		) {
+		if ([50001, 50013, 50007, 40007, 10003, 10008, 10011, 10026].includes(code as number)) {
 			return ErrorSeverity.CRITICAL;
 		}
 		// High severity Discord API errors
-		if (
-			[50035, 50036, 40001, 40002, 50003, 50004, 50006].includes(code as number)
-		) {
+		if ([50035, 50036, 40001, 40002, 50003, 50004, 50006].includes(code as number)) {
 			return ErrorSeverity.HIGH;
 		}
 		// Medium severity Discord API errors
-		if (
-			[50007, 50008, 50009, 50010, 50014, 50021, 50025, 50034].includes(
-				code as number,
-			)
-		) {
+		if ([50007, 50008, 50009, 50010, 50014, 50021, 50025, 50034].includes(code as number)) {
 			return ErrorSeverity.MEDIUM;
 		}
 		// Default to LOW for other API errors
 		return ErrorSeverity.LOW;
 	}
 	// Check for critical performance issues
-	const memoryUsagePercent =
-		performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal;
+	const memoryUsagePercent = performance.memoryUsage.heapUsed / performance.memoryUsage.heapTotal;
 	if (
 		memoryUsagePercent > 0.95 || // Memory usage over 95%
 		performance.cpu.usage > 95 || // CPU usage over 95%
@@ -45,11 +34,7 @@ export default function determineSeverity(
 	}
 
 	// Check for high performance issues
-	if (
-		memoryUsagePercent > 0.85 ||
-		performance.cpu.usage > 80 ||
-		performance.cpu.load[0] > 5
-	) {
+	if (memoryUsagePercent > 0.85 || performance.cpu.usage > 80 || performance.cpu.load[0] > 5) {
 		return ErrorSeverity.HIGH;
 	}
 

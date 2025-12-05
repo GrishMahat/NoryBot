@@ -4,8 +4,7 @@ const messageConfig = {
 		warning: '#FFCC4D', // Color for warning messages
 		error: '#FB2F61', // Color for error messages
 	},
-	embedErrorMessage:
-		'`❌` An unexpected error occurred. Please try again later.',
+	embedErrorMessage: '`❌` An unexpected error occurred. Please try again later.',
 	commandDevOnly:
 		'`❌` This command is restricted to developers only. If you believe you should have access, please contact an administrator.',
 	commandTestMode:

@@ -1,4 +1,4 @@
-import { Document, SchemaOptions } from 'mongoose';
+import type { Document, SchemaOptions } from 'mongoose';
 
 export interface BaseDocument extends Document {
 	createdAt: Date;

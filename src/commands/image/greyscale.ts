@@ -1,20 +1,17 @@
+import { greyscale } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { greyscale } from 'discord-image-utils';
 const greyscaleCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('greyscale')
 		.setDescription("Convert someone's avatar to black and white")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user whose avatar to convert')
-				.setRequired(false),
+			option.setName('user').setDescription('The user whose avatar to convert').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -27,15 +24,11 @@ const greyscaleCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',

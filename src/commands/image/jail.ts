@@ -1,21 +1,18 @@
+import { jail } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { jail } from 'discord-image-utils';
 
 const jailCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('jail')
 		.setDescription("Put someone's avatar behind bars")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user to put in jail')
-				.setRequired(false),
+			option.setName('user').setDescription('The user to put in jail').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -28,15 +25,11 @@ const jailCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',

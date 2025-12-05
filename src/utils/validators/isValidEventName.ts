@@ -1,13 +1,11 @@
-import { ClientEvents } from 'discord.js';
+import type { ClientEvents } from 'discord.js';
 
 /**
  * Type guard to check if a string is a valid Discord.js event name
  * @param {string} eventName - The event name to validate
  * @returns {boolean} True if the event name is a valid Discord.js event
  */
-export function isValidEventName(
-	eventName: string,
-): eventName is keyof ClientEvents {
+export function isValidEventName(eventName: string): eventName is keyof ClientEvents {
 	// Define known Discord.js events as a Set for faster lookups
 	const validEvents = new Set([
 		// 'ready', // !todo remove this is deprecated in discord v15

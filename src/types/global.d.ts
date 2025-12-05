@@ -1,4 +1,4 @@
-import { ErrorHandler } from '../handlers/errorHandler';
+import type { ErrorHandler } from '../handlers/errorHandler';
 
 declare global {
 	// Import command types from our organized structure
@@ -22,5 +22,3 @@ declare global {
 	}
 	var errorHandler: ErrorHandler;
 }
-
-export {};

@@ -16,11 +16,7 @@ export const config = {
 	 * The IDs of the developers.
 	 * @type {string[]}
 	 */
-	developersId: [
-		'660117771421614085',
-		'598554287244574731',
-		'1215648186643906643',
-	],
+	developersId: ['660117771421614085', '598554287244574731', '1215648186643906643'],
 	/**
 	 * The duration to cache data in seconds.
 	 * @type {number}

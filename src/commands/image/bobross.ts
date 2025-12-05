@@ -1,13 +1,13 @@
-import {
-	EmbedBuilder,
-	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	MessageFlags,
-	ChatInputCommandInteraction,
-} from 'discord.js';
-import { LocalCommand } from '../../types/index';
 import { bobross } from 'discord-image-utils';
+import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
+	EmbedBuilder,
+	MessageFlags,
+	SlashCommandBuilder,
+} from 'discord.js';
+import type { LocalCommand } from '../../types/index';
 
 const bobrossCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -30,13 +30,9 @@ const bobrossCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			// Start processing
 			await interaction.deferReply();

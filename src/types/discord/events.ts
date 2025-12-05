@@ -3,7 +3,7 @@
  * @description Defines types for Discord event handlers and event registry
  */
 
-import { Client, ClientEvents } from 'discord.js';
+import type { Client, ClientEvents } from 'discord.js';
 
 /**
  * Represents information about a Discord event handler
@@ -20,10 +20,7 @@ export interface EventInfo {
 /**
  * Type for event handler functions that can be async or sync
  */
-export type EventHandler = (
-	client: Client,
-	...args: unknown[]
-) => Promise<void> | void;
+export type EventHandler = (client: Client, ...args: unknown[]) => Promise<void> | void;
 
 /**
  * Type-safe event handler with proper event parameter typing

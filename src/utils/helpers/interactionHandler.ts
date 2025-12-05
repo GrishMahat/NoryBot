@@ -1,7 +1,7 @@
 import {
-	CommandInteraction,
-	InteractionReplyOptions,
-	InteractionEditReplyOptions,
+	type CommandInteraction,
+	type InteractionEditReplyOptions,
+	type InteractionReplyOptions,
 	MessageFlags,
 } from 'discord.js';
 
@@ -17,8 +17,7 @@ export async function safeReply(
 	isEphemeral = false,
 ): Promise<void> {
 	try {
-		const replyOptions =
-			typeof options === 'string' ? { content: options } : options;
+		const replyOptions = typeof options === 'string' ? { content: options } : options;
 
 		if (interaction.deferred || interaction.replied) {
 			await interaction.editReply(replyOptions as InteractionEditReplyOptions);
@@ -63,8 +62,7 @@ export async function safeFollowUp(
 	options: string | InteractionReplyOptions,
 ): Promise<void> {
 	try {
-		const followUpOptions =
-			typeof options === 'string' ? { content: options } : options;
+		const followUpOptions = typeof options === 'string' ? { content: options } : options;
 		await interaction.followUp(followUpOptions);
 	} catch (error) {
 		console.error('Failed to send follow-up:', error);

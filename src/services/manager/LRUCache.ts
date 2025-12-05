@@ -115,10 +115,7 @@ class LRUCache<K, V> extends EventEmitter {
 			}
 		}
 
-		const expiry =
-			ttl || this.defaultTTL
-				? Date.now() + (ttl || this.defaultTTL || 0)
-				: undefined;
+		const expiry = ttl || this.defaultTTL ? Date.now() + (ttl || this.defaultTTL || 0) : undefined;
 
 		const item: CacheItem<V> = {
 			value,
@@ -132,7 +129,7 @@ class LRUCache<K, V> extends EventEmitter {
 
 	private selectKeyForEviction(): K | undefined {
 		if (this.evictionPolicy === 'LFU') {
-			let minHits = Infinity;
+			let minHits = Number.POSITIVE_INFINITY;
 			let keyToEvict: K | undefined;
 
 			for (const [key, item] of this.cache) {

@@ -1,20 +1,20 @@
 import {
+	type ButtonInteraction,
+	type Client,
+	type ColorResolvable,
 	EmbedBuilder,
-	PermissionsBitField,
-	Client,
-	ButtonInteraction,
-	GuildMember,
-	ColorResolvable,
-	PermissionResolvable,
+	type GuildMember,
+	type InteractionReplyOptions,
 	MessageFlags,
-	InteractionReplyOptions,
+	type PermissionResolvable,
+	PermissionsBitField,
 } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
-import getButtons from '../../utils/helpers/getButtons';
-import { Button } from '../../types/index';
-import LRUCache from '../../services/manager/LRUCache';
 import cooldownManager from '../../services/manager/CooldownManager';
+import LRUCache from '../../services/manager/LRUCache';
+import type { Button } from '../../types/index';
+import getButtons from '../../utils/helpers/getButtons';
 
 // Enhanced button interface
 interface ButtonMetrics {
@@ -78,11 +78,7 @@ class ButtonManager {
 		};
 	}
 
-	private updateMetrics(
-		customId: string,
-		responseTime: number,
-		failed: boolean = false,
-	): void {
+	private updateMetrics(customId: string, responseTime: number, failed = false): void {
 		const metrics = this.metrics.get(customId) || {
 			uses: 0,
 			lastUsed: new Date(),
@@ -93,14 +89,13 @@ class ButtonManager {
 		metrics.uses++;
 		metrics.lastUsed = new Date();
 		metrics.averageResponseTime =
-			(metrics.averageResponseTime * (metrics.uses - 1) + responseTime) /
-			metrics.uses;
+			(metrics.averageResponseTime * (metrics.uses - 1) + responseTime) / metrics.uses;
 		if (failed) metrics.failures++;
 
 		this.metrics.set(customId, metrics);
 	}
 
-	public async loadButtons(retryCount: number = 0): Promise<void> {
+	public async loadButtons(retryCount = 0): Promise<void> {
 		try {
 			const buttonFiles = await getButtons();
 			for (const button of buttonFiles) {
@@ -129,33 +124,22 @@ class ButtonManager {
 				? (interaction: ButtonInteraction): boolean => {
 						const guild = interaction.guild;
 						if (!guild?.members.me) return false;
-						return this.checkPermissions(
-							guild.members.me,
-							button.botPermissions || [],
-						);
+						return this.checkPermissions(guild.members.me, button.botPermissions || []);
 					}
 				: (): boolean => true,
 		};
 		this.buttons.set(button.customId, button);
 	}
 
-	private checkPermissions(
-		member: GuildMember,
-		permissions: PermissionResolvable[],
-	): boolean {
+	private checkPermissions(member: GuildMember, permissions: PermissionResolvable[]): boolean {
 		return permissions.every((permission) =>
 			member.permissions.has(
-				PermissionsBitField.Flags[
-					permission as keyof typeof PermissionsBitField.Flags
-				],
+				PermissionsBitField.Flags[permission as keyof typeof PermissionsBitField.Flags],
 			),
 		);
 	}
 
-	public async handleInteraction(
-		client: Client,
-		interaction: ButtonInteraction,
-	): Promise<void> {
+	public async handleInteraction(client: Client, interaction: ButtonInteraction): Promise<void> {
 		if (!this.isLoaded) {
 			await this.loadButtons();
 		}
@@ -164,8 +148,7 @@ class ButtonManager {
 		const { customId } = interaction;
 
 		try {
-			const button =
-				this.buttonCache.get(customId) || this.buttons.get(customId);
+			const button = this.buttonCache.get(customId) || this.buttons.get(customId);
 			if (!button) return;
 
 			// Validate button usage
@@ -185,12 +168,9 @@ class ButtonManager {
 			await global.errorHandler.handleError(error, 'ButtonExecutionError');
 
 			await interaction.reply(
-				this.createEmbed(
-					interaction,
-					'Red',
-					'An error occurred while processing your request.',
-					{ ephemeral: true },
-				),
+				this.createEmbed(interaction, 'Red', 'An error occurred while processing your request.', {
+					ephemeral: true,
+				}),
 			);
 		}
 	}
@@ -270,11 +250,7 @@ class ButtonManager {
 					),
 				);
 			}
-			cooldownManager.setCooldown(
-				interaction.user.id,
-				button.customId,
-				button.cooldown,
-			);
+			cooldownManager.setCooldown(interaction.user.id, button.customId, button.cooldown);
 		}
 
 		return Promise.resolve(null);
@@ -292,10 +268,7 @@ class ButtonManager {
 // Export a singleton instance
 const buttonManager = new ButtonManager();
 
-export default async (
-	client: Client,
-	interaction: ButtonInteraction,
-): Promise<void> => {
+export default async (client: Client, interaction: ButtonInteraction): Promise<void> => {
 	if (!interaction.isButton()) return;
 	await buttonManager.handleInteraction(client, interaction);
 };

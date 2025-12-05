@@ -1,20 +1,17 @@
+import { invert } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	Client,
-	AttachmentBuilder,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { invert } from 'discord-image-utils';
 const invertCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('invert')
 		.setDescription("Invert the colors of someone's avatar")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription('The user whose avatar to invert')
-				.setRequired(false),
+			option.setName('user').setDescription('The user whose avatar to invert').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -27,15 +24,11 @@ const invertCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -51,9 +44,7 @@ const invertCommand: LocalCommand = {
 
 			const embed = new EmbedBuilder()
 				.setColor('#FF00FF')
-				.setDescription(
-					`${targetUser.toString()}'s avatar with inverted colors`,
-				)
+				.setDescription(`${targetUser.toString()}'s avatar with inverted colors`)
 				.setImage('attachment://invert.png')
 				.setTimestamp();
 

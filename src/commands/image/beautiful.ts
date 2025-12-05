@@ -1,20 +1,17 @@
+import { beautiful } from 'discord-image-utils';
 import {
+	AttachmentBuilder,
+	type ChatInputCommandInteraction,
+	type Client,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	AttachmentBuilder,
-	Client,
-	ChatInputCommandInteraction,
 } from 'discord.js';
-import { beautiful } from 'discord-image-utils';
 const beautifulCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')
 		.setDescription("Create a 'This is Beautiful' meme with someone's avatar")
 		.addUserOption((option) =>
-			option
-				.setName('user')
-				.setDescription("The user who's beautiful")
-				.setRequired(false),
+			option.setName('user').setDescription("The user who's beautiful").setRequired(false),
 		)
 		.setContexts([0, 1, 2])
 		.setIntegrationTypes([0, 1])
@@ -27,15 +24,11 @@ const beautifulCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	): Promise<void> => {
+	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 
-			const targetUser =
-				interaction.options.get('user')?.user || interaction.user;
+			const targetUser = interaction.options.get('user')?.user || interaction.user;
 
 			const avatarUrl = targetUser.displayAvatarURL({
 				extension: 'png',
@@ -92,9 +85,7 @@ const beautifulCommand: LocalCommand = {
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')
 				.setTitle('❌ Error')
-				.setDescription(
-					'Failed to generate the beautiful meme. Please try again later.',
-				)
+				.setDescription('Failed to generate the beautiful meme. Please try again later.')
 				.setTimestamp();
 
 			await interaction.editReply({

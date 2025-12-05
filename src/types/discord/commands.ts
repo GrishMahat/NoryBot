@@ -3,24 +3,24 @@
  * @description Defines types for Discord commands, command options, and interactions
  */
 
-import {
+import type {
 	ApplicationCommandOptionType,
-	Client,
-	PermissionsBitField,
-	ContextMenuCommandBuilder,
-	PermissionResolvable,
-	ContextMenuCommandInteraction,
-	ButtonInteraction,
-	StringSelectMenuInteraction,
-	ModalSubmitInteraction,
-	ChatInputCommandInteraction,
 	AutocompleteInteraction,
+	ButtonInteraction,
+	ChatInputCommandInteraction,
+	Client,
 	CommandInteraction,
-	Message,
+	ContextMenuCommandBuilder,
+	ContextMenuCommandInteraction,
 	Guild,
+	GuildMember,
+	Message,
+	ModalSubmitInteraction,
+	PermissionResolvable,
+	PermissionsBitField,
+	StringSelectMenuInteraction,
 	TextBasedChannel,
 	User,
-	GuildMember,
 } from 'discord.js';
 
 /**
@@ -129,14 +129,8 @@ export interface LocalCommand extends BaseCommandConfig {
 		description_localizations?: Record<string, string> | null;
 	};
 	category?: string;
-	run: (
-		client: Client,
-		interaction: ChatInputCommandInteraction,
-	) => Promise<void>;
-	autocomplete?: (
-		client: Client,
-		interaction: AutocompleteInteraction,
-	) => Promise<void>;
+	run: (client: Client, interaction: ChatInputCommandInteraction) => Promise<void>;
+	autocomplete?: (client: Client, interaction: AutocompleteInteraction) => Promise<void>;
 }
 
 /**
@@ -144,10 +138,7 @@ export interface LocalCommand extends BaseCommandConfig {
  */
 export interface LocalContextMenu extends BaseCommandConfig {
 	data: ContextMenuCommandBuilder;
-	run: (
-		client: Client,
-		interaction: ContextMenuCommandInteraction,
-	) => Promise<void>;
+	run: (client: Client, interaction: ContextMenuCommandInteraction) => Promise<void>;
 }
 
 /**
@@ -155,10 +146,7 @@ export interface LocalContextMenu extends BaseCommandConfig {
  */
 export interface SelectMenu extends BaseCommandConfig {
 	customId: string;
-	run: (
-		client: Client,
-		interaction: StringSelectMenuInteraction,
-	) => Promise<void>;
+	run: (client: Client, interaction: StringSelectMenuInteraction) => Promise<void>;
 	compiledChecks?: CompiledChecks<StringSelectMenuInteraction>;
 }
 
@@ -197,11 +185,7 @@ export type CommandCategory =
 	| 'economy';
 
 // Command Permission Levels
-export type PermissionLevel =
-	| 'everyone'
-	| 'moderator'
-	| 'administrator'
-	| 'owner';
+export type PermissionLevel = 'everyone' | 'moderator' | 'administrator' | 'owner';
 
 // Command Cooldown Types
 export interface CommandCooldown {

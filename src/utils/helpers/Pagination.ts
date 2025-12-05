@@ -1,21 +1,20 @@
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
-	EmbedBuilder,
+	type CommandInteraction,
+	type EmbedBuilder,
+	type InteractionResponse,
+	Message,
+	type MessageActionRowComponentBuilder,
+	type MessageComponentInteraction,
+	MessageFlags,
+	ModalBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	CommandInteraction,
-	MessageComponentInteraction,
-	MessageActionRowComponentBuilder,
-	MessageFlags,
-	ComponentType,
-	Message,
-	ModalBuilder,
 	TextInputBuilder,
 	TextInputStyle,
-	ButtonInteraction,
-	InteractionResponse,
 } from 'discord.js';
 
 export type PaginationType = 'button' | 'select' | 'both';
@@ -108,10 +107,7 @@ export class Pagination {
 		this.interaction = interaction;
 		this.pages = pages;
 		this.settings = { ...DEFAULT_SETTINGS, ...settings };
-		this.currentPage = Math.min(
-			Math.max(0, this.settings.startPage),
-			pages.length - 1,
-		);
+		this.currentPage = Math.min(Math.max(0, this.settings.startPage), pages.length - 1);
 	}
 
 	public async send(): Promise<void> {
@@ -179,7 +175,7 @@ export class Pagination {
 				});
 				this.message = response.resource?.message ?? null;
 			}
-			
+
 			if (this.message) {
 				this.createCollector();
 			}
@@ -227,31 +223,27 @@ export class Pagination {
 	private createSelectMenu(): ActionRowBuilder<MessageActionRowComponentBuilder> {
 		const maxOptions = Math.min(this.settings.maxSelectOptions, 25);
 		// Center the window around the current page
-        let start = Math.max(0, this.currentPage - Math.floor(maxOptions / 2));
-        let end = Math.min(this.pages.length, start + maxOptions);
+		let start = Math.max(0, this.currentPage - Math.floor(maxOptions / 2));
+		const end = Math.min(this.pages.length, start + maxOptions);
 
-        if (end - start < maxOptions) {
-            start = Math.max(0, end - maxOptions);
-        }
+		if (end - start < maxOptions) {
+			start = Math.max(0, end - maxOptions);
+		}
 
-		const options = this.pages
-			.slice(start, end)
-			.map((_, index) => {
-                const actualIndex = start + index;
-				return new StringSelectMenuOptionBuilder()
-					.setLabel(`Page ${actualIndex + 1}`)
-					.setValue(actualIndex.toString())
-					.setDefault(actualIndex === this.currentPage);
-			});
+		const options = this.pages.slice(start, end).map((_, index) => {
+			const actualIndex = start + index;
+			return new StringSelectMenuOptionBuilder()
+				.setLabel(`Page ${actualIndex + 1}`)
+				.setValue(actualIndex.toString())
+				.setDefault(actualIndex === this.currentPage);
+		});
 
 		const menu = new StringSelectMenuBuilder()
 			.setCustomId('pagination_select')
 			.setPlaceholder(this.settings.placeholder)
 			.setOptions(options);
 
-		return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-			menu,
-		);
+		return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(menu);
 	}
 
 	private createButtonRows(): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
@@ -321,10 +313,12 @@ export class Pagination {
 		// Discord limits action rows to 5 components each, so split buttons across rows
 		const rows: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
 		const MAX_BUTTONS_PER_ROW = 5;
-		
+
 		for (let i = 0; i < buttons.length; i += MAX_BUTTONS_PER_ROW) {
 			const rowButtons = buttons.slice(i, i + MAX_BUTTONS_PER_ROW);
-			const row = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(rowButtons);
+			const row = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+				rowButtons,
+			);
 			rows.push(row);
 		}
 
@@ -351,7 +345,7 @@ export class Pagination {
 				// For InteractionResponse, try to fetch the actual message
 				// This is more reliable for DMs and ephemeral messages
 				let message: Message | null = null;
-				
+
 				try {
 					// Try to fetch the reply as a Message object
 					message = await this.interaction.fetchReply();
@@ -374,11 +368,13 @@ export class Pagination {
 
 				// Fallback: try to get the channel
 				let channel = this.interaction.channel;
-				
+
 				// If channel is not cached, try to fetch it
 				if (!channel && this.interaction.channelId) {
 					try {
-						channel = await this.interaction.client.channels.fetch(this.interaction.channelId) as any;
+						channel = (await this.interaction.client.channels.fetch(
+							this.interaction.channelId,
+						)) as any;
 					} catch {
 						// Channel fetch failed
 					}
@@ -387,12 +383,12 @@ export class Pagination {
 				// For DMs, try to create or fetch the DM channel
 				if (!channel && this.interaction.user) {
 					try {
-						channel = await this.interaction.user.createDM() as any;
+						channel = (await this.interaction.user.createDM()) as any;
 					} catch {
 						// DM channel creation failed
 					}
 				}
-				
+
 				if (!channel) {
 					console.error('Failed to setup pagination collector: No channel available');
 					return;
@@ -433,7 +429,7 @@ export class Pagination {
 				return;
 			}
 
-            await i.deferUpdate().catch(() => {});
+			await i.deferUpdate().catch(() => {});
 
 			if (i.isButton()) {
 				switch (i.customId) {
@@ -444,10 +440,7 @@ export class Pagination {
 						this.currentPage = Math.max(0, this.currentPage - 1);
 						break;
 					case 'pagination_next':
-						this.currentPage = Math.min(
-							this.pages.length - 1,
-							this.currentPage + 1,
-						);
+						this.currentPage = Math.min(this.pages.length - 1, this.currentPage + 1);
 						break;
 					case 'pagination_last':
 						this.currentPage = this.pages.length - 1;
@@ -457,7 +450,7 @@ export class Pagination {
 						return;
 				}
 			} else if (i.isStringSelectMenu() && i.customId === 'pagination_select') {
-				this.currentPage = parseInt(i.values[0]);
+				this.currentPage = Number.parseInt(i.values[0]);
 			}
 
 			await this.updateMessage();
@@ -467,9 +460,7 @@ export class Pagination {
 	}
 
 	private async showJumpModal(i: ButtonInteraction): Promise<void> {
-		const modal = new ModalBuilder()
-			.setCustomId('pagination_jump_modal')
-			.setTitle('Jump to Page');
+		const modal = new ModalBuilder().setCustomId('pagination_jump_modal').setTitle('Jump to Page');
 
 		const pageInput = new TextInputBuilder()
 			.setCustomId('page_number')
@@ -493,9 +484,7 @@ export class Pagination {
 					modalInteraction.user.id === i.user.id,
 			});
 
-			const pageNum = parseInt(
-				submitted.fields.getTextInputValue('page_number'),
-			);
+			const pageNum = Number.parseInt(submitted.fields.getTextInputValue('page_number'));
 
 			if (isNaN(pageNum) || pageNum < 1 || pageNum > this.pages.length) {
 				await submitted.reply({
@@ -504,8 +493,8 @@ export class Pagination {
 				});
 				return;
 			}
-            
-            await submitted.deferUpdate().catch(() => {});
+
+			await submitted.deferUpdate().catch(() => {});
 			this.currentPage = pageNum - 1;
 			await this.updateMessage();
 		} catch (error) {
@@ -572,7 +561,7 @@ export class Pagination {
 				} catch {}
 			}
 		}
-        
+
 		if (reason === 'user') {
 			try {
 				await this.interaction.deleteReply();
