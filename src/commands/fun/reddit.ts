@@ -38,36 +38,68 @@ const COMPONENT_TIMEOUT = 300000; // 5 minutes
 const MAX_TITLE_LENGTH = 256;
 const MAX_DESCRIPTION_LENGTH = 4096;
 
-// Enhanced color scheme based on Reddit themes
+// Premium gradient-inspired color scheme
 const REDDIT_COLORS = {
-	hot: '#FF4500',
-	new: '#46D160',
-	top: '#FFD700',
-	rising: '#FF8C00',
-	controversial: '#DC143C',
-	default: '#FF4500',
+	hot: '#FF6B35',      // Vibrant orange-red
+	new: '#00D4AA',      // Teal mint
+	top: '#FFB800',      // Golden yellow
+	rising: '#FF9500',   // Bright orange
+	controversial: '#E91E63', // Pink-red
+	default: '#FF4500',  // Reddit orange
+};
+
+// Award emojis for engagement levels
+const getEngagementEmoji = (ups: number): string => {
+	if (ups >= 50000) return '💎';  // Diamond
+	if (ups >= 25000) return '🏆';  // Trophy
+	if (ups >= 10000) return '🥇';  // Gold
+	if (ups >= 5000) return '🥈';   // Silver
+	if (ups >= 1000) return '🥉';   // Bronze
+	if (ups >= 500) return '⭐';    // Star
+	return '👍';                     // Thumbs up
 };
 
 // Sort option configurations with enhanced styling
 const SORT_OPTIONS = {
-	hot: { name: '🔥 Hot', description: 'Currently trending posts', emoji: '🔥' },
-	new: { name: '✨ New', description: 'Most recent posts', emoji: '✨' },
-	top: { name: '🏆 Top', description: 'Highest voted posts', emoji: '🏆' },
-	rising: { name: '📈 Rising', description: 'Fast growing posts', emoji: '📈' },
+	hot: { 
+		name: '🔥 Hot', 
+		description: 'Trending right now', 
+		emoji: '🔥',
+		color: '#FF6B35'
+	},
+	new: { 
+		name: '✨ New', 
+		description: 'Fresh off the press', 
+		emoji: '✨',
+		color: '#00D4AA'
+	},
+	top: { 
+		name: '👑 Top', 
+		description: 'Best of the best', 
+		emoji: '👑',
+		color: '#FFB800'
+	},
+	rising: { 
+		name: '� Rising', 
+		description: 'Gaining momentum', 
+		emoji: '�',
+		color: '#FF9500'
+	},
 	controversial: {
-		name: '⚡ Controversial',
-		description: 'Most debated posts',
-		emoji: '⚡',
+		name: '💥 Controversial',
+		description: 'Sparking debate',
+		emoji: '💥',
+		color: '#E91E63'
 	},
 };
 
 const TIME_OPTIONS = {
-	hour: { name: '⏰ Hour', description: 'Past hour', emoji: '⏰' },
-	day: { name: '📅 Today', description: 'Past 24 hours', emoji: '📅' },
-	week: { name: '📊 Week', description: 'Past 7 days', emoji: '📊' },
-	month: { name: '📆 Month', description: 'Past 30 days', emoji: '📆' },
-	year: { name: '🗓️ Year', description: 'Past 365 days', emoji: '🗓️' },
-	all: { name: '♾️ All Time', description: 'Since Reddit began', emoji: '♾️' },
+	hour: { name: '⏱️ Past Hour', description: 'Last 60 minutes', emoji: '⏱️' },
+	day: { name: '📅 Today', description: 'Last 24 hours', emoji: '📅' },
+	week: { name: '📊 This Week', description: 'Last 7 days', emoji: '📊' },
+	month: { name: '📆 This Month', description: 'Last 30 days', emoji: '📆' },
+	year: { name: '🗓️ This Year', description: 'Last 365 days', emoji: '🗓️' },
+	all: { name: '♾️ All Time', description: 'The greatest hits', emoji: '♾️' },
 };
 
 interface RedditSession {
@@ -83,7 +115,7 @@ interface RedditSession {
 const activeSessions = new Map<string, RedditSession>();
 
 /**
- * Creates an enhanced Discord Embed for a Reddit post with better styling
+ * Creates a premium Discord Embed for a Reddit post
  */
 const createPostEmbed = (
 	post: RedditPostData,
@@ -92,8 +124,9 @@ const createPostEmbed = (
 	sort: string,
 ): EmbedBuilder => {
 	const timeString = formatTimeAgo(post.created_utc * 1000);
-	const sortColor =
-		REDDIT_COLORS[sort as keyof typeof REDDIT_COLORS] || REDDIT_COLORS.default;
+	const sortConfig = SORT_OPTIONS[sort as keyof typeof SORT_OPTIONS];
+	const sortColor = REDDIT_COLORS[sort as keyof typeof REDDIT_COLORS] || REDDIT_COLORS.default;
+	const engagementEmoji = getEngagementEmoji(post.ups);
 
 	const embed = new EmbedBuilder()
 		.setColor(sortColor as ColorResolvable)
@@ -104,74 +137,125 @@ const createPostEmbed = (
 		)
 		.setURL(`${REDDIT_BASE_URL}${post.permalink}`)
 		.setAuthor({
-			name: `${post.subreddit_name_prefixed} • ${SORT_OPTIONS[sort as keyof typeof SORT_OPTIONS]?.name || sort}`,
+			name: `${post.subreddit_name_prefixed}`,
 			url: `${REDDIT_BASE_URL}/${post.subreddit_name_prefixed}`,
 			iconURL: REDDIT_ICON_URL,
 		});
 
-	// Enhanced description handling
+	// Build enhanced description
 	let description = '';
 
-	if (post.selftext && post.selftext.trim()) {
-		description =
-			post.selftext.length > MAX_DESCRIPTION_LENGTH - 100
-				? post.selftext.substring(0, MAX_DESCRIPTION_LENGTH - 103) + '...'
-				: post.selftext;
+	// Add content type indicator
+	const contentTypes: string[] = [];
+	if (post.is_video) contentTypes.push('🎬 Video');
+	else if (post.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i)) contentTypes.push('🖼️ Image');
+	else if (post.is_gallery) contentTypes.push('📸 Gallery');
+	else if (post.selftext) contentTypes.push('📝 Text');
+	else if (post.url && !post.url.includes('reddit.com')) contentTypes.push('🔗 Link');
+
+	if (contentTypes.length > 0) {
+		description += `${contentTypes.join(' • ')}\n\n`;
 	}
 
-	// Media handling with better formatting
+	// Add selftext if available
+	if (post.selftext && post.selftext.trim()) {
+		const maxLen = MAX_DESCRIPTION_LENGTH - description.length - 150;
+		const selfText = post.selftext.length > maxLen
+			? post.selftext.substring(0, maxLen - 3) + '...'
+			: post.selftext;
+		description += selfText;
+	}
+
+	// Special handling for videos
 	if (post.is_video && post.media?.reddit_video) {
-		const videoEmbed = `🎥 **[Watch Video](${post.media.reddit_video.fallback_url})**\n${description ? `\n${description}` : ''}`;
-		if (videoEmbed.length <= MAX_DESCRIPTION_LENGTH) {
-			description = videoEmbed;
-		}
-		if (post.thumbnail && post.thumbnail !== 'default') {
-			embed.setImage(post.thumbnail);
-		}
-	} else if (post.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+		if (description) description += '\n\n';
+		description += `▶️ **[Watch Video](${post.media.reddit_video.fallback_url})**`;
+	}
+
+	// Media handling
+	if (post.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
 		embed.setImage(post.url);
-	} else if (
-		post.thumbnail &&
-		!['self', 'default', 'nsfw', ''].includes(post.thumbnail)
-	) {
-		embed.setImage(post.thumbnail);
+	} else if (post.thumbnail && !['self', 'default', 'nsfw', 'spoiler', ''].includes(post.thumbnail)) {
+		// Only set thumbnail if it's a valid URL
+		if (post.thumbnail.startsWith('http')) {
+			embed.setThumbnail(post.thumbnail);
+		}
+	}
+
+	// For gallery posts, try to get first image
+	if (post.is_gallery && post.gallery_data?.items?.[0]) {
+		const firstMediaId = post.gallery_data.items[0].media_id;
+		if (post.media_metadata?.[firstMediaId]?.s?.u) {
+			embed.setImage(post.media_metadata[firstMediaId].s.u.replace(/&amp;/g, '&'));
+		}
 	}
 
 	if (description) {
 		embed.setDescription(description);
 	}
 
-	// Enhanced footer with better formatting
-	const tags = [];
-	if (post.over_18) tags.push('🔞 NSFW');
-	if (post.spoiler) tags.push('⚠️ Spoiler');
-	if (post.locked) tags.push('🔒 Locked');
-	if (post.stickied) tags.push('📌 Pinned');
+	// Build tag indicators
+	const tags: string[] = [];
+	if (post.over_18) tags.push('`🔞 NSFW`');
+	if (post.spoiler) tags.push('`⚠️ SPOILER`');
+	if (post.locked) tags.push('`🔒 LOCKED`');
+	if (post.stickied) tags.push('`📌 PINNED`');
+	if (post.is_original_content) tags.push('`✨ OC`');
 
-	const tagString = tags.length > 0 ? `${tags.join(' • ')} • ` : '';
-	const stats = `👍 ${post.ups.toLocaleString()} (${Math.round(post.upvote_ratio * 100)}%) • 💬 ${post.num_comments.toLocaleString()}`;
-	const postInfo = `Posted ${timeString} by u/${post.author}`;
-	const pageInfo = `Page ${currentIndex + 1} of ${totalPosts}`;
+	// Add stats fields with visual appeal
+	const upvotePercent = Math.round(post.upvote_ratio * 100);
+	const upvoteBar = '█'.repeat(Math.floor(upvotePercent / 10)) + '░'.repeat(10 - Math.floor(upvotePercent / 10));
 
-	embed.setFooter({
-		text: `${tagString}${stats} • ${postInfo} • ${pageInfo}`,
-		iconURL: REDDIT_ICON_URL,
-	});
+	embed.addFields(
+		{
+			name: `${engagementEmoji} Score`,
+			value: `**${post.ups.toLocaleString()}**\n\`${upvoteBar}\` ${upvotePercent}%`,
+			inline: true,
+		},
+		{
+			name: '💬 Comments',
+			value: `**${post.num_comments.toLocaleString()}**`,
+			inline: true,
+		},
+		{
+			name: `${sortConfig?.emoji || '📊'} Sorting`,
+			value: `**${sortConfig?.name || sort}**`,
+			inline: true,
+		},
+	);
 
-	// Add fields for better organization
+	// Add flair if present
 	if (post.link_flair_text) {
 		embed.addFields({
 			name: '🏷️ Flair',
-			value: post.link_flair_text,
+			value: `\`${post.link_flair_text}\``,
 			inline: true,
 		});
 	}
+
+	// Add tags if any
+	if (tags.length > 0) {
+		embed.addFields({
+			name: '🚩 Tags',
+			value: tags.join(' '),
+			inline: true,
+		});
+	}
+
+	// Premium footer
+	embed.setFooter({
+		text: `👤 u/${post.author} • 🕐 ${timeString} • 📄 ${currentIndex + 1}/${totalPosts}`,
+		iconURL: REDDIT_ICON_URL,
+	});
+
+	// Add timestamp
+	embed.setTimestamp(post.created_utc * 1000);
 
 	return embed;
 };
 
 /**
- * Creates navigation components with enhanced styling
+ * Creates premium navigation components
  */
 const createNavigationComponents = (
 	session: RedditSession,
@@ -180,65 +264,62 @@ const createNavigationComponents = (
 	const { currentIndex, posts, sort, subreddit } = session;
 	const isFirst = currentIndex === 0;
 	const isLast = currentIndex === posts.length - 1;
+	const sortConfig = SORT_OPTIONS[sort as keyof typeof SORT_OPTIONS];
 
-	// Navigation buttons row
+	// Navigation buttons row - Clean emoji-only design
 	const navigationRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
 			.setCustomId('reddit_first')
-			.setLabel('First')
-			.setEmoji('⏮️')
+			.setEmoji('⏪')
 			.setStyle(ButtonStyle.Secondary)
 			.setDisabled(isFirst),
 		new ButtonBuilder()
 			.setCustomId('reddit_prev')
-			.setLabel('Previous')
 			.setEmoji('◀️')
-			.setStyle(ButtonStyle.Primary)
+			.setStyle(isFirst ? ButtonStyle.Secondary : ButtonStyle.Primary)
 			.setDisabled(isFirst),
 		new ButtonBuilder()
 			.setCustomId('reddit_random')
-			.setLabel('Random')
 			.setEmoji('🎲')
+			.setLabel('Shuffle')
 			.setStyle(ButtonStyle.Success),
 		new ButtonBuilder()
 			.setCustomId('reddit_next')
-			.setLabel('Next')
 			.setEmoji('▶️')
-			.setStyle(ButtonStyle.Primary)
+			.setStyle(isLast ? ButtonStyle.Secondary : ButtonStyle.Primary)
 			.setDisabled(isLast),
 		new ButtonBuilder()
 			.setCustomId('reddit_last')
-			.setLabel('Last')
-			.setEmoji('⏭️')
+			.setEmoji('⏩')
 			.setStyle(ButtonStyle.Secondary)
 			.setDisabled(isLast),
 	);
 
-	// Action buttons row
+	// Action buttons row - Premium design
 	const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
 			.setCustomId('reddit_refresh')
-			.setLabel('Refresh')
-			.setEmoji('🔄')
+			.setEmoji('🔃')
+			.setLabel('New Posts')
 			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder()
-			.setLabel('Open in Reddit')
-			.setEmoji('📱')
+			.setLabel('View on Reddit')
+			.setEmoji('🔗')
 			.setStyle(ButtonStyle.Link)
 			.setURL(`${REDDIT_BASE_URL}${posts[currentIndex].permalink}`),
 		new ButtonBuilder()
 			.setCustomId('reddit_share')
-			.setLabel('Share Post')
-			.setEmoji('📤')
+			.setEmoji('📋')
+			.setLabel('Copy Link')
 			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder()
 			.setCustomId('reddit_info')
-			.setLabel('Post Info')
-			.setEmoji('ℹ️')
+			.setEmoji('📊')
+			.setLabel('Stats')
 			.setStyle(ButtonStyle.Secondary),
 	);
 
-	// Sort selector
+	// Sort selector with dynamic placeholder
 	const sortOptions = Object.entries(SORT_OPTIONS).map(([value, config]) =>
 		new StringSelectMenuOptionBuilder()
 			.setLabel(config.name)
@@ -251,7 +332,7 @@ const createNavigationComponents = (
 	const sortRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 		new StringSelectMenuBuilder()
 			.setCustomId('reddit_sort')
-			.setPlaceholder('🔄 Change sorting method')
+			.setPlaceholder(`${sortConfig?.emoji || '📊'} ${sortConfig?.name || 'Sort by...'} ▾`)
 			.addOptions(sortOptions),
 	);
 
@@ -270,6 +351,7 @@ const createTimeFilterComponent = (
 		return null;
 	}
 
+	const timeConfig = TIME_OPTIONS[time as keyof typeof TIME_OPTIONS];
 	const timeOptions = Object.entries(TIME_OPTIONS).map(([value, config]) =>
 		new StringSelectMenuOptionBuilder()
 			.setLabel(config.name)
@@ -282,7 +364,7 @@ const createTimeFilterComponent = (
 	return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 		new StringSelectMenuBuilder()
 			.setCustomId('reddit_time')
-			.setPlaceholder('📅 Select time period')
+			.setPlaceholder(`${timeConfig?.emoji || '📅'} ${timeConfig?.name || 'Time Period'} ▾`)
 			.addOptions(timeOptions),
 	);
 };
@@ -474,12 +556,21 @@ const redditCommand: Command = {
 
 			await updateDisplay(interaction, session);
 
-			// Component interaction collector
-			const collector = interaction.channel?.createMessageComponentCollector({
+			// Fetch the reply message to create collector on it (works in DMs)
+			let message;
+			try {
+				message = await interaction.fetchReply();
+			} catch {
+				console.error('Failed to fetch reply for Reddit collector');
+				return;
+			}
+
+			// Component interaction collector on the message itself
+			const collector = message.createMessageComponentCollector({
 				time: COMPONENT_TIMEOUT,
 			});
 
-			collector?.on('collect', async (i) => {
+			collector.on('collect', async (i) => {
 				if (i.user.id !== interaction.user.id) {
 					await i.reply({
 						content:
@@ -489,107 +580,133 @@ const redditCommand: Command = {
 					return;
 				}
 
-				await i.deferUpdate();
+				try {
+					await i.deferUpdate();
+				} catch {
+					// Defer failed, interaction may have expired
+					return;
+				}
+				
 				const currentSession = activeSessions.get(sessionId);
 				if (!currentSession) return;
 
-									if (i.isButton()) {
-										switch (i.customId) {
-											case 'reddit_first':
-												currentSession.currentIndex = 0;
-												break;
-											case 'reddit_prev':
-												if (currentSession.currentIndex > 0) {
-													currentSession.currentIndex--;
-												}
-												break;
-											case 'reddit_next':
-												if (currentSession.currentIndex < currentSession.posts.length - 1) {
-													currentSession.currentIndex++;
-												}
-												break;
-											case 'reddit_last':
-												currentSession.currentIndex = currentSession.posts.length - 1;
-												break;
-											case 'reddit_random':
-												currentSession.currentIndex = Math.floor(
-													Math.random() * currentSession.posts.length,
+								if (i.isButton()) {
+									switch (i.customId) {
+										case 'reddit_first':
+											currentSession.currentIndex = 0;
+											break;
+										case 'reddit_prev':
+											if (currentSession.currentIndex > 0) {
+												currentSession.currentIndex--;
+											}
+											break;
+										case 'reddit_next':
+											if (currentSession.currentIndex < currentSession.posts.length - 1) {
+												currentSession.currentIndex++;
+											}
+											break;
+										case 'reddit_last':
+											currentSession.currentIndex = currentSession.posts.length - 1;
+											break;
+										case 'reddit_random':
+											currentSession.currentIndex = Math.floor(
+												Math.random() * currentSession.posts.length,
+											);
+											break;
+										case 'reddit_refresh':
+											try {
+												const newPosts = await fetchRedditPosts(
+													currentSession.subreddit,
+													currentSession.sort,
+													currentSession.time,
 												);
-												break;
-											case 'reddit_refresh':
-												try {
-													const newPosts = await fetchRedditPosts(
-														currentSession.subreddit,
-														currentSession.sort,
-														currentSession.time,
-													);
-													currentSession.posts = newPosts;
-													currentSession.currentIndex = 0;
-												} catch (error) {
-													await i.followUp({
-														content: '❌ Failed to refresh posts.',
-														flags: [MessageFlags.Ephemeral],
-													});
-													return;
-												}
-												break;
-											case 'reddit_share':
-												const sharePost = currentSession.posts[currentSession.currentIndex];
+												currentSession.posts = newPosts;
+												currentSession.currentIndex = 0;
+											} catch (error) {
 												await i.followUp({
-													content: `📤 **Share this post:**\n${REDDIT_BASE_URL}${sharePost.permalink}`,
+													content: '❌ Failed to refresh posts.',
 													flags: [MessageFlags.Ephemeral],
 												});
 												return;
-											case 'reddit_info':
-												const infoPost = currentSession.posts[currentSession.currentIndex];
-												const infoEmbed = new EmbedBuilder()
-													.setTitle('📊 Post Statistics')
-													// .setColor(REDDIT_COLORS[currentSession.sort as keyof typeof REDDIT_COLORS])
-													.addFields(
-														{
-															name: '👍 Score',
-															value: infoPost.ups.toLocaleString(),
-															inline: true,
-														},
-														{
-															name: '👎 Downvotes',
-															value: Math.round(
-																infoPost.ups / infoPost.upvote_ratio - infoPost.ups,
-															).toLocaleString(),
-															inline: true,
-														},
-														{
-															name: '📊 Upvote Ratio',
-															value: `${Math.round(infoPost.upvote_ratio * 100)}%`,
-															inline: true,
-														},
-														{
-															name: '💬 Comments',
-															value: infoPost.num_comments.toLocaleString(),
-															inline: true,
-														},
-														{
-															name: '👤 Author',
-															value: `u/${infoPost.author}`,
-															inline: true,
-														},
-														{
-															name: '🏷️ Flair',
-															value: infoPost.link_flair_text || 'None',
-															inline: true,
-														},
-													)
-													.setFooter({
-														text: `Posted in ${infoPost.subreddit_name_prefixed}`,
-													});
+											}
+											break;
+										case 'reddit_share':
+											const sharePost = currentSession.posts[currentSession.currentIndex];
+											await i.followUp({
+												content: `📤 **Share this post:**\n${REDDIT_BASE_URL}${sharePost.permalink}`,
+												flags: [MessageFlags.Ephemeral],
+											});
+											return;
+										case 'reddit_info':
+											const infoPost = currentSession.posts[currentSession.currentIndex];
+											const infoEmbed = new EmbedBuilder()
+												.setTitle('📊 Post Statistics')
+												// .setColor(REDDIT_COLORS[currentSession.sort as keyof typeof REDDIT_COLORS])
+												.addFields(
+													{
+														name: '👍 Score',
+														value: infoPost.ups.toLocaleString(),
+														inline: true,
+													},
+													{
+														name: '👎 Downvotes',
+														value: Math.round(
+															infoPost.ups / infoPost.upvote_ratio - infoPost.ups,
+														).toLocaleString(),
+														inline: true,
+													},
+													{
+														name: '📊 Upvote Ratio',
+														value: `${Math.round(infoPost.upvote_ratio * 100)}%`,
+														inline: true,
+													},
+													{
+														name: '💬 Comments',
+														value: infoPost.num_comments.toLocaleString(),
+														inline: true,
+													},
+													{
+														name: '👤 Author',
+														value: `u/${infoPost.author}`,
+														inline: true,
+													},
+													{
+														name: '🏷️ Flair',
+														value: infoPost.link_flair_text || 'None',
+														inline: true,
+													},
+												)
+												.setFooter({
+													text: `Posted in ${infoPost.subreddit_name_prefixed}`,
+												});
 				
-												await i.followUp({
-														embeds: [infoEmbed],
-														flags: [MessageFlags.Ephemeral],
-													});
-												return;
+											await i.followUp({
+													embeds: [infoEmbed],
+													flags: [MessageFlags.Ephemeral],
+												});
+											return;
 										}
-										await updateDisplay(i, currentSession);
+										
+										// Update display using interaction.editReply for DM compatibility
+										try {
+											const { posts, currentIndex, sort } = currentSession;
+											const currentPost = posts[currentIndex];
+											const embed = createPostEmbed(currentPost, currentIndex, posts.length, sort);
+											const components = createNavigationComponents(
+												currentSession,
+												interaction as ChatInputCommandInteraction,
+											);
+											const timeFilter = createTimeFilterComponent(currentSession);
+											if (timeFilter) {
+												components.push(timeFilter);
+											}
+											await interaction.editReply({
+												embeds: [embed],
+												components,
+											});
+										} catch (error) {
+											console.error('Failed to update Reddit display:', error);
+										}
 									}
 				
 									if (i.isStringSelectMenu()) {
@@ -630,7 +747,27 @@ const redditCommand: Command = {
 												return;
 											}
 										}
-										await updateDisplay(i, currentSession);
+										
+										// Update display using interaction.editReply for DM compatibility
+										try {
+											const { posts, currentIndex, sort } = currentSession;
+											const currentPost = posts[currentIndex];
+											const embed = createPostEmbed(currentPost, currentIndex, posts.length, sort);
+											const components = createNavigationComponents(
+												currentSession,
+												interaction as ChatInputCommandInteraction,
+											);
+											const timeFilter = createTimeFilterComponent(currentSession);
+											if (timeFilter) {
+												components.push(timeFilter);
+											}
+											await interaction.editReply({
+												embeds: [embed],
+												components,
+											});
+										} catch (error) {
+											console.error('Failed to update Reddit display:', error);
+										}
 									}
 								});
 			// Cleanup session after timeout

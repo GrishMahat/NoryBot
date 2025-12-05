@@ -133,6 +133,23 @@ export interface RedditPostData {
 	link_flair_richtext: unknown[];
 	is_created_from_ads_ui: boolean;
 	allow_live_comments: boolean;
+
+	/** Gallery posts */
+	is_gallery?: boolean;
+	gallery_data?: {
+		items: Array<{
+			media_id: string;
+			id: number;
+		}>;
+	};
+	media_metadata?: Record<string, {
+		status: string;
+		e: string;
+		m: string;
+		p: Array<{ y: number; x: number; u: string }>;
+		s: { y: number; x: number; u: string };
+		id: string;
+	}>;
 }
 
 /**
