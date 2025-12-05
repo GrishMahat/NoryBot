@@ -44,24 +44,24 @@
 			"suspicious": {
 				"noExplicitAny": "warn",
 				"noAsyncPromiseExecutor": "error",
-				"noGlobalIsNan": "off",
-				"noAssignInExpressions": "off",
-				"noImplicitAnyLet": "off"
+				"noGlobalIsNan": "error",
+				"noAssignInExpressions": "error",
+				"noImplicitAnyLet": "warn"
 			},
 			"style": {
-				"useConst": "error",
+				"useConst": "warn",
 				"noVar": "error",
 				"useShorthandFunctionType": "off",
-				"useTemplate": "warn",
+				"useTemplate": "off",
 				"useNodejsImportProtocol": "off",
 				"useImportType": "warn",
 				"noParameterAssign": "off",
 				"noUnusedTemplateLiteral": "off",
 				"noUselessElse": "off",
-				"useExponentiationOperator": "off"
+				"useExponentiationOperator": "warn"
 			},
 			"complexity": {
-				"noBannedTypes": "off",
+				"noBannedTypes": "warn",
 				"noForEach": "off",
 				"useOptionalChain": "warn",
 				"noStaticOnlyClass": "off",

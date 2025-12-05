@@ -3,8 +3,11 @@ import {
 	ButtonBuilder,
 	type ButtonInteraction,
 	ButtonStyle,
+	type Collection,
 	type CommandInteraction,
 	type EmbedBuilder,
+	type GuildTextBasedChannel,
+	type InteractionCollector,
 	type InteractionResponse,
 	Message,
 	type MessageActionRowComponentBuilder,
@@ -97,7 +100,8 @@ export class Pagination {
 	private settings: PaginationSettings;
 	private currentPage: number;
 	private message: Message | InteractionResponse | null = null;
-	private collector: any = null;
+	// biome-ignore lint/suspicious/noExplicitAny: Generic collector type required for compatibility
+	private collector: InteractionCollector<any> | null = null;
 
 	constructor(
 		interaction: CommandInteraction,
@@ -338,7 +342,11 @@ export class Pagination {
 					});
 
 					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-					this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
+					this.collector.on(
+						'end',
+						(_collected: Collection<string, MessageComponentInteraction>, reason: string) =>
+							this.handleEnd(reason),
+					);
 					return;
 				}
 
@@ -362,7 +370,11 @@ export class Pagination {
 					});
 
 					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-					this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
+					this.collector.on(
+						'end',
+						(_collected: Collection<string, MessageComponentInteraction>, reason: string) =>
+							this.handleEnd(reason),
+					);
 					return;
 				}
 
@@ -374,7 +386,7 @@ export class Pagination {
 					try {
 						channel = (await this.interaction.client.channels.fetch(
 							this.interaction.channelId,
-						)) as any;
+						)) as GuildTextBasedChannel;
 					} catch {
 						// Channel fetch failed
 					}
@@ -383,7 +395,7 @@ export class Pagination {
 				// For DMs, try to create or fetch the DM channel
 				if (!channel && this.interaction.user) {
 					try {
-						channel = (await this.interaction.user.createDM()) as any;
+						channel = (await this.interaction.user.createDM()) as GuildTextBasedChannel;
 					} catch {
 						// DM channel creation failed
 					}
@@ -412,7 +424,11 @@ export class Pagination {
 				});
 
 				this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-				this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
+				this.collector.on(
+					'end',
+					(_collected: Collection<string, MessageComponentInteraction>, reason: string) =>
+						this.handleEnd(reason),
+				);
 			} catch (error) {
 				console.error('Failed to setup pagination collector:', error);
 			}
@@ -486,7 +502,7 @@ export class Pagination {
 
 			const pageNum = Number.parseInt(submitted.fields.getTextInputValue('page_number'));
 
-			if (isNaN(pageNum) || pageNum < 1 || pageNum > this.pages.length) {
+			if (Number.isNaN(pageNum) || pageNum < 1 || pageNum > this.pages.length) {
 				await submitted.reply({
 					content: 'Invalid page number.',
 					ephemeral: true,

@@ -2,6 +2,7 @@ import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	type Client,
+	type ColorResolvable,
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
@@ -35,7 +36,15 @@ const testPagination: LocalCommand = {
 
 		// Create a set of embed pages with more content
 		const pages: EmbedBuilder[] = [];
-		const colors = ['#0099ff', '#00ff99', '#ff9900', '#ff0099', '#9900ff', '#ffffff', '#000000'];
+		const colors: ColorResolvable[] = [
+			'#0099ff',
+			'#00ff99',
+			'#ff9900',
+			'#ff0099',
+			'#9900ff',
+			'#ffffff',
+			'#000000',
+		];
 
 		for (let i = 0; i < 20; i++) {
 			pages.push(
@@ -44,7 +53,7 @@ const testPagination: LocalCommand = {
 					.setDescription(
 						`This is page number ${i + 1} of the pagination test.\n\nUse the controls below to navigate.`,
 					)
-					.setColor(colors[i % colors.length] as any)
+					.setColor(colors[i % colors.length])
 					.addFields({ name: 'Random Data', value: Math.random().toString(36).substring(7) }),
 			);
 		}

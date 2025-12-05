@@ -11,6 +11,7 @@ import {
 	EmbedBuilder,
 	type InteractionEditReplyOptions,
 	type InteractionReplyOptions,
+	type Message,
 	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
@@ -544,7 +545,7 @@ const redditCommand: Command = {
 			await updateDisplay(interaction, session);
 
 			// Fetch the reply message to create collector on it (works in DMs)
-			let message;
+			let message: Message;
 			try {
 				message = await interaction.fetchReply();
 			} catch {

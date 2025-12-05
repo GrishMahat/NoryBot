@@ -133,11 +133,11 @@ async function getFact(category: string): Promise<string> {
 		const response = await axios.get(url, { timeout: 5000 });
 		if (category === 'animal') {
 			return response.data.fact;
-		} else if (category === 'year' || category === 'math') {
-			return response.data;
-		} else {
-			return response.data.text;
 		}
+		if (category === 'year' || category === 'math') {
+			return response.data;
+		}
+		return response.data.text;
 	} catch (error) {
 		console.error(`Error fetching fact from ${url}:`, error);
 		throw new Error('Unable to fetch a fact at this time. Please try again later.');

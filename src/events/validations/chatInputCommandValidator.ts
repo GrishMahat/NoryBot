@@ -68,7 +68,7 @@ class CommandValidator {
 	 */
 	private handleCacheExpiry(key: string): void {
 		if (key === CommandValidator.LOCAL_COMMANDS_CACHE_KEY) {
-			console.log(`Command list cache expired. Will reload on next interaction.`.yellow);
+			console.log('Command list cache expired. Will reload on next interaction.'.yellow);
 			// Reset initialization status so commands are reloaded
 			this.isInitialized = false;
 			this.commandMap.clear();

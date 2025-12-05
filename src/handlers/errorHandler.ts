@@ -548,7 +548,7 @@ class ErrorHandler {
 					await new Promise((resolve) => setTimeout(resolve, retryAfter));
 				} else if (attempt < this.config.retryAttempts) {
 					// Use exponential backoff for non-rate-limit errors
-					const backoff = this.config.retryDelay * Math.pow(1.5, attempt - 1);
+					const backoff = this.config.retryDelay * 1.5 ** (attempt - 1);
 					console.log(`ErrorHandler: Retrying in ${backoff / 1000} seconds...`);
 					await new Promise((resolve) => setTimeout(resolve, backoff));
 				} else {
@@ -1008,7 +1008,7 @@ class ErrorHandler {
 			// Create embed for the group summary
 			const embed = new EmbedBuilder()
 				.setColor(0xffa500) // Orange for group summaries
-				.setTitle(`⚠️ Recurring Error Pattern Detected`)
+				.setTitle('⚠️ Recurring Error Pattern Detected')
 				.setDescription(
 					`A group of similar errors has occurred ${group.count} times (${rate}/min).`,
 				)

@@ -51,7 +51,9 @@ const timestampCommand: Command = {
 
 			// Parse relative dates
 			const relativeKeywords: Record<string, (d: Date) => void> = {
-				now: () => (date = new Date()),
+				now: () => {
+					date = new Date();
+				},
 				tomorrow: (d) => d.setDate(d.getDate() + 1),
 				'next week': (d) => d.setDate(d.getDate() + 7),
 				'next month': (d) => d.setMonth(d.getMonth() + 1),
@@ -88,7 +90,7 @@ const timestampCommand: Command = {
 				}
 			}
 
-			if (isNaN(date.getTime())) {
+			if (Number.isNaN(date.getTime())) {
 				const validFormats = [
 					'• YYYY-MM-DD',
 					'• now',
@@ -99,8 +101,7 @@ const timestampCommand: Command = {
 				].join('\n');
 
 				await interaction.editReply({
-					content:
-						`${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n${validFormats}\nYou can also add a time using the time option (e.g., 15:30 or 3:30 PM)`,
+					content: `${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n${validFormats}\nYou can also add a time using the time option (e.g., 15:30 or 3:30 PM)`,
 				});
 				return;
 			}

@@ -8,6 +8,15 @@ import {
 import type { LocalCommand } from '../../types/index';
 import { Pagination } from '../../utils/helpers/Pagination';
 
+interface NewsArticle {
+	title: string;
+	url: string;
+	source: { name: string };
+	urlToImage: string | null;
+	description: string | null;
+	publishedAt: string;
+}
+
 const NEWS_API_URL = 'https://saurav.tech/NewsAPI/top-headlines/category';
 
 const newsSettings = {
@@ -57,7 +66,7 @@ const newsCommand: LocalCommand = {
 		try {
 			await interaction.deferReply();
 
-			const response = await axios.get(url);
+			const response = await axios.get<{ articles: NewsArticle[] }>(url);
 			const articles = response.data.articles;
 
 			if (!articles || articles.length === 0) {
@@ -65,7 +74,7 @@ const newsCommand: LocalCommand = {
 				return;
 			}
 
-			const pages = articles.map((article: any) => {
+			const pages = articles.map((article) => {
 				return new EmbedBuilder()
 					.setTitle(article.title)
 					.setURL(article.url)
@@ -73,7 +82,7 @@ const newsCommand: LocalCommand = {
 					.setImage(article.urlToImage)
 					.setDescription(article.description)
 					.setTimestamp(new Date(article.publishedAt))
-					.setFooter({ text: `Powered by saurav.tech` });
+					.setFooter({ text: 'Powered by saurav.tech' });
 			});
 
 			const pagination = new Pagination(interaction, pages, newsSettings);

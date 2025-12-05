@@ -66,8 +66,14 @@ export async function loadComponents<T extends Component>(
  * @param componentType - The expected component type
  * @returns boolean - True if valid, false otherwise
  */
-function isValidComponent(obj: any, _componentType: ComponentType): boolean {
-	if (!obj || typeof obj !== 'object' || !obj.customId || typeof obj.run !== 'function') {
+function isValidComponent(obj: unknown, _componentType: ComponentType): boolean {
+	if (
+		!obj ||
+		typeof obj !== 'object' ||
+		!('customId' in obj) ||
+		!('run' in obj) ||
+		typeof (obj as { run: unknown }).run !== 'function'
+	) {
 		return false;
 	}
 

@@ -316,7 +316,6 @@ async function handleListSubcommand(
 				return b.memberCount - a.memberCount;
 			case 'createdAt':
 				return b.createdAt.getTime() - a.createdAt.getTime();
-			case 'name':
 			default:
 				return a.name.localeCompare(b.name);
 		}
@@ -547,7 +546,7 @@ async function handleCheckSubcommand(
 				embeds.push(
 					new EmbedBuilder()
 						.setTitle(`✅ Server Found: ${guild.name}`)
-						.setDescription(`The bot **is** in this server.`)
+						.setDescription('The bot **is** in this server.')
 						.setColor(DEFAULT_EMBED_COLOR)
 						.addFields(
 							{ name: '🆔 Server ID', value: `\`${serverId}\``, inline: true },
@@ -574,7 +573,7 @@ async function handleCheckSubcommand(
 			} else {
 				embeds.push(
 					new EmbedBuilder()
-						.setTitle(`❌ Server Not Found`)
+						.setTitle('❌ Server Not Found')
 						.setDescription(`The bot is **not** in a server with the ID \`${serverId}\`.`)
 						.setColor(ERROR_EMBED_COLOR)
 						.setTimestamp(),

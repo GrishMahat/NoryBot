@@ -62,7 +62,7 @@ const clownCommand: LocalCommand = {
 				.setImage('attachment://clown.png')
 				.setTimestamp()
 				.setFooter({
-					text: `Honk honk! 🎪`,
+					text: 'Honk honk! 🎪',
 					iconURL: interaction.user.displayAvatarURL(),
 				});
 

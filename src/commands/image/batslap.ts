@@ -84,7 +84,7 @@ const batslapCommand: LocalCommand = {
 				.setImage('attachment://batslap.png')
 				.setTimestamp()
 				.setFooter({
-					text: `POW! BAM! SLAP! 💫`,
+					text: 'POW! BAM! SLAP! 💫',
 					iconURL: interaction.user.displayAvatarURL(),
 				});
 
