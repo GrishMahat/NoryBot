@@ -15,7 +15,7 @@ import {
 
 type PaginationType = 'button' | 'select' | 'both';
 
-interface PaginationSettings {
+export interface PaginationSettings {
 	type: PaginationType;
 	time?: number;
 	buttonEmojis?: {

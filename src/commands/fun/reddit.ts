@@ -222,7 +222,6 @@ const createNavigationComponents = (
 			.setEmoji('🔄')
 			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder()
-			.setCustomId('reddit_open')
 			.setLabel('Open in Reddit')
 			.setEmoji('📱')
 			.setStyle(ButtonStyle.Link)
@@ -477,188 +476,167 @@ const redditCommand: Command = {
 
 			// Component interaction collector
 			const collector = interaction.channel?.createMessageComponentCollector({
-				componentType: ComponentType.Button,
 				time: COMPONENT_TIMEOUT,
 			});
 
-			const selectCollector =
-				interaction.channel?.createMessageComponentCollector({
-					componentType: ComponentType.StringSelect,
-					time: COMPONENT_TIMEOUT,
-				});
-
-			collector?.on('collect', async (buttonInteraction) => {
-				if (buttonInteraction.user.id !== interaction.user.id) {
-					await buttonInteraction.reply({
+			collector?.on('collect', async (i) => {
+				if (i.user.id !== interaction.user.id) {
+					await i.reply({
 						content:
-							'❌ Only the command user can interact with these buttons.',
+							'❌ Only the command user can interact with these components.',
 						flags: [MessageFlags.Ephemeral],
 					});
 					return;
 				}
 
-				await buttonInteraction.deferUpdate();
+				await i.deferUpdate();
 				const currentSession = activeSessions.get(sessionId);
 				if (!currentSession) return;
 
-				switch (buttonInteraction.customId) {
-					case 'reddit_first':
-						currentSession.currentIndex = 0;
-						break;
-					case 'reddit_prev':
-						if (currentSession.currentIndex > 0) {
-							currentSession.currentIndex--;
-						}
-						break;
-					case 'reddit_next':
-						if (currentSession.currentIndex < currentSession.posts.length - 1) {
-							currentSession.currentIndex++;
-						}
-						break;
-					case 'reddit_last':
-						currentSession.currentIndex = currentSession.posts.length - 1;
-						break;
-					case 'reddit_random':
-						currentSession.currentIndex = Math.floor(
-							Math.random() * currentSession.posts.length,
-						);
-						break;
-					case 'reddit_refresh':
-						try {
-							const newPosts = await fetchRedditPosts(
-								currentSession.subreddit,
-								currentSession.sort,
-								currentSession.time,
-							);
-							currentSession.posts = newPosts;
-							currentSession.currentIndex = 0;
-						} catch (error) {
-							await buttonInteraction.followUp({
-								content: '❌ Failed to refresh posts.',
-								flags: [MessageFlags.Ephemeral],
-							});
-							return;
-						}
-						break;
-					case 'reddit_share':
-						const sharePost = currentSession.posts[currentSession.currentIndex];
-						await buttonInteraction.followUp({
-							content: `📤 **Share this post:**\n${REDDIT_BASE_URL}${sharePost.permalink}`,
-							flags: [MessageFlags.Ephemeral],
-						});
-						return;
-					case 'reddit_info':
-						const infoPost = currentSession.posts[currentSession.currentIndex];
-						const infoEmbed = new EmbedBuilder()
-							.setTitle('📊 Post Statistics')
-							// .setColor(REDDIT_COLORS[currentSession.sort as keyof typeof REDDIT_COLORS])
-							.addFields(
-								{
-									name: '👍 Score',
-									value: infoPost.ups.toLocaleString(),
-									inline: true,
-								},
-								{
-									name: '👎 Downvotes',
-									value: Math.round(
-										infoPost.ups / infoPost.upvote_ratio - infoPost.ups,
-									).toLocaleString(),
-									inline: true,
-								},
-								{
-									name: '📊 Upvote Ratio',
-									value: `${Math.round(infoPost.upvote_ratio * 100)}%`,
-									inline: true,
-								},
-								{
-									name: '💬 Comments',
-									value: infoPost.num_comments.toLocaleString(),
-									inline: true,
-								},
-								{
-									name: '👤 Author',
-									value: `u/${infoPost.author}`,
-									inline: true,
-								},
-								{
-									name: '🏷️ Flair',
-									value: infoPost.link_flair_text || 'None',
-									inline: true,
-								},
-							)
-							.setFooter({
-								text: `Posted in ${infoPost.subreddit_name_prefixed}`,
-							});
-
-						await buttonInteraction.followUp({
-							embeds: [infoEmbed],
-							flags: [MessageFlags.Ephemeral],
-						});
-						return;
-				}
-
-				await updateDisplay(buttonInteraction, currentSession);
-			});
-
-			selectCollector?.on('collect', async (selectInteraction) => {
-				if (selectInteraction.user.id !== interaction.user.id) {
-					await selectInteraction.reply({
-						content: '❌ Only the command user can interact with these menus.',
-						flags: [MessageFlags.Ephemeral],
-					});
-					return;
-				}
-
-				await selectInteraction.deferUpdate();
-				const currentSession = activeSessions.get(sessionId);
-				if (!currentSession) return;
-
-				const selectedValue = selectInteraction.values[0];
-
-				if (selectInteraction.customId === 'reddit_sort') {
-					currentSession.sort = selectedValue;
-					try {
-						const newPosts = await fetchRedditPosts(
-							currentSession.subreddit,
-							currentSession.sort,
-							currentSession.time,
-						);
-						currentSession.posts = newPosts;
-						currentSession.currentIndex = 0;
-					} catch (error) {
-						await selectInteraction.followUp({
-							content: '❌ Failed to load posts with new sort.',
-							flags: [MessageFlags.Ephemeral],
-						});
-						return;
-					}
-				} else if (selectInteraction.customId === 'reddit_time') {
-					currentSession.time = selectedValue;
-					try {
-						const newPosts = await fetchRedditPosts(
-							currentSession.subreddit,
-							currentSession.sort,
-							currentSession.time,
-						);
-						currentSession.posts = newPosts;
-						currentSession.currentIndex = 0;
-					} catch (error) {
-						await selectInteraction.followUp({
-							content: '❌ Failed to load posts with new time filter.',
-							flags: [MessageFlags.Ephemeral],
-						});
-						return;
-					}
-				}
-
-				await updateDisplay(selectInteraction, currentSession);
-			});
-
+									if (i.isButton()) {
+										switch (i.customId) {
+											case 'reddit_first':
+												currentSession.currentIndex = 0;
+												break;
+											case 'reddit_prev':
+												if (currentSession.currentIndex > 0) {
+													currentSession.currentIndex--;
+												}
+												break;
+											case 'reddit_next':
+												if (currentSession.currentIndex < currentSession.posts.length - 1) {
+													currentSession.currentIndex++;
+												}
+												break;
+											case 'reddit_last':
+												currentSession.currentIndex = currentSession.posts.length - 1;
+												break;
+											case 'reddit_random':
+												currentSession.currentIndex = Math.floor(
+													Math.random() * currentSession.posts.length,
+												);
+												break;
+											case 'reddit_refresh':
+												try {
+													const newPosts = await fetchRedditPosts(
+														currentSession.subreddit,
+														currentSession.sort,
+														currentSession.time,
+													);
+													currentSession.posts = newPosts;
+													currentSession.currentIndex = 0;
+												} catch (error) {
+													await i.followUp({
+														content: '❌ Failed to refresh posts.',
+														flags: [MessageFlags.Ephemeral],
+													});
+													return;
+												}
+												break;
+											case 'reddit_share':
+												const sharePost = currentSession.posts[currentSession.currentIndex];
+												await i.followUp({
+													content: `📤 **Share this post:**\n${REDDIT_BASE_URL}${sharePost.permalink}`,
+													flags: [MessageFlags.Ephemeral],
+												});
+												return;
+											case 'reddit_info':
+												const infoPost = currentSession.posts[currentSession.currentIndex];
+												const infoEmbed = new EmbedBuilder()
+													.setTitle('📊 Post Statistics')
+													// .setColor(REDDIT_COLORS[currentSession.sort as keyof typeof REDDIT_COLORS])
+													.addFields(
+														{
+															name: '👍 Score',
+															value: infoPost.ups.toLocaleString(),
+															inline: true,
+														},
+														{
+															name: '👎 Downvotes',
+															value: Math.round(
+																infoPost.ups / infoPost.upvote_ratio - infoPost.ups,
+															).toLocaleString(),
+															inline: true,
+														},
+														{
+															name: '📊 Upvote Ratio',
+															value: `${Math.round(infoPost.upvote_ratio * 100)}%`,
+															inline: true,
+														},
+														{
+															name: '💬 Comments',
+															value: infoPost.num_comments.toLocaleString(),
+															inline: true,
+														},
+														{
+															name: '👤 Author',
+															value: `u/${infoPost.author}`,
+															inline: true,
+														},
+														{
+															name: '🏷️ Flair',
+															value: infoPost.link_flair_text || 'None',
+															inline: true,
+														},
+													)
+													.setFooter({
+														text: `Posted in ${infoPost.subreddit_name_prefixed}`,
+													});
+				
+												await i.followUp({
+														embeds: [infoEmbed],
+														flags: [MessageFlags.Ephemeral],
+													});
+												return;
+										}
+										await updateDisplay(i, currentSession);
+									}
+				
+									if (i.isStringSelectMenu()) {
+										const selectedValue = i.values[0];
+				
+										if (i.customId === 'reddit_sort') {
+											currentSession.sort = selectedValue;
+											try {
+												const newPosts = await fetchRedditPosts(
+													currentSession.subreddit,
+													currentSession.sort,
+													currentSession.time,
+												);
+												currentSession.posts = newPosts;
+												currentSession.currentIndex = 0;
+											} catch (error) {
+												await i.followUp({
+													content: '❌ Failed to load posts with new sort.',
+													flags: [MessageFlags.Ephemeral],
+												});
+												return;
+											}
+										} else if (i.customId === 'reddit_time') {
+											currentSession.time = selectedValue;
+											try {
+												const newPosts = await fetchRedditPosts(
+													currentSession.subreddit,
+													currentSession.sort,
+													currentSession.time,
+												);
+												currentSession.posts = newPosts;
+												currentSession.currentIndex = 0;
+											} catch (error) {
+												await i.followUp({
+													content: '❌ Failed to load posts with new time filter.',
+													flags: [MessageFlags.Ephemeral],
+												});
+												return;
+											}
+										}
+										await updateDisplay(i, currentSession);
+									}
+								});
 			// Cleanup session after timeout
 			setTimeout(() => {
 				activeSessions.delete(sessionId);
 				collector?.stop();
-				selectCollector?.stop();
 			}, COMPONENT_TIMEOUT);
 		} catch (error) {
 			console.error('Reddit Command Error:', error);

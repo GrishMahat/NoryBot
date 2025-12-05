@@ -110,3 +110,6 @@ const consoleLog = async (client: Client): Promise<void> => {
 };
 
 export default consoleLog;
+
+consoleLog.priority = -1; // Lower priority to ensure it runs last
+
