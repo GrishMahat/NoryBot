@@ -1,4 +1,3 @@
-import 'module-alias/register';
 import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
 import loadEventHandlers from '@/handlers/eventHandler';

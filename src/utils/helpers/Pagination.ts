@@ -11,475 +11,592 @@ import {
 	MessageFlags,
 	ComponentType,
 	Message,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	ButtonInteraction,
+	InteractionResponse,
 } from 'discord.js';
 
-type PaginationType = 'button' | 'select' | 'both';
+export type PaginationType = 'button' | 'select' | 'both';
 
-export interface PaginationSettings {
-	type: PaginationType;
-	time?: number;
-	buttonEmojis?: {
-		first?: string;
-		prev: string;
-		next: string;
-		last?: string;
-		stop?: string;
-	};
-	buttonStyle?: ButtonStyle;
-	placeholder?: string;
-	maxSelectOptions?: number;
-	showPageNumbers?: boolean;
-	disableOnTimeout?: boolean;
-	showTotalPages?: boolean;
-	showCurrentPage?: boolean;
-	showPageInfo?: boolean;
-	customFooter?: string;
-	customColor?: number;
-	ephemeral?: boolean;
-	deleteOnTimeout?: boolean;
-	autoDelete?: boolean;
-	autoDeleteTime?: number;
+export interface PaginationButtonEmojis {
+	first: string;
+	prev: string;
+	next: string;
+	last: string;
+	stop?: string;
+	jump?: string;
 }
 
-const createButtonRow = (
-	currentPage: number,
-	totalPages: number,
-	settings: PaginationSettings,
-): ActionRowBuilder<MessageActionRowComponentBuilder> => {
-	const row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
-	const buttons: ButtonBuilder[] = [];
+export interface PaginationSettings {
+	/** Navigation type: 'button', 'select', or 'both' */
+	type: PaginationType;
+	/** Duration in milliseconds before the pagination expires */
+	time: number;
+	/** Custom emojis for buttons */
+	buttonEmojis: PaginationButtonEmojis;
+	/** Style of the navigation buttons */
+	buttonStyle: ButtonStyle;
+	/** Placeholder text for the select menu */
+	placeholder: string;
+	/** Maximum number of options to show in the select menu (max 25) */
+	maxSelectOptions: number;
+	/** Whether to show "Page X of Y" in the embed footer */
+	showPageInfo: boolean;
+	/** Whether to show the current page number in the footer */
+	showCurrentPage: boolean;
+	/** Whether to show the total page count in the footer */
+	showTotalPages: boolean;
+	/** Custom text to append to the footer */
+	customFooter?: string;
+	/** Initial page index (0-based) */
+	startPage: number;
+	/** Whether the response should be ephemeral */
+	ephemeral: boolean;
+	/** Whether to delete the message when the timeout expires */
+	deleteOnTimeout: boolean;
+	/** Whether to disable components when the timeout expires */
+	disableOnTimeout: boolean;
+	/** Whether to include a "Jump to Page" button */
+	enableJump: boolean;
+	/** Whether to include a "Stop" button to end pagination early */
+	enableStop: boolean;
+	/** Whether to include First/Last page buttons */
+	fastSkip: boolean;
+}
 
-	// First page button
-	if (settings.buttonEmojis?.first) {
-		buttons.push(
-			new ButtonBuilder()
-				.setCustomId('pagination_first')
-				.setEmoji(settings.buttonEmojis.first)
-				.setStyle(settings.buttonStyle ?? ButtonStyle.Primary)
-				.setDisabled(currentPage === 0),
-		);
-	}
-
-	// Previous page button
-	buttons.push(
-		new ButtonBuilder()
-			.setCustomId('pagination_prev')
-			.setEmoji(settings.buttonEmojis?.prev ?? '⬅️')
-			.setStyle(settings.buttonStyle ?? ButtonStyle.Primary)
-			.setDisabled(currentPage === 0),
-	);
-
-	// Stop button
-	if (settings.buttonEmojis?.stop) {
-		buttons.push(
-			new ButtonBuilder()
-				.setCustomId('pagination_stop')
-				.setEmoji(settings.buttonEmojis.stop)
-				.setStyle(ButtonStyle.Danger),
-		);
-	}
-
-	// Next page button
-	buttons.push(
-		new ButtonBuilder()
-			.setCustomId('pagination_next')
-			.setEmoji(settings.buttonEmojis?.next ?? '➡️')
-			.setStyle(settings.buttonStyle ?? ButtonStyle.Primary)
-			.setDisabled(currentPage === totalPages - 1),
-	);
-
-	// Last page button
-	if (settings.buttonEmojis?.last) {
-		buttons.push(
-			new ButtonBuilder()
-				.setCustomId('pagination_last')
-				.setEmoji(settings.buttonEmojis.last)
-				.setStyle(settings.buttonStyle ?? ButtonStyle.Primary)
-				.setDisabled(currentPage === totalPages - 1),
-		);
-	}
-
-	return row.addComponents(buttons);
+const DEFAULT_SETTINGS: PaginationSettings = {
+	type: 'button',
+	time: 5 * 60 * 1000,
+	buttonEmojis: {
+		first: '⏮️',
+		prev: '◀️',
+		next: '▶️',
+		last: '⏭️',
+		stop: '⏹️',
+		jump: '↗️',
+	},
+	buttonStyle: ButtonStyle.Secondary,
+	placeholder: 'Select a page...',
+	maxSelectOptions: 25,
+	showPageInfo: true,
+	showCurrentPage: true,
+	showTotalPages: true,
+	startPage: 0,
+	ephemeral: false,
+	deleteOnTimeout: false,
+	disableOnTimeout: true,
+	enableJump: false,
+	enableStop: false,
+	fastSkip: true,
 };
 
-const createSelectMenu = (
-	pages: EmbedBuilder[],
-	currentPage: number,
-	settings: PaginationSettings,
-): ActionRowBuilder<MessageActionRowComponentBuilder> => {
-	const maxOptions = Math.min(settings.maxSelectOptions ?? 25, 25);
-	const options = pages.slice(0, maxOptions).map((_, index) =>
-		new StringSelectMenuOptionBuilder()
-			.setLabel(`Page ${index + 1}`)
-			.setValue(index.toString())
-			.setDefault(index === currentPage),
-	);
+export class Pagination {
+	private interaction: CommandInteraction;
+	private pages: EmbedBuilder[];
+	private settings: PaginationSettings;
+	private currentPage: number;
+	private message: Message | InteractionResponse | null = null;
+	private collector: any = null;
 
-	const menu = new StringSelectMenuBuilder()
-		.setCustomId('pagination_select')
-		.setPlaceholder(settings.placeholder ?? 'Select a page...')
-		.setOptions(options);
-
-	const row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
-	return row.addComponents(menu);
-};
-
-const updateEmbedFooter = (
-	embed: EmbedBuilder,
-	currentPage: number,
-	totalPages: number,
-	settings: PaginationSettings,
-): void => {
-	const footerParts: string[] = [];
-
-	if (settings.showPageInfo) {
-		if (settings.showCurrentPage) {
-			footerParts.push(`Page ${currentPage + 1}`);
-		}
-		if (settings.showTotalPages) {
-			footerParts.push(`of ${totalPages}`);
-		}
-	}
-
-	if (settings.customFooter) {
-		footerParts.push(settings.customFooter);
-	}
-
-	if (footerParts.length > 0) {
-		embed.setFooter({ text: footerParts.join(' • ') });
-	}
-};
-
-export default async function createPagination(
-	interaction: CommandInteraction,
-	pages: EmbedBuilder[],
-	settings: Partial<PaginationSettings> = { type: 'button' },
-): Promise<void> {
-	if (!interaction) {
-		console.error('Invalid interaction provided to pagination');
-		return;
-	}
-
-	if (!Array.isArray(pages) || pages.length === 0) {
-		console.error('Pages array is invalid or empty');
-		try {
-			if (interaction.deferred) {
-				await interaction.editReply({ content: 'No content to display.' });
-			} else if (!interaction.replied) {
-				await interaction.reply({
-					content: 'No content to display.',
-					ephemeral: true,
-				});
-			}
-		} catch (error) {
-			console.error('Failed to reply with empty pages error:', error);
-		}
-		return;
-	}
-
-	const defaultSettings: PaginationSettings = {
-		type: 'button',
-		time: 5 * 60 * 1000,
-		buttonStyle: ButtonStyle.Primary,
-		maxSelectOptions: 25,
-		showPageNumbers: true,
-		disableOnTimeout: true,
-		showTotalPages: true,
-		showCurrentPage: true,
-		showPageInfo: true,
-		deleteOnTimeout: false,
-		autoDelete: false,
-		autoDeleteTime: 30 * 1000,
-		...settings,
-	};
-
-	let currentPage = 0;
-	const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
-
-	if (defaultSettings.type === 'button' || defaultSettings.type === 'both') {
-		components.push(
-			createButtonRow(currentPage, pages.length, defaultSettings),
+	constructor(
+		interaction: CommandInteraction,
+		pages: EmbedBuilder[],
+		settings: Partial<PaginationSettings> = {},
+	) {
+		this.interaction = interaction;
+		this.pages = pages;
+		this.settings = { ...DEFAULT_SETTINGS, ...settings };
+		this.currentPage = Math.min(
+			Math.max(0, this.settings.startPage),
+			pages.length - 1,
 		);
 	}
 
-	if (defaultSettings.type === 'select' || defaultSettings.type === 'both') {
-		components.push(createSelectMenu(pages, currentPage, defaultSettings));
+	public async send(): Promise<void> {
+		if (this.pages.length === 0) {
+			await this.handleEmptyPages();
+			return;
+		}
+
+		if (this.pages.length === 1) {
+			// If only one page, just send it without pagination controls
+			await this.sendSinglePage();
+			return;
+		}
+
+		await this.startPagination();
 	}
 
-	// Update the first page's footer
-	updateEmbedFooter(
-		pages[currentPage],
-		currentPage,
-		pages.length,
-		defaultSettings,
-	);
+	private async handleEmptyPages(): Promise<void> {
+		const content = 'No content to display.';
+		if (this.interaction.deferred || this.interaction.replied) {
+			await this.interaction.editReply({ content });
+		} else {
+			await this.interaction.reply({
+				content,
+				flags: this.settings.ephemeral ? [MessageFlags.Ephemeral] : [],
+			});
+		}
+	}
 
-	// Handle the initial reply based on interaction state
-	let initialMessage: Message;
-	try {
-		if (!interaction.deferred && !interaction.replied) {
-			initialMessage = await interaction.reply({
-				embeds: [pages[currentPage]],
-				components,
-				fetchReply: true,
-				ephemeral: defaultSettings.ephemeral,
+	private async sendSinglePage(): Promise<void> {
+		const page = this.pages[0];
+		this.updateFooter(page, 0);
+
+		if (this.interaction.deferred || this.interaction.replied) {
+			await this.interaction.editReply({
+				embeds: [page],
+				components: [],
 			});
 		} else {
-			initialMessage = await interaction.editReply({
-				embeds: [pages[currentPage]],
-				components,
+			await this.interaction.reply({
+				embeds: [page],
+				components: [],
+				flags: this.settings.ephemeral ? [MessageFlags.Ephemeral] : [],
 			});
 		}
-	} catch (error) {
-		console.error('Failed to send initial pagination message:', error);
-		return;
 	}
 
-	// Create collectors for button and select interactions
-	try {
-		const buttonCollector = initialMessage.createMessageComponentCollector({
-			time: defaultSettings.time,
-			filter: (i) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-		});
+	private async startPagination(): Promise<void> {
+		const page = this.pages[this.currentPage];
+		this.updateFooter(page, this.currentPage);
+		const components = this.getComponents();
 
-		const selectCollector = initialMessage.createMessageComponentCollector({
-			time: defaultSettings.time,
-			filter: (i) => i.user.id === interaction.user.id,
-			componentType: ComponentType.StringSelect,
-		});
-
-		const handlePageChange = async (
-			newPage: number,
-			i: MessageComponentInteraction,
-		): Promise<void> => {
-			if (newPage !== currentPage) {
-				currentPage = newPage;
-				updateEmbedFooter(
-					pages[currentPage],
-					currentPage,
-					pages.length,
-					defaultSettings,
-				);
-
-				const updatedComponents: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
-					[];
-
-				if (
-					defaultSettings.type === 'button' ||
-					defaultSettings.type === 'both'
-				) {
-					updatedComponents.push(
-						createButtonRow(currentPage, pages.length, defaultSettings),
-					);
-				}
-
-				if (
-					defaultSettings.type === 'select' ||
-					defaultSettings.type === 'both'
-				) {
-					updatedComponents.push(
-						createSelectMenu(pages, currentPage, defaultSettings),
-					);
-				}
-
-				await i.update({
-					embeds: [pages[currentPage]],
-					components: updatedComponents,
+		try {
+			if (this.interaction.deferred || this.interaction.replied) {
+				this.message = await this.interaction.editReply({
+					embeds: [page],
+					components,
 				});
+			} else {
+				const response = await this.interaction.reply({
+					embeds: [page],
+					components,
+					flags: this.settings.ephemeral ? [MessageFlags.Ephemeral] : [],
+					withResponse: true,
+				});
+				this.message = response.resource?.message ?? null;
+			}
+			
+			if (this.message) {
+				this.createCollector();
+			}
+		} catch (error) {
+			console.error('Failed to start pagination:', error);
+		}
+	}
+
+	private updateFooter(embed: EmbedBuilder, pageIndex: number): void {
+		const parts: string[] = [];
+		if (this.settings.showPageInfo) {
+			if (this.settings.showCurrentPage && this.settings.showTotalPages) {
+				parts.push(`Page ${pageIndex + 1} of ${this.pages.length}`);
+			} else if (this.settings.showCurrentPage) {
+				parts.push(`Page ${pageIndex + 1}`);
+			} else if (this.settings.showTotalPages) {
+				parts.push(`${this.pages.length} Pages`);
+			}
+		}
+
+		if (this.settings.customFooter) {
+			parts.push(this.settings.customFooter);
+		}
+
+		if (parts.length > 0) {
+			embed.setFooter({ text: parts.join(' • ') });
+		}
+	}
+
+	private getComponents(): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
+		const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+
+		if (this.settings.type === 'select' || this.settings.type === 'both') {
+			components.push(this.createSelectMenu());
+		}
+
+		if (this.settings.type === 'button' || this.settings.type === 'both') {
+			// createButtonRows returns an array of action rows (may be split if > 5 buttons)
+			components.push(...this.createButtonRows());
+		}
+
+		return components;
+	}
+
+	private createSelectMenu(): ActionRowBuilder<MessageActionRowComponentBuilder> {
+		const maxOptions = Math.min(this.settings.maxSelectOptions, 25);
+		// Center the window around the current page
+        let start = Math.max(0, this.currentPage - Math.floor(maxOptions / 2));
+        let end = Math.min(this.pages.length, start + maxOptions);
+
+        if (end - start < maxOptions) {
+            start = Math.max(0, end - maxOptions);
+        }
+
+		const options = this.pages
+			.slice(start, end)
+			.map((_, index) => {
+                const actualIndex = start + index;
+				return new StringSelectMenuOptionBuilder()
+					.setLabel(`Page ${actualIndex + 1}`)
+					.setValue(actualIndex.toString())
+					.setDefault(actualIndex === this.currentPage);
+			});
+
+		const menu = new StringSelectMenuBuilder()
+			.setCustomId('pagination_select')
+			.setPlaceholder(this.settings.placeholder)
+			.setOptions(options);
+
+		return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+			menu,
+		);
+	}
+
+	private createButtonRows(): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
+		const buttons: ButtonBuilder[] = [];
+
+		// First Page
+		if (this.settings.fastSkip) {
+			buttons.push(
+				new ButtonBuilder()
+					.setCustomId('pagination_first')
+					.setEmoji(this.settings.buttonEmojis.first)
+					.setStyle(this.settings.buttonStyle)
+					.setDisabled(this.currentPage === 0),
+			);
+		}
+
+		// Previous Page
+		buttons.push(
+			new ButtonBuilder()
+				.setCustomId('pagination_prev')
+				.setEmoji(this.settings.buttonEmojis.prev)
+				.setStyle(this.settings.buttonStyle)
+				.setDisabled(this.currentPage === 0),
+		);
+
+		// Next Page
+		buttons.push(
+			new ButtonBuilder()
+				.setCustomId('pagination_next')
+				.setEmoji(this.settings.buttonEmojis.next)
+				.setStyle(this.settings.buttonStyle)
+				.setDisabled(this.currentPage === this.pages.length - 1),
+		);
+
+		// Last Page
+		if (this.settings.fastSkip) {
+			buttons.push(
+				new ButtonBuilder()
+					.setCustomId('pagination_last')
+					.setEmoji(this.settings.buttonEmojis.last)
+					.setStyle(this.settings.buttonStyle)
+					.setDisabled(this.currentPage === this.pages.length - 1),
+			);
+		}
+
+		// Jump Button
+		if (this.settings.enableJump) {
+			buttons.push(
+				new ButtonBuilder()
+					.setCustomId('pagination_jump')
+					.setEmoji(this.settings.buttonEmojis.jump || '↗️')
+					.setStyle(ButtonStyle.Secondary)
+					.setDisabled(false),
+			);
+		}
+
+		// Stop Button
+		if (this.settings.enableStop) {
+			buttons.push(
+				new ButtonBuilder()
+					.setCustomId('pagination_stop')
+					.setEmoji(this.settings.buttonEmojis.stop || '⏹️')
+					.setStyle(ButtonStyle.Danger),
+			);
+		}
+
+		// Discord limits action rows to 5 components each, so split buttons across rows
+		const rows: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+		const MAX_BUTTONS_PER_ROW = 5;
+		
+		for (let i = 0; i < buttons.length; i += MAX_BUTTONS_PER_ROW) {
+			const rowButtons = buttons.slice(i, i + MAX_BUTTONS_PER_ROW);
+			const row = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(rowButtons);
+			rows.push(row);
+		}
+
+		return rows;
+	}
+
+	private createCollector(): void {
+		if (!this.message) return;
+
+		const setupCollector = async () => {
+			try {
+				// If message is a Message instance, we can create collector directly on it
+				if (this.message instanceof Message) {
+					this.collector = this.message.createMessageComponentCollector({
+						filter: (i) => i.user.id === this.interaction.user.id,
+						time: this.settings.time,
+					});
+
+					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
+					this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+					return;
+				}
+
+				// For InteractionResponse, try to fetch the actual message
+				// This is more reliable for DMs and ephemeral messages
+				let message: Message | null = null;
+				
+				try {
+					// Try to fetch the reply as a Message object
+					message = await this.interaction.fetchReply();
+				} catch {
+					// fetchReply failed, try alternative methods
+				}
+
+				if (message instanceof Message) {
+					// We have a proper Message object, create collector on it
+					this.message = message;
+					this.collector = message.createMessageComponentCollector({
+						filter: (i) => i.user.id === this.interaction.user.id,
+						time: this.settings.time,
+					});
+
+					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
+					this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+					return;
+				}
+
+				// Fallback: try to get the channel
+				let channel = this.interaction.channel;
+				
+				// If channel is not cached, try to fetch it
+				if (!channel && this.interaction.channelId) {
+					try {
+						channel = await this.interaction.client.channels.fetch(this.interaction.channelId) as any;
+					} catch {
+						// Channel fetch failed
+					}
+				}
+
+				// For DMs, try to create or fetch the DM channel
+				if (!channel && this.interaction.user) {
+					try {
+						channel = await this.interaction.user.createDM() as any;
+					} catch {
+						// DM channel creation failed
+					}
+				}
+				
+				if (!channel) {
+					console.error('Failed to setup pagination collector: No channel available');
+					return;
+				}
+
+				// Get the message ID for filtering
+				let messageId: string | undefined;
+				if (this.message && 'id' in this.message) {
+					messageId = (this.message as InteractionResponse).id;
+				}
+
+				// Create the collector on the channel with a filter for this specific message
+				this.collector = channel.createMessageComponentCollector({
+					filter: (i) => {
+						// Check if it's from the right user and the right message
+						const isRightUser = i.user.id === this.interaction.user.id;
+						const isRightMessage = messageId ? i.message.id === messageId : true;
+						return isRightUser && isRightMessage;
+					},
+					time: this.settings.time,
+				});
+
+				this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
+				this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+			} catch (error) {
+				console.error('Failed to setup pagination collector:', error);
 			}
 		};
 
-		buttonCollector.on('collect', async (i: MessageComponentInteraction) => {
-			try {
-				let newPage = currentPage;
+		setupCollector();
+	}
 
+	private async handleCollect(i: MessageComponentInteraction): Promise<void> {
+		try {
+			// Handle Jump to Page Modal Trigger
+			if (i.isButton() && i.customId === 'pagination_jump') {
+				await this.showJumpModal(i as ButtonInteraction);
+				return;
+			}
+
+            await i.deferUpdate().catch(() => {});
+
+			if (i.isButton()) {
 				switch (i.customId) {
 					case 'pagination_first':
-						newPage = 0;
+						this.currentPage = 0;
 						break;
 					case 'pagination_prev':
-						newPage = Math.max(0, currentPage - 1);
+						this.currentPage = Math.max(0, this.currentPage - 1);
 						break;
 					case 'pagination_next':
-						newPage = Math.min(pages.length - 1, currentPage + 1);
+						this.currentPage = Math.min(
+							this.pages.length - 1,
+							this.currentPage + 1,
+						);
 						break;
 					case 'pagination_last':
-						newPage = pages.length - 1;
+						this.currentPage = this.pages.length - 1;
 						break;
 					case 'pagination_stop':
-						buttonCollector.stop('user');
-						selectCollector.stop('user');
+						this.collector.stop('user');
 						return;
 				}
-
-				await handlePageChange(newPage, i);
-			} catch (error) {
-				console.error('Error handling button interaction:', error);
-				try {
-					if (!i.replied && !i.deferred) {
-						await i.reply({
-							content:
-								'An error occurred while changing pages. Please try again.',
-							flags: MessageFlags.Ephemeral,
-						});
-					}
-				} catch (replyError) {
-					console.error('Failed to send error response:', replyError);
-				}
+			} else if (i.isStringSelectMenu() && i.customId === 'pagination_select') {
+				this.currentPage = parseInt(i.values[0]);
 			}
-		});
 
-		selectCollector.on('collect', async (i: MessageComponentInteraction) => {
-			try {
-				if (i.isStringSelectMenu() && i.customId === 'pagination_select') {
-					const newPage = parseInt(i.values[0]);
-					await handlePageChange(newPage, i);
-				}
-			} catch (error) {
-				console.error('Error handling select menu interaction:', error);
-				try {
-					if (!i.replied && !i.deferred) {
-						await i.reply({
-							content:
-								'An error occurred while changing pages. Please try again.',
-							flags: MessageFlags.Ephemeral,
-						});
-					}
-				} catch (replyError) {
-					console.error('Failed to send error response:', replyError);
-				}
-			}
-		});
-
-		buttonCollector.on('end', async (collected, reason) => {
-			try {
-				// Check if the message is still fetchable before operations
-				try {
-					// Try to check if we can still access the channel
-					await initialMessage.fetch();
-				} catch (
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-					_
-				) {
-					// Message is no longer accessible, silently exit
-					console.log(
-						'Pagination message no longer accessible, skipping cleanup',
-					);
-					return;
-				}
-
-				if (defaultSettings.deleteOnTimeout && reason === 'time') {
-					try {
-						await initialMessage.delete();
-					} catch (deleteError) {
-						console.log('Unable to delete pagination message', deleteError);
-					}
-					return;
-				}
-
-				if (defaultSettings.disableOnTimeout && reason === 'time') {
-					const disabledComponents = components.map((row) => {
-						const newRow =
-							new ActionRowBuilder<MessageActionRowComponentBuilder>(
-								row.toJSON(),
-							);
-						newRow.components.forEach((comp) => {
-							if ('setDisabled' in comp) {
-								comp.setDisabled(true);
-							}
-						});
-						return newRow;
-					});
-
-					try {
-						await initialMessage.edit({ components: disabledComponents });
-					} catch (editError) {
-						console.log(
-							'Unable to edit pagination message components',
-							editError,
-						);
-					}
-				}
-
-				if (defaultSettings.autoDelete && reason === 'user') {
-					setTimeout(async () => {
-						try {
-							await initialMessage.delete();
-						} catch (error) {
-							console.log('Failed to auto-delete message:', error);
-						}
-					}, defaultSettings.autoDeleteTime);
-				}
-			} catch (error) {
-				console.error('Error in collector end handler:', error);
-			}
-		});
-
-		selectCollector.on('end', async (collected, reason) => {
-			try {
-				// Check if the message is still fetchable before operations
-				try {
-					// Try to check if we can still access the channel
-					await initialMessage.fetch();
-				} catch (
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-					_
-				) {
-					// Message is no longer accessible, silently exit
-					console.log(
-						'Pagination message no longer accessible, skipping cleanup',
-					);
-					return;
-				}
-
-				if (defaultSettings.deleteOnTimeout && reason === 'time') {
-					try {
-						await initialMessage.delete();
-					} catch (deleteError) {
-						console.log('Unable to delete pagination message', deleteError);
-					}
-					return;
-				}
-
-				if (defaultSettings.disableOnTimeout && reason === 'time') {
-					const disabledComponents = components.map((row) => {
-						const newRow =
-							new ActionRowBuilder<MessageActionRowComponentBuilder>(
-								row.toJSON(),
-							);
-						newRow.components.forEach((comp) => {
-							if ('setDisabled' in comp) {
-								comp.setDisabled(true);
-							}
-						});
-						return newRow;
-					});
-
-					try {
-						await initialMessage.edit({ components: disabledComponents });
-					} catch (editError) {
-						console.log(
-							'Unable to edit pagination message components',
-							editError,
-						);
-					}
-				}
-
-				if (defaultSettings.autoDelete && reason === 'user') {
-					setTimeout(async () => {
-						try {
-							await initialMessage.delete();
-						} catch (error) {
-							console.log('Failed to auto-delete message:', error);
-						}
-					}, defaultSettings.autoDeleteTime);
-				}
-			} catch (error) {
-				console.error('Error in collector end handler:', error);
-			}
-		});
-	} catch (error) {
-		console.error('Failed to create collectors:', error);
+			await this.updateMessage();
+		} catch (error) {
+			console.warn('Error handling pagination interaction:', error);
+		}
 	}
+
+	private async showJumpModal(i: ButtonInteraction): Promise<void> {
+		const modal = new ModalBuilder()
+			.setCustomId('pagination_jump_modal')
+			.setTitle('Jump to Page');
+
+		const pageInput = new TextInputBuilder()
+			.setCustomId('page_number')
+			.setLabel(`Page Number (1 - ${this.pages.length})`)
+			.setStyle(TextInputStyle.Short)
+			.setPlaceholder('Enter page number')
+			.setRequired(true)
+			.setMinLength(1)
+			.setMaxLength(this.pages.length.toString().length);
+
+		const row = new ActionRowBuilder<TextInputBuilder>().addComponents(pageInput);
+		modal.addComponents(row);
+
+		await i.showModal(modal);
+
+		try {
+			const submitted = await i.awaitModalSubmit({
+				time: 30000,
+				filter: (modalInteraction) =>
+					modalInteraction.customId === 'pagination_jump_modal' &&
+					modalInteraction.user.id === i.user.id,
+			});
+
+			const pageNum = parseInt(
+				submitted.fields.getTextInputValue('page_number'),
+			);
+
+			if (isNaN(pageNum) || pageNum < 1 || pageNum > this.pages.length) {
+				await submitted.reply({
+					content: 'Invalid page number.',
+					ephemeral: true,
+				});
+				return;
+			}
+            
+            await submitted.deferUpdate().catch(() => {});
+			this.currentPage = pageNum - 1;
+			await this.updateMessage();
+		} catch (error) {
+			// Modal timed out or other error
+		}
+	}
+
+	private async updateMessage(): Promise<void> {
+		const page = this.pages[this.currentPage];
+		this.updateFooter(page, this.currentPage);
+		const components = this.getComponents();
+
+		// Always use interaction.editReply() as it works via the interaction token
+		// and doesn't require the channel to be cached (fixes DM issues)
+		try {
+			await this.interaction.editReply({
+				embeds: [page],
+				components,
+			});
+		} catch (error) {
+			// Fallback to message.edit if editReply fails
+			if (this.message && 'edit' in this.message) {
+				await (this.message as Message).edit({
+					embeds: [page],
+					components,
+				});
+			}
+		}
+	}
+
+	private async handleEnd(reason: string): Promise<void> {
+		if (this.settings.deleteOnTimeout && reason === 'time') {
+			try {
+				await this.interaction.deleteReply();
+			} catch {
+				// Fallback to message.delete
+				try {
+					if (this.message && 'delete' in this.message) {
+						await (this.message as Message).delete();
+					}
+				} catch {}
+			}
+			return;
+		}
+
+		if (this.settings.disableOnTimeout && reason === 'time') {
+			try {
+				const disabledComponents = this.getComponents().map((row) => {
+					row.components.forEach((c) => c.setDisabled(true));
+					return row;
+				});
+
+				await this.interaction.editReply({ components: disabledComponents });
+			} catch {
+				// Fallback to message.edit
+				try {
+					if (this.message && 'edit' in this.message) {
+						const disabledComponents = this.getComponents().map((row) => {
+							row.components.forEach((c) => c.setDisabled(true));
+							return row;
+						});
+						await (this.message as Message).edit({ components: disabledComponents });
+					}
+				} catch {}
+			}
+		}
+        
+		if (reason === 'user') {
+			try {
+				await this.interaction.deleteReply();
+			} catch {
+				// Fallback to message.delete
+				try {
+					if (this.message && 'delete' in this.message) {
+						await (this.message as Message).delete();
+					}
+				} catch {}
+			}
+		}
+	}
+}
+
+/**
+ * Backwards-compatible helper for functional usage, but prefers the class.
+ * @deprecated Use `new Pagination(interaction, pages, settings).send()` instead.
+ */
+export default async function createPagination(
+	interaction: CommandInteraction,
+	pages: EmbedBuilder[],
+	settings: Partial<PaginationSettings> = {},
+): Promise<void> {
+	const pagination = new Pagination(interaction, pages, settings);
+	await pagination.send();
 }

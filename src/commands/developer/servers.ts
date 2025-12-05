@@ -20,7 +20,7 @@ import {
 	Collection,
 	ColorResolvable,
 } from 'discord.js';
-import paginateEmbeds from '../../utils/helpers/Pagination';
+import { Pagination } from '../../utils/helpers/Pagination';
 import { LocalCommand } from '../../types/index';
 import { formatTimestamp } from '../../utils/helpers/misc'; // Assuming a helper for timestamp formatting
 
@@ -363,7 +363,13 @@ async function handleListSubcommand(
 		return;
 	}
 
-	await paginateEmbeds(interaction, embeds, { type: 'button' });
+	const pagination = new Pagination(interaction, embeds, {
+		type: 'button',
+		enableJump: true,
+		fastSkip: true,
+		time: 5 * 60 * 1000,
+	});
+	await pagination.send();
 }
 
 /**
@@ -934,7 +940,13 @@ async function handleSearchSubcommand(
 		currentIndex++;
 	});
 
-	await paginateEmbeds(interaction, embeds, { type: 'button' });
+	const pagination = new Pagination(interaction, embeds, {
+		type: 'button',
+		enableJump: true,
+		fastSkip: true,
+		time: 5 * 60 * 1000,
+	});
+	await pagination.send();
 }
 
 export default serversCommand;
