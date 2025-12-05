@@ -177,7 +177,7 @@ async function fetchQuote(): Promise<QuoteResponse> {
 	}
 }
 
-function createQuoteEmbed(client: Client, attachment: AttachmentBuilder): EmbedBuilder {
+function createQuoteEmbed(_client: Client, _attachment: AttachmentBuilder): EmbedBuilder {
 	return new EmbedBuilder()
 		.setColor('#2b2d31')
 		.setTitle(`${emojiConfig.statistics} Random Quote`)

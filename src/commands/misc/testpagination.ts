@@ -28,7 +28,7 @@ const testPagination: LocalCommand = {
 		.addBooleanOption((option) => option.setName('stop').setDescription('Enable Stop button'))
 		.toJSON(),
 	devOnly: false,
-	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction) => {
 		const type = (interaction.options.getString('type') as 'button' | 'select' | 'both') || 'both';
 		const enableJump = interaction.options.getBoolean('jump') ?? true;
 		const enableStop = interaction.options.getBoolean('stop') ?? true;

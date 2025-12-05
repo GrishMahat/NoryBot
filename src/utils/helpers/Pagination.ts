@@ -338,7 +338,7 @@ export class Pagination {
 					});
 
 					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-					this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+					this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
 					return;
 				}
 
@@ -362,7 +362,7 @@ export class Pagination {
 					});
 
 					this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-					this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+					this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
 					return;
 				}
 
@@ -412,7 +412,7 @@ export class Pagination {
 				});
 
 				this.collector.on('collect', (i: MessageComponentInteraction) => this.handleCollect(i));
-				this.collector.on('end', (collected: any, reason: string) => this.handleEnd(reason));
+				this.collector.on('end', (_collected: any, reason: string) => this.handleEnd(reason));
 			} catch (error) {
 				console.error('Failed to setup pagination collector:', error);
 			}
@@ -497,7 +497,7 @@ export class Pagination {
 			await submitted.deferUpdate().catch(() => {});
 			this.currentPage = pageNum - 1;
 			await this.updateMessage();
-		} catch (error) {
+		} catch (_error) {
 			// Modal timed out or other error
 		}
 	}
@@ -514,7 +514,7 @@ export class Pagination {
 				embeds: [page],
 				components,
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Fallback to message.edit if editReply fails
 			if (this.message && 'edit' in this.message) {
 				await (this.message as Message).edit({

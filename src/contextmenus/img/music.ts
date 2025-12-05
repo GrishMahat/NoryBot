@@ -13,7 +13,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
 		.setName('Music Player View')
 		.setType(ApplicationCommandType.Message)
 		.setContexts([0, 1, 2]),
-	async run(client: Client, interaction: ContextMenuCommandInteraction) {
+	async run(_client: Client, interaction: ContextMenuCommandInteraction) {
 		if (!interaction.isMessageContextMenuCommand()) return;
 
 		await interaction.deferReply();

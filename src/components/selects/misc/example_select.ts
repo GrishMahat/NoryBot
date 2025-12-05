@@ -5,7 +5,7 @@ const exampleSelectMenu: SelectMenu = {
 	customId: 'test-select',
 	cooldown: 5,
 	userPermissions: [],
-	async run(client: Client, interaction: StringSelectMenuInteraction) {
+	async run(_client: Client, interaction: StringSelectMenuInteraction) {
 		const selectedValue = interaction.values[0];
 		await interaction.reply({
 			content: `You selected: ${selectedValue}`,

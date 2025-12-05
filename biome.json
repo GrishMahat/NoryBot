@@ -36,13 +36,13 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				"noUnusedVariables": "off",
+				"noUnusedVariables": "warn",
 				"noUnusedImports": "warn",
 				"useExhaustiveDependencies": "off",
 				"noSwitchDeclarations": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "off",
+				"noExplicitAny": "warn",
 				"noAsyncPromiseExecutor": "error",
 				"noGlobalIsNan": "off",
 				"noAssignInExpressions": "off",
@@ -52,7 +52,7 @@
 				"useConst": "error",
 				"noVar": "error",
 				"useShorthandFunctionType": "off",
-				"useTemplate": "off",
+				"useTemplate": "warn",
 				"useNodejsImportProtocol": "off",
 				"useImportType": "warn",
 				"noParameterAssign": "off",
@@ -63,7 +63,7 @@
 			"complexity": {
 				"noBannedTypes": "off",
 				"noForEach": "off",
-				"useOptionalChain": "off",
+				"useOptionalChain": "warn",
 				"noStaticOnlyClass": "off",
 				"noThisInStatic": "off",
 				"noUselessSwitchCase": "off"

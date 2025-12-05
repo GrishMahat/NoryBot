@@ -65,7 +65,7 @@ const currencyCommand: LocalCommand = {
 	devOnly: false,
 
 	run: async (
-		client: Client<boolean>,
+		_client: Client<boolean>,
 		interaction: ChatInputCommandInteraction<CacheType>,
 	): Promise<void> => {
 		try {
@@ -199,7 +199,7 @@ const currencyCommand: LocalCommand = {
 		}
 	},
 
-	autocomplete: async (client, interaction) => {
+	autocomplete: async (_client, interaction) => {
 		try {
 			const focusedOption = interaction.options.getFocused(true);
 			const searchTerm = focusedOption.value.toString().toUpperCase();

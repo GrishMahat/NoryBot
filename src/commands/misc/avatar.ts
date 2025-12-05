@@ -19,7 +19,7 @@ const avatarCommand: LocalCommand = {
 		.setIntegrationTypes([0, 1])
 		.toJSON(),
 
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 

@@ -100,8 +100,7 @@ const timestampCommand: Command = {
 
 				await interaction.editReply({
 					content:
-						`${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n${validFormats}\n` +
-						'You can also add a time using the time option (e.g., 15:30 or 3:30 PM)',
+						`${emojiConfig.notag} Invalid date/time format. Please use one of these formats:\n${validFormats}\nYou can also add a time using the time option (e.g., 15:30 or 3:30 PM)`,
 				});
 				return;
 			}
@@ -132,11 +131,7 @@ const timestampCommand: Command = {
 				.setColor('#2b2d31')
 				.setTitle(`${emojiConfig.statistics} Discord Timestamp Formats`)
 				.setDescription(
-					'Here are the different timestamp formats. The display format (12/24hr) depends on your Discord language setting.\n' +
-						'US English (🇺🇸) shows 12-hour format\n' +
-						'UK English (🇬🇧) shows 24-hour format\n\n' +
-						`${showPreview ? '**Preview date:** ' + date.toLocaleString() + '\n\n' : ''}` +
-						'**Note:** Click on the codes to copy them!',
+					`Here are the different timestamp formats. The display format (12/24hr) depends on your Discord language setting.\nUS English (🇺🇸) shows 12-hour format\nUK English (🇬🇧) shows 24-hour format\n\n${showPreview ? `**Preview date:** ${date.toLocaleString()}\n\n` : ''}**Note:** Click on the codes to copy them!`,
 				)
 				.addFields(
 					formats.map((format) => ({

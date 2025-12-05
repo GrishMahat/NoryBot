@@ -23,7 +23,7 @@ import { formatTimeAgo } from '../../utils/helpers/misc';
 // Constants
 const REDDIT_BASE_URL = 'https://www.reddit.com';
 const USER_AGENT = 'NoryBot/1.0 (Discord Bot)';
-const DEFAULT_EMBED_COLOR: ColorResolvable = '#FF4500';
+const _DEFAULT_EMBED_COLOR: ColorResolvable = '#FF4500';
 const REDDIT_ICON_URL =
 	'https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png';
 const MAX_POST_LIMIT = 50;
@@ -126,7 +126,7 @@ const createPostEmbed = (
 		.setColor(sortColor as ColorResolvable)
 		.setTitle(
 			post.title.length > MAX_TITLE_LENGTH
-				? post.title.substring(0, MAX_TITLE_LENGTH - 3) + '...'
+				? `${post.title.substring(0, MAX_TITLE_LENGTH - 3)}...`
 				: post.title,
 		)
 		.setURL(`${REDDIT_BASE_URL}${post.permalink}`)
@@ -152,11 +152,11 @@ const createPostEmbed = (
 	}
 
 	// Add selftext if available
-	if (post.selftext && post.selftext.trim()) {
+	if (post.selftext?.trim()) {
 		const maxLen = MAX_DESCRIPTION_LENGTH - description.length - 150;
 		const selfText =
 			post.selftext.length > maxLen
-				? post.selftext.substring(0, maxLen - 3) + '...'
+				? `${post.selftext.substring(0, maxLen - 3)}...`
 				: post.selftext;
 		description += selfText;
 	}
@@ -258,9 +258,9 @@ const createPostEmbed = (
  */
 const createNavigationComponents = (
 	session: RedditSession,
-	interaction: ChatInputCommandInteraction,
+	_interaction: ChatInputCommandInteraction,
 ): ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] => {
-	const { currentIndex, posts, sort, subreddit } = session;
+	const { currentIndex, posts, sort } = session;
 	const isFirst = currentIndex === 0;
 	const isLast = currentIndex === posts.length - 1;
 	const sortConfig = SORT_OPTIONS[sort as keyof typeof SORT_OPTIONS];
@@ -515,7 +515,7 @@ const redditCommand: Command = {
 	devOnly: false,
 
 	run: async (
-		client: Client<boolean>,
+		_client: Client<boolean>,
 		interaction: ChatInputCommandInteraction<CacheType>,
 	): Promise<void> => {
 		if (!interaction.deferred && !interaction.replied) {
@@ -606,7 +606,7 @@ const redditCommand: Command = {
 								);
 								currentSession.posts = newPosts;
 								currentSession.currentIndex = 0;
-							} catch (error) {
+							} catch (_error) {
 								await i.followUp({
 									content: '❌ Failed to refresh posts.',
 									flags: [MessageFlags.Ephemeral],
@@ -706,7 +706,7 @@ const redditCommand: Command = {
 							);
 							currentSession.posts = newPosts;
 							currentSession.currentIndex = 0;
-						} catch (error) {
+						} catch (_error) {
 							await i.followUp({
 								content: '❌ Failed to load posts with new sort.',
 								flags: [MessageFlags.Ephemeral],
@@ -723,7 +723,7 @@ const redditCommand: Command = {
 							);
 							currentSession.posts = newPosts;
 							currentSession.currentIndex = 0;
-						} catch (error) {
+						} catch (_error) {
 							await i.followUp({
 								content: '❌ Failed to load posts with new time filter.',
 								flags: [MessageFlags.Ephemeral],

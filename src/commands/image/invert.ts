@@ -24,7 +24,7 @@ const invertCommand: LocalCommand = {
 	testMode: false,
 	devOnly: false,
 
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {
 			await interaction.deferReply();
 

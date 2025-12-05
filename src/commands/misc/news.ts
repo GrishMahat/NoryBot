@@ -50,7 +50,7 @@ const newsCommand: LocalCommand = {
 		)
 		.toJSON(),
 	devOnly: false,
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		const category = interaction.options.getString('category') || 'general';
 		const url = `${NEWS_API_URL}/${category}/us.json`;
 

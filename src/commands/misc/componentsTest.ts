@@ -20,7 +20,7 @@ const componentsTestCommand: LocalCommand = {
 	testMode: true,
 	cooldown: 3,
 
-	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction) => {
 		// Build a button that opens a modal (handled by components/buttons/openModal.ts)
 		const openModalButton = new ButtonBuilder()
 			.setCustomId('open-modal')

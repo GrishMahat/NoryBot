@@ -42,7 +42,7 @@ const eightBallCommand: LocalCommand = {
 		.toJSON(),
 	cooldown: 5,
 
-	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction) => {
 		try {
 			const question = interaction.options.get('question')?.value as string;
 			const response = responses[Math.floor(Math.random() * responses.length)];

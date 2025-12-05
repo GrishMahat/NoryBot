@@ -7,7 +7,7 @@ const modal: Modal = {
 	devOnly: false,
 	testMode: false,
 
-	async run(client: Client, interaction: ModalSubmitInteraction) {
+	async run(_client: Client, interaction: ModalSubmitInteraction) {
 		// Get the value from the test input
 		const testInput = interaction.fields.getTextInputValue('test-input');
 

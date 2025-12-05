@@ -22,7 +22,7 @@ const testCommand: Command = {
 		.toJSON(),
 	testMode: false,
 	deleted: true,
-	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
+	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		const subcommand = interaction.options.getSubcommand();
 		switch (subcommand) {
 			case 'button': {

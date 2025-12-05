@@ -3,7 +3,7 @@ import type { Button } from '../../../types/index';
 
 const testButton: Button = {
 	customId: 'test-button',
-	run: async (client: Client, interaction: ButtonInteraction) => {
+	run: async (_client: Client, interaction: ButtonInteraction) => {
 		await interaction.reply('Test button clicked!');
 	},
 };

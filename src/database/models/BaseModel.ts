@@ -13,7 +13,7 @@ export const baseSchemaOptions: SchemaOptions = {
 	toObject: {
 		virtuals: true,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		transform(doc: any, ret: any, options: any): any {
+		transform(_doc: any, ret: any, _options: any): any {
 			ret.id = ret._id;
 			delete ret._id;
 			delete ret.__v;

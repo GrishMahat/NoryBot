@@ -613,7 +613,7 @@ async function handleUserSubcommand(
 		.join('\n');
 
 	if (serverList.length > MAX_SERVER_LIST_LENGTH) {
-		serverList = serverList.substring(0, MAX_SERVER_LIST_LENGTH - 3) + '...';
+		serverList = `${serverList.substring(0, MAX_SERVER_LIST_LENGTH - 3)}...`;
 	}
 
 	const embed = new EmbedBuilder()

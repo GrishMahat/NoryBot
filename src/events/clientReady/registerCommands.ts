@@ -155,7 +155,7 @@ async function updateOrCreateCommands(
 ): Promise<void> {
 	// Filter valid commands first
 	const validCommands = localCommands.filter(
-		(cmd) => cmd && cmd.data && cmd.data.name && cmd.deleted !== true,
+		(cmd) => cmd?.data?.name && cmd.deleted !== true,
 	);
 
 	// Create a map for faster lookup of existing commands

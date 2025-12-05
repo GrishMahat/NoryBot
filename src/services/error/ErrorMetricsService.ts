@@ -25,7 +25,7 @@ export class ErrorMetricsService {
 		this.updateSeverityMetrics(dayKey, error);
 	}
 
-	private updateRateMetrics(timeKey: string, error: ErrorDetails): void {
+	private updateRateMetrics(timeKey: string, _error: ErrorDetails): void {
 		const existing = this.metrics.get(timeKey) || this.createNewMetrics();
 		if (timeKey.startsWith('hour:')) {
 			existing.hourlyRate++;
