@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "nory-bot",
@@ -10,7 +11,7 @@
         "discord-image-utils": "^0.1.4",
         "discord.js": "^14.25.1",
         "dotenv": "^17.2.3",
-        "mongoose": "^9.0.0",
+        "mongoose": "^9.0.1",
       },
       "devDependencies": {
         "@biomejs/biome": "^1.9.4",

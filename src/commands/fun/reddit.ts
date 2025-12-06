@@ -75,9 +75,9 @@ const SORT_OPTIONS = {
 		color: '#FFB800',
 	},
 	rising: {
-		name: '� Rising',
+		name: '📈 Rising',
 		description: 'Gaining momentum',
-		emoji: '�',
+		emoji: '📈',
 		color: '#FF9500',
 	},
 	controversial: {
