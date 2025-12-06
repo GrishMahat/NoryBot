@@ -1,5 +1,7 @@
 import { createHash } from 'crypto';
 import os from 'os';
+import fs from 'fs';
+import path from 'path';
 import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
 import { DevLogger } from '../utils/DevLogger';
 import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
@@ -27,8 +29,9 @@ interface DiscordRateLimitError extends Error {
 
 /**
  * Handles error reporting, performance monitoring, and metrics generation for the Discord bot.
+ * Also serves as the central logger for the application.
  */
-class ErrorHandler {
+export class Logger {
 	private webhook: WebhookClient | null = null;
 	private client: Client | null = null;
 	private errorCache: Map<string, ErrorInfo>;
@@ -37,9 +40,10 @@ class ErrorHandler {
 	private metrics: Map<string, ErrorMetrics>;
 	private performanceMonitor: PerformanceMonitor | null = null;
 	private metricsService: ErrorMetricsService | null = null;
+  private logDirectory: string;
 
 	/**
-	 * Creates an instance of ErrorHandler.
+	 * Creates an instance of Logger.
 	 * @param config Partial configuration to override defaults.
 	 */
 	constructor(config: Partial<ErrorHandlerConfig> = {}) {
@@ -67,7 +71,7 @@ class ErrorHandler {
 				stackTraceLimit: 20,
 			},
 			production: {
-				logToFile: true, // TODO: Implement file logging
+				logToFile: true,
 				alertThreshold: 10, // TODO: Implement alert threshold logic
 				metricsInterval: 5 * 60 * 1000, // 5 minutes in ms
 			},
@@ -77,19 +81,102 @@ class ErrorHandler {
 		this.errorCache = new Map();
 		this.errorGroups = new Map();
 		this.metrics = new Map();
+        
+        this.logDirectory = path.join(process.cwd(), 'logs');
+        this.ensureLogDirectory();
 
 		// Initialize webhook if URL is provided
 		if (this.config.webhook) {
 			this.setupWebhook();
 		} else {
-			console.warn(
-				'ErrorHandler: No webhook URL provided in config or environment variables. Error reporting will be limited.',
-			);
+			this.warn('Logger', 'No webhook URL provided. Error reporting will be limited.');
 		}
+	}
 
-		// console.log(
-		// 	`ErrorHandler: Initialized with grouping threshold of ${this.config.groupingThreshold} errors`,
-		// );
+    private ensureLogDirectory(): void {
+        if (!fs.existsSync(this.logDirectory)) {
+            try {
+                fs.mkdirSync(this.logDirectory, { recursive: true });
+            } catch (error) {
+                console.error('Logger: Failed to create logs directory:', error);
+            }
+        }
+    }
+
+    private async logToFile(level: string, message: string, context?: Record<string, unknown>): Promise<void> {
+        if (!this.config.production.logToFile) return;
+
+        const date = new Date();
+        const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        const logFile = path.join(this.logDirectory, `${dateString}.log`);
+        const timestamp = date.toISOString();
+        
+        let logMessage = `[${timestamp}] [${level}] ${message}`;
+        if (context) {
+            try {
+                logMessage += `\nContext: ${JSON.stringify(context)}`;
+            } catch {
+                logMessage += `\nContext: [Circular or Invalid JSON]`;
+            }
+        }
+        logMessage += '\n';
+
+        try {
+            await fs.promises.appendFile(logFile, logMessage, 'utf8');
+        } catch (error) {
+            console.error('Logger: Failed to write to log file:', error);
+        }
+    }
+
+	public info(title: string, message: string, context?: Record<string, unknown>): void {
+		if (this.config.environment === 'development') {
+			DevLogger.info(title, message);
+			if (context && this.config.development.verbose) console.log(context);
+		} else {
+			// Production logging
+			this.logToFile('INFO', `${title}: ${message}`, context);
+            // Info logs generally don't go to webhook to avoid spam, unless CRITICAL context is passed
+		}
+	}
+
+	public success(title: string, message: string): void {
+		if (this.config.environment === 'development') {
+			DevLogger.success(title, message);
+		} else {
+            this.logToFile('SUCCESS', `${title}: ${message}`);
+		}
+	}
+
+	public warn(title: string, message: string, context?: Record<string, unknown>): void {
+		if (this.config.environment === 'development') {
+			DevLogger.warn(title, message);
+			if (context) console.warn(context);
+		} else {
+			console.warn(`[WARN] ${title}: ${message}`);
+            // Send warnings to webhook in production
+            this.sendCustomWebhook('WARN', title, message, 0xffaa00, context).catch(err => console.error('Failed to send warning webhook', err));
+		}
+	}
+
+
+	public debug(title: string, message: string, context?: Record<string, unknown>): void {
+		if (this.config.environment === 'development' && this.config.development.verbose) {
+			DevLogger.info(title, message); // Use info style for now, maybe add debug style later
+			if (context) console.log(context);
+		}
+	}
+
+	public table(headers: string[], rows: string[][]): void {
+		if (this.config.environment === 'development') {
+			DevLogger.table(headers, rows);
+		}
+	}
+
+	/**
+	 * Log an error. This is an alias/wrapper for handleError.
+	 */
+	public async error(error: unknown, title = 'Error', context?: ErrorContext): Promise<void> {
+		await this.handleError(error, title, context);
 	}
 
 	/**
@@ -98,20 +185,13 @@ class ErrorHandler {
 	private setupWebhook(): void {
 		try {
 			if (!this.config.webhook || this.config.webhook.trim() === '') {
-				console.error('ErrorHandler: Attempted to set up webhook, but no valid URL was provided.');
+				this.error('Webhook Setup', 'Attempted to set up webhook, but no valid URL was provided.');
 				this.webhook = null;
 				return;
 			}
 			this.webhook = new WebhookClient({ url: this.config.webhook });
-			// Optional: Send a test message on initialization
-			// console.log('ErrorHandler: Webhook client initialized successfully.');
-			// this.webhook.send({ content: `Error handler initialized in ${this.config.environment} mode.` }).catch((err) => {
-			//   console.error('ErrorHandler: Failed to send test message to webhook:', err);
-			//   this.webhook = null; // Invalidate webhook if test message fails
-			// });
 		} catch (error) {
-			console.log(`Webhook ${this.config.webhook}`);
-			console.error('ErrorHandler: Failed to create WebhookClient:', error);
+			console.error('Logger: Failed to create WebhookClient:', error);
 			this.webhook = null;
 		}
 	}
@@ -122,7 +202,7 @@ class ErrorHandler {
 	 */
 	public initialize(client: Client): void {
 		if (!client) {
-			console.error('ErrorHandler: Initialization failed - Discord client instance is required.');
+			console.error('Logger: Initialization failed - Discord client instance is required.');
 			return;
 		}
 		this.client = client;
@@ -130,7 +210,7 @@ class ErrorHandler {
 		this.metricsService = new ErrorMetricsService(this.config.cacheExpiration);
 		this.setupEventListeners();
 		this.startPerformanceMonitoring();
-		console.log('ErrorHandler: Initialized successfully.');
+		this.success('Logger', 'Initialized successfully.');
 	}
 
 	/**
@@ -138,25 +218,20 @@ class ErrorHandler {
 	 */
 	private setupEventListeners(): void {
 		if (!this.client) {
-			console.error('ErrorHandler: Cannot setup event listeners without a client.');
+			console.error('Logger: Cannot setup event listeners without a client.');
 			return;
 		}
 		this.client.on(Events.Error, (error) => this.handleError(error, 'ClientError'));
-		process.on('unhandledRejection', (reason, promise) => {
-			console.error('ErrorHandler: Unhandled Rejection at:', promise, 'reason:', reason);
+		process.on('unhandledRejection', (reason, _promise) => {
 			this.handleError(
 				reason instanceof Error ? reason : new Error(String(reason)),
 				'UnhandledRejection',
 			);
 		});
-		process.on('uncaughtException', (error, origin) => {
-			console.error(`ErrorHandler: Uncaught Exception origin: ${origin}`, error);
+		process.on('uncaughtException', (error, _origin) => {
 			this.handleError(error, 'UncaughtException');
-			// According to Node.js docs, process should exit after uncaughtException
-			// Consider if graceful shutdown is needed here.
-			// process.exit(1);
 		});
-		console.log('ErrorHandler: Global error event listeners attached.');
+		this.info('Logger', 'Global error event listeners attached.');
 	}
 
 	/**
@@ -497,9 +572,19 @@ class ErrorHandler {
 				console.error(
 					'ErrorHandler: Webhook reinitialization failed. Cannot send error notification.',
 				);
+				// Even if webhook fails, try to log to file
+                this.logToFile('ERROR', `[${errorDetails.type}] ${errorDetails.message}`, errorDetails.context);
 				return; // Abort sending if webhook setup fails
 			}
 		}
+
+        // Log to file in production
+        this.logToFile('ERROR', `[${errorDetails.type}] ${errorDetails.message}`, {
+            ...errorDetails.context,
+            errorId: errorDetails.errorId,
+            stack: errorDetails.stack,
+            severity: errorDetails.severity
+        });
 
 		console.log(
 			`ErrorHandler: Processing error ${errorDetails.errorId} (Group: ${errorKey}). Severity: ${errorDetails.severity}.`,
@@ -759,6 +844,32 @@ class ErrorHandler {
 			// Log the error during sending, but re-throw to allow retry logic to catch it
 			console.error('ErrorHandler: Error occurred within sendErrorToWebhook:', error);
 			throw error; // Re-throw the error to be caught by sendWithRetry
+		}
+	}
+
+	/**
+	 * Sends a custom log message to the webhook.
+	 */
+	private async sendCustomWebhook(level: string, title: string, message: string, color: number, context?: Record<string, unknown>): Promise<void> {
+		if (!this.webhook) return;
+
+		try {
+			const embed = new EmbedBuilder()
+				.setColor(color)
+				.setTitle(`[${level}] ${title}`)
+				.setDescription(message)
+				.setTimestamp();
+			
+			if (context) {
+				const contextString = JSON.stringify(context, null, 2);
+				if (contextString.length < 1000) {
+					embed.addFields({ name: 'Context', value: `\`\`\`json\n${contextString}\n\`\`\`` });
+				}
+			}
+
+			await this.webhook.send({ embeds: [embed] });
+		} catch (error) {
+			console.error('Logger: Failed to send custom webhook message:', error);
 		}
 	}
 
@@ -1131,8 +1242,7 @@ class ErrorHandler {
 			group.reportSent = false;
 			this.errorGroups.set(hash, group);
 		}
-		console.log(`ErrorHandler: Reset report flags for ${this.errorGroups.size} error groups`);
 	}
 }
 
-export default ErrorHandler;
+export default Logger;

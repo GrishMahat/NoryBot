@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import 'colors';
 import { config } from '@/config/config';
-import ErrorHandler from '@/handlers/errorHandler';
+import Logger from '@/handlers/Logger';
 import { EventManager } from '@/handlers/eventHandler';
 import { Client, GatewayIntentBits } from 'discord.js';
 
-// Create error handler instance
-const errorHandler = new ErrorHandler({
+// Create logger instance
+const logger = new Logger({
 	webhook: process.env.ERROR_WEBHOOK,
 	environment: process.env.NODE_ENV,
 	development: {
@@ -21,8 +21,9 @@ const errorHandler = new ErrorHandler({
 	},
 });
 
-// Make error handler globally available
-global.errorHandler = errorHandler;
+// Make logger globally available
+global.logger = logger;
+global.errorHandler = logger; // Backward compatibility
 
 const initializeClient = async (): Promise<Client<boolean>> => {
 	// Create Discord client with required intents
@@ -36,9 +37,9 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 		],
 	});
 
-	// Initialize error handling if enabled
+	// Initialize logs
 	if (!config.errorHandler) {
-		errorHandler.initialize(client);
+		logger.initialize(client);
 	}
 
 	try {
@@ -51,7 +52,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 
 		return client;
 	} catch (error) {
-		await errorHandler.handleError(error, 'ClientInitializationError');
+		await logger.error(error, 'ClientInitializationError');
 		throw error; // Re-throw to be caught by main
 	}
 };
@@ -60,23 +61,14 @@ const main = async (): Promise<void> => {
 	try {
 		await initializeClient();
 	} catch (error) {
-		await errorHandler.handleError(error, 'MainProcessError');
+		await logger.error(error, 'MainProcessError');
 		process.exit(1);
 	}
 };
 
 // Handle uncaught errors in the main process
-process.on('unhandledRejection', async (error) => {
-	await errorHandler.handleError(error, 'UnhandledRejection');
-	process.exit(1);
-});
-
-process.on('uncaughtException', async (error) => {
-	await errorHandler.handleError(error, 'UncaughtException');
-	process.exit(1);
-});
 
 main().catch(async (error) => {
-	await errorHandler.handleError(error, 'UncaughtError');
+	await logger.error(error, 'UncaughtError');
 	process.exit(1);
 });

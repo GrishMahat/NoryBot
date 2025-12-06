@@ -1,3 +1,10 @@
+import type { Logger } from '@/handlers/Logger';
+
+declare global {
+	var logger: Logger;
+	var errorHandler: Logger; // Keep for backward compatibility if needed, or remove
+}
+
 /**
  * @file NoryBot Type Definitions
  * @description Central export point for all type definitions used in the bot

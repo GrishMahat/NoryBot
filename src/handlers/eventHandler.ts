@@ -4,7 +4,6 @@ import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
 import getAllFiles from '../utils/helpers/getAllFiles';
 import { isValidEventName } from '../utils/validators/isValidEventName';
-import { DevLogger } from '../utils/DevLogger';
 
 export class EventManager {
 	private client: Client;
@@ -30,7 +29,7 @@ export class EventManager {
 			await Promise.all(eventFolders.map((folder) => this.processEventFolder(folder)));
 			this.registerEvents();
 		} catch (error) {
-			await global.errorHandler.handleError(error, 'EventManagerInitError');
+			await global.logger.error(error, 'EventManagerInitError');
 		}
 	}
 
@@ -42,7 +41,7 @@ export class EventManager {
 		this.eventRegistry.clear();
 		this.loadedEvents.clear();
 		await this.init();
-		DevLogger.success('Reload', 'Events reloaded successfully.');
+		global.logger.success('Reload', 'Events reloaded successfully.');
 	}
 
 	private async processEventFolder(eventFolder: string): Promise<void> {
@@ -72,7 +71,7 @@ export class EventManager {
 				)
 			);
 		} catch (error) {
-			await global.errorHandler.handleError(error, 'EventFolderProcessError', { eventFolder });
+			await global.logger.error(error, 'EventFolderProcessError', { eventFolder });
 		}
 	}
 
@@ -85,7 +84,7 @@ export class EventManager {
 			const eventFunction = eventModule.default;
 
 			if (typeof eventFunction !== 'function') {
-				DevLogger.warn('Event Handler', `Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`);
+				global.logger.warn('Event Handler', `Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`);
 				return;
 			}
 
@@ -101,7 +100,7 @@ export class EventManager {
 			handlers.push(eventInfo);
 			this.eventRegistry.set(eventName, handlers);
 		} catch (error) {
-			await global.errorHandler.handleError(error, 'EventFileLoadError', { eventFile });
+			await global.logger.error(error, 'EventFileLoadError', { eventFile });
 		}
 	}
 
@@ -124,12 +123,13 @@ export class EventManager {
 				]);
 			});
 
+			// biome-ignore lint/suspicious/noExplicitAny: Generic event wrapper requires any
 			const wrapper = async (...args: any[]) => {
 				for (const handlerInfo of handlers) {
 					try {
 						await handlerInfo.function(this.client, ...args);
 					} catch (error) {
-						await global.errorHandler.handleError(error, 'EventHandlerExecutionError', {
+						await global.logger.error(error, 'EventHandlerExecutionError', {
 							eventName: typedEventName,
 							fileName: handlerInfo.fileName,
 						});
@@ -142,8 +142,8 @@ export class EventManager {
 		}
 
 		if (process.env.NODE_ENV === 'development') {
-			DevLogger.info('Event Manager', 'Loaded Events:');
-			DevLogger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
+			global.logger.info('Event Manager', 'Loaded Events:');
+			global.logger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
 		}
 	}
 }

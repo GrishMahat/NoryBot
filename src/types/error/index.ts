@@ -250,6 +250,7 @@ export interface PerformanceMetrics {
  * Context information for an error
  */
 export interface ErrorContext {
+	[key: string]: unknown;
 	/** Command that triggered the error */
 	command?: {
 		name: string;
