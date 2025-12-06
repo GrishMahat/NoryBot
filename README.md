@@ -16,8 +16,8 @@ A powerful Discord bot built with Discord.js v14, TypeScript, and MongoDB, featu
 ## 🔧 Prerequisites
 
 Before you begin, ensure you have the following installed:
-- [Node.js](https://nodejs.org/) v16.9.0 or higher
-- [PNPM](https://pnpm.io/) package manager
+
+- [Bun](https://bun.sh/) package manager
 - [MongoDB](https://www.mongodb.com/) database
 - [Discord Bot Token](https://discord.com/developers/applications)
 
@@ -31,7 +31,7 @@ cd NoryBot
 
 2. **Install dependencies**
 ```bash
-pnpm install
+bun install
 ```
 
 3. **Set up environment variables**
@@ -43,20 +43,23 @@ cp .env.example .env
 
 4. **Build and start the bot**
 ```bash
-pnpm build
-pnpm start
+bun start
+```
+Alternatively, you can build and run the executable separately:
+```bash
+bun build
+./dist/nory-bot
 ```
 
 ## 📝 Available Scripts
 
 | Command | Description |
-|---------|-------------|
-| `pnpm start` | Start the bot from compiled JavaScript |
-| `pnpm test` | Run the test suite |
-| `pnpm start:ts` | Start the bot directly with TypeScript |
-| `pnpm dev` | Start in development mode with hot reload |
-| `pnpm build` | Compile TypeScript to JavaScript |
-| `pnpm pre` | Run Prettier code formatting |
+|---|---|
+| `bun start` | Build the bot and start it from the executable |
+| `bun start:exec` | Start the bot from the executable |
+| `bun dev` | Start in development mode with hot reload |
+| `bun build` | Compile TypeScript to a single executable |
+| `bun test` | Run the test suite |
 
 ## 🔒 Environment Variables
 

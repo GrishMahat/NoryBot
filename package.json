@@ -10,10 +10,10 @@
     "discord.js"
   ],
   "scripts": {
-    "start": "node dist/index.js",
-    "start:ts": "tsx src/index.ts",
-    "dev": "nodemon --exec tsx src/index.ts",
-    "build": "tspc",
+    "start": "bun build ./src/index.ts --compile --outfile ./dist/nory-bot && ./dist/nory-bot",
+    "start:exec": "./dist/nory-bot",
+    "dev": "bun --hot src/index.ts",
+    "build": "bun build ./src/index.ts --compile --outfile ./dist/nory-bot",
     "lint": "biome lint ./src",
     "lint:fix": "biome lint --write ./src",
     "format": "biome format --write ./src",
@@ -33,24 +33,13 @@
     "discord-image-utils": "^0.1.4",
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3",
-    "mongoose": "^9.0.0",
-    "tsx": "^4.21.0"
+    "mongoose": "^9.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^24.10.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "nodemon": "^3.1.11",
-    "ts-node": "^10.9.2",
-    "ts-patch": "^3.3.0",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3",
-    "typescript-transform-paths": "^3.5.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+    "typescript": "^5.9.3"
   }
 }
