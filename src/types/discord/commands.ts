@@ -138,8 +138,6 @@ export interface LocalContextMenu extends BaseCommandConfig {
 	run: (client: Client, interaction: ContextMenuCommandInteraction) => Promise<void>;
 }
 
-
-
 /**
  * @file Discord Command Types
  * @description Type definitions for Discord bot commands

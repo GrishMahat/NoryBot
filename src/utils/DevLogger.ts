@@ -36,24 +36,28 @@ export class DevLogger {
 	/**
 	 * Display a styled box for important messages (like errors)
 	 */
-	static box(title: string, lines: string[], color: 'red' | 'yellow' | 'green' | 'blue' = 'blue'): void {
+	static box(
+		title: string,
+		lines: string[],
+		color: 'red' | 'yellow' | 'green' | 'blue' = 'blue',
+	): void {
 		const width = 60;
 		const horizontal = '─'.repeat(width);
 		const top = `┌${horizontal}┐`;
 		const bottom = `└${horizontal}┘`;
-		
+
 		// @ts-ignore - Dynamic color access
 		const c = (str: string) => str[color] as string;
 
 		console.log(c(top));
 		console.log(c(`│ ${title.padEnd(width - 1)}│`));
 		console.log(c(`├${horizontal}┤`));
-		
+
 		for (const line of lines) {
 			// Basic wrapping or truncation could be added here, currently just printing
 			console.log(c(`│ ${line.padEnd(width - 1)}│`));
 		}
-		
+
 		console.log(c(bottom));
 	}
 
@@ -62,7 +66,7 @@ export class DevLogger {
 	 */
 	static table(headers: string[], rows: string[][]): void {
 		const colWidths = headers.map((h, i) => {
-			const maxRow = Math.max(...rows.map(r => (r[i] || '').length));
+			const maxRow = Math.max(...rows.map((r) => (r[i] || '').length));
 			return Math.max(h.length, maxRow) + 2;
 		});
 
@@ -70,11 +74,11 @@ export class DevLogger {
 			return items.map((item, i) => item.padEnd(colWidths[i])).join(' | ');
 		};
 
-		const separator = colWidths.map(w => '-'.repeat(w)).join('-+-');
+		const separator = colWidths.map((w) => '-'.repeat(w)).join('-+-');
 
 		console.log(buildRow(headers).bold);
 		console.log(separator.gray);
-		
+
 		for (const row of rows) {
 			console.log(buildRow(row));
 		}

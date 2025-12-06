@@ -1,46 +1,44 @@
-
-import { 
-    type Interaction, 
-    type InteractionReplyOptions, 
-    EmbedBuilder 
-} from 'discord.js';
-import type { Guard } from './Guard';
-import type { BaseComponent } from '../../types/components';
+import { EmbedBuilder, type Interaction, type InteractionReplyOptions } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
+import type { BaseComponent } from '../../types/components';
+import type { Guard } from './Guard';
 
 export class EnvironmentGuard implements Guard {
-    name = 'EnvironmentGuard';
+	name = 'EnvironmentGuard';
 
-    async validate(interaction: Interaction, component: BaseComponent): Promise<InteractionReplyOptions | null> {
-        const { developersId, testServerId } = config;
+	async validate(
+		interaction: Interaction,
+		component: BaseComponent,
+	): Promise<InteractionReplyOptions | null> {
+		const { developersId, testServerId } = config;
 
-        // Dev Only Check
-        if (component.devOnly && !developersId.includes(interaction.user.id)) {
-            return this.createErrorEmbed(interaction, mConfig.commandDevOnly);
-        }
+		// Dev Only Check
+		if (component.devOnly && !developersId.includes(interaction.user.id)) {
+			return this.createErrorEmbed(interaction, mConfig.commandDevOnly);
+		}
 
-        // Test Mode/Server Check
-        if (component.testMode && interaction.guildId !== testServerId) {
-            return this.createErrorEmbed(interaction, mConfig.commandTestMode);
-        }
+		// Test Mode/Server Check
+		if (component.testMode && interaction.guildId !== testServerId) {
+			return this.createErrorEmbed(interaction, mConfig.commandTestMode);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    private createErrorEmbed(interaction: Interaction, description: string): InteractionReplyOptions {
-        const embed = new EmbedBuilder()
-            .setColor('Red')
-            .setDescription(description)
-            .setAuthor({
-                name: interaction.user.username,
-                iconURL: interaction.user.displayAvatarURL(),
-            })
-            .setTimestamp();
+	private createErrorEmbed(interaction: Interaction, description: string): InteractionReplyOptions {
+		const embed = new EmbedBuilder()
+			.setColor('Red')
+			.setDescription(description)
+			.setAuthor({
+				name: interaction.user.username,
+				iconURL: interaction.user.displayAvatarURL(),
+			})
+			.setTimestamp();
 
-        return {
-            embeds: [embed],
-            ephemeral: true
-        };
-    }
+		return {
+			embeds: [embed],
+			ephemeral: true,
+		};
+	}
 }

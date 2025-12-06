@@ -1,9 +1,8 @@
 import { createHash } from 'crypto';
-import os from 'os';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
-import { DevLogger } from '../utils/DevLogger';
 import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
 import determineErrorCategory from '../services/error/determineErrorCategory';
 import determineSeverity from '../services/error/determineSeverity';
@@ -20,6 +19,7 @@ import {
 	ErrorSeverity,
 	type PerformanceMetrics,
 } from '../types/index';
+import { DevLogger } from '../utils/DevLogger';
 
 // Interface for Discord rate limit errors
 interface DiscordRateLimitError extends Error {
@@ -40,7 +40,7 @@ export class Logger {
 	private metrics: Map<string, ErrorMetrics>;
 	private performanceMonitor: PerformanceMonitor | null = null;
 	private metricsService: ErrorMetricsService | null = null;
-  private logDirectory: string;
+	private logDirectory: string;
 
 	/**
 	 * Creates an instance of Logger.
@@ -81,9 +81,9 @@ export class Logger {
 		this.errorCache = new Map();
 		this.errorGroups = new Map();
 		this.metrics = new Map();
-        
-        this.logDirectory = path.join(process.cwd(), 'logs');
-        this.ensureLogDirectory();
+
+		this.logDirectory = path.join(process.cwd(), 'logs');
+		this.ensureLogDirectory();
 
 		// Initialize webhook if URL is provided
 		if (this.config.webhook) {
@@ -93,40 +93,44 @@ export class Logger {
 		}
 	}
 
-    private ensureLogDirectory(): void {
-        if (!fs.existsSync(this.logDirectory)) {
-            try {
-                fs.mkdirSync(this.logDirectory, { recursive: true });
-            } catch (error) {
-                console.error('Logger: Failed to create logs directory:', error);
-            }
-        }
-    }
+	private ensureLogDirectory(): void {
+		if (!fs.existsSync(this.logDirectory)) {
+			try {
+				fs.mkdirSync(this.logDirectory, { recursive: true });
+			} catch (error) {
+				console.error('Logger: Failed to create logs directory:', error);
+			}
+		}
+	}
 
-    private async logToFile(level: string, message: string, context?: Record<string, unknown>): Promise<void> {
-        if (!this.config.production.logToFile) return;
+	private async logToFile(
+		level: string,
+		message: string,
+		context?: Record<string, unknown>,
+	): Promise<void> {
+		if (!this.config.production.logToFile) return;
 
-        const date = new Date();
-        const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        const logFile = path.join(this.logDirectory, `${dateString}.log`);
-        const timestamp = date.toISOString();
-        
-        let logMessage = `[${timestamp}] [${level}] ${message}`;
-        if (context) {
-            try {
-                logMessage += `\nContext: ${JSON.stringify(context)}`;
-            } catch {
-                logMessage += `\nContext: [Circular or Invalid JSON]`;
-            }
-        }
-        logMessage += '\n';
+		const date = new Date();
+		const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
+		const logFile = path.join(this.logDirectory, `${dateString}.log`);
+		const timestamp = date.toISOString();
 
-        try {
-            await fs.promises.appendFile(logFile, logMessage, 'utf8');
-        } catch (error) {
-            console.error('Logger: Failed to write to log file:', error);
-        }
-    }
+		let logMessage = `[${timestamp}] [${level}] ${message}`;
+		if (context) {
+			try {
+				logMessage += `\nContext: ${JSON.stringify(context)}`;
+			} catch {
+				logMessage += `\nContext: [Circular or Invalid JSON]`;
+			}
+		}
+		logMessage += '\n';
+
+		try {
+			await fs.promises.appendFile(logFile, logMessage, 'utf8');
+		} catch (error) {
+			console.error('Logger: Failed to write to log file:', error);
+		}
+	}
 
 	public info(title: string, message: string, context?: Record<string, unknown>): void {
 		if (this.config.environment === 'development') {
@@ -135,7 +139,7 @@ export class Logger {
 		} else {
 			// Production logging
 			this.logToFile('INFO', `${title}: ${message}`, context);
-            // Info logs generally don't go to webhook to avoid spam, unless CRITICAL context is passed
+			// Info logs generally don't go to webhook to avoid spam, unless CRITICAL context is passed
 		}
 	}
 
@@ -143,7 +147,7 @@ export class Logger {
 		if (this.config.environment === 'development') {
 			DevLogger.success(title, message);
 		} else {
-            this.logToFile('SUCCESS', `${title}: ${message}`);
+			this.logToFile('SUCCESS', `${title}: ${message}`);
 		}
 	}
 
@@ -153,11 +157,12 @@ export class Logger {
 			if (context) console.warn(context);
 		} else {
 			console.warn(`[WARN] ${title}: ${message}`);
-            // Send warnings to webhook in production
-            this.sendCustomWebhook('WARN', title, message, 0xffaa00, context).catch(err => console.error('Failed to send warning webhook', err));
+			// Send warnings to webhook in production
+			this.sendCustomWebhook('WARN', title, message, 0xffaa00, context).catch((err) =>
+				console.error('Failed to send warning webhook', err),
+			);
 		}
 	}
-
 
 	public debug(title: string, message: string, context?: Record<string, unknown>): void {
 		if (this.config.environment === 'development' && this.config.development.verbose) {
@@ -350,9 +355,8 @@ export class Logger {
 
 			// Handle development logging separately
 			if (this.config.environment === 'development' && this.config.development.logToConsole) {
-				const contextString = (context && Object.keys(context).length > 0) 
-					? JSON.stringify(context, null, 2) 
-					: '';
+				const contextString =
+					context && Object.keys(context).length > 0 ? JSON.stringify(context, null, 2) : '';
 
 				const lines = [
 					`Message: ${errorDetails.message}`,
@@ -363,13 +367,13 @@ export class Logger {
 				if (contextString) {
 					lines.push('Context:', ...contextString.split('\n'));
 				}
-				
+
 				if (this.config.development.verbose) {
 					lines.push('Stack Trace:', ...errorDetails.stack.split('\n').slice(0, 5)); // First 5 stack lines
 				}
 
 				DevLogger.box(`Error: ${errorDetails.errorId}`, lines, 'red');
-				
+
 				return; // Don't send to webhook in dev unless specifically configured
 			}
 
@@ -573,18 +577,22 @@ export class Logger {
 					'ErrorHandler: Webhook reinitialization failed. Cannot send error notification.',
 				);
 				// Even if webhook fails, try to log to file
-                this.logToFile('ERROR', `[${errorDetails.type}] ${errorDetails.message}`, errorDetails.context);
+				this.logToFile(
+					'ERROR',
+					`[${errorDetails.type}] ${errorDetails.message}`,
+					errorDetails.context,
+				);
 				return; // Abort sending if webhook setup fails
 			}
 		}
 
-        // Log to file in production
-        this.logToFile('ERROR', `[${errorDetails.type}] ${errorDetails.message}`, {
-            ...errorDetails.context,
-            errorId: errorDetails.errorId,
-            stack: errorDetails.stack,
-            severity: errorDetails.severity
-        });
+		// Log to file in production
+		this.logToFile('ERROR', `[${errorDetails.type}] ${errorDetails.message}`, {
+			...errorDetails.context,
+			errorId: errorDetails.errorId,
+			stack: errorDetails.stack,
+			severity: errorDetails.severity,
+		});
 
 		console.log(
 			`ErrorHandler: Processing error ${errorDetails.errorId} (Group: ${errorKey}). Severity: ${errorDetails.severity}.`,
@@ -850,7 +858,13 @@ export class Logger {
 	/**
 	 * Sends a custom log message to the webhook.
 	 */
-	private async sendCustomWebhook(level: string, title: string, message: string, color: number, context?: Record<string, unknown>): Promise<void> {
+	private async sendCustomWebhook(
+		level: string,
+		title: string,
+		message: string,
+		color: number,
+		context?: Record<string, unknown>,
+	): Promise<void> {
 		if (!this.webhook) return;
 
 		try {
@@ -859,7 +873,7 @@ export class Logger {
 				.setTitle(`[${level}] ${title}`)
 				.setDescription(message)
 				.setTimestamp();
-			
+
 			if (context) {
 				const contextString = JSON.stringify(context, null, 2);
 				if (contextString.length < 1000) {

@@ -22,7 +22,7 @@ export class EventManager {
 
 	/**
 	 * Initializes the event manager by loading all events from the events directory
- 	 */
+	 */
 	public async init(): Promise<void> {
 		try {
 			const eventFolders = getAllFiles(path.join(__dirname, '..', 'events'), true);
@@ -67,8 +67,8 @@ export class EventManager {
 
 			await Promise.all(
 				eventFiles.map((file) =>
-					this.loadEventFile(path.join(eventFolder, file), eventName as keyof ClientEvents)
-				)
+					this.loadEventFile(path.join(eventFolder, file), eventName as keyof ClientEvents),
+				),
 			);
 		} catch (error) {
 			await global.logger.error(error, 'EventFolderProcessError', { eventFolder });
@@ -79,12 +79,15 @@ export class EventManager {
 		try {
 			// Delete from require cache to support reloading
 			delete require.cache[require.resolve(eventFile)];
-			
+
 			const eventModule = await import(eventFile);
 			const eventFunction = eventModule.default;
 
 			if (typeof eventFunction !== 'function') {
-				global.logger.warn('Event Handler', `Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`);
+				global.logger.warn(
+					'Event Handler',
+					`Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`,
+				);
 				return;
 			}
 
@@ -113,13 +116,13 @@ export class EventManager {
 			// Sort by priority (descending logic: b - a)
 			handlers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
-			handlers.forEach(h => {
+			handlers.forEach((h) => {
 				tableData.push([
 					eventName,
 					h.fileName,
 					(h.priority ?? 0).toString(),
 					h.once ? 'ONCE' : 'ON',
-					'✅'
+					'✅',
 				]);
 			});
 
