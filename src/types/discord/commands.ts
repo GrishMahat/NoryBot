@@ -6,7 +6,6 @@
 import type {
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
-	ButtonInteraction,
 	ChatInputCommandInteraction,
 	Client,
 	CommandInteraction,
@@ -15,10 +14,8 @@ import type {
 	Guild,
 	GuildMember,
 	Message,
-	ModalSubmitInteraction,
 	PermissionResolvable,
 	PermissionsBitField,
-	StringSelectMenuInteraction,
 	TextBasedChannel,
 	User,
 } from 'discord.js';
@@ -141,32 +138,7 @@ export interface LocalContextMenu extends BaseCommandConfig {
 	run: (client: Client, interaction: ContextMenuCommandInteraction) => Promise<void>;
 }
 
-/**
- * Represents a select menu component implementation
- */
-export interface SelectMenu extends BaseCommandConfig {
-	customId: string;
-	run: (client: Client, interaction: StringSelectMenuInteraction) => Promise<void>;
-	compiledChecks?: CompiledChecks<StringSelectMenuInteraction>;
-}
 
-/**
- * Represents a button component implementation
- */
-export interface Button extends BaseCommandConfig {
-	customId: string;
-	run: (client: Client, interaction: ButtonInteraction) => Promise<void>;
-	compiledChecks?: CompiledChecks<ButtonInteraction>;
-}
-
-/**
- * Represents a modal component implementation
- */
-export interface Modal extends BaseCommandConfig {
-	customId: string;
-	run: (client: Client, interaction: ModalSubmitInteraction) => Promise<void>;
-	compiledChecks?: CompiledChecks<ModalSubmitInteraction>;
-}
 
 /**
  * @file Discord Command Types

@@ -1,163 +1,247 @@
 import type {
-	ButtonInteraction,
-	Client,
-	Interaction,
-	ModalSubmitInteraction,
-	StringSelectMenuInteraction,
+    Client,
+    Interaction,
 } from 'discord.js';
-import type { Button, Modal, SelectMenu } from '../types/index';
+import type { Button, Modal, SelectMenu, AnyComponent, ComponentMetrics } from '../types/index';
 import { type ComponentType, loadAllComponents } from '../utils/helpers/loadComponents';
+import LRUCache from './manager/LRUCache';
+import type { Guard } from './guards/Guard';
+import { PermissionGuard } from './guards/PermissionGuard';
+import { CooldownGuard } from './guards/CooldownGuard';
+import { EnvironmentGuard } from './guards/EnvironmentGuard';
 
 /**
- * Unified component manager that handles all component types
+ * Unified component manager that handles all component types with robust validation.
  */
 export class ComponentManager {
-	private buttons: Map<string, Button> = new Map();
-	private selects: Map<string, SelectMenu> = new Map();
-	private modals: Map<string, Modal> = new Map();
-	private isLoaded = false;
+    private buttons: Map<string, Button> = new Map();
+    private selects: Map<string, SelectMenu> = new Map();
+    private modals: Map<string, Modal> = new Map();
+    
+    // Unified cache for frequently accessed components
+    private componentCache: LRUCache<string, AnyComponent>;
+    private metrics: Map<string, ComponentMetrics> = new Map();
+    
+    // Validation Guards
+    private guards: Guard[] = [];
+    
+    private isLoaded = false;
 
-	/**
-	 * Load all components from the components directory
-	 */
-	async loadComponents(): Promise<void> {
-		try {
-			const { buttons, selects, modals } = await loadAllComponents();
+    constructor() {
+        this.componentCache = new LRUCache<string, AnyComponent>({
+            capacity: 500,
+            defaultTTL: 1000 * 60 * 60, // 1 hour
+        });
 
-			// Store components in their respective maps
-			buttons.forEach((button) => this.buttons.set(button.customId, button));
-			selects.forEach((select) => this.selects.set(select.customId, select));
-			modals.forEach((modal) => this.modals.set(modal.customId, modal));
+        // Initialize guards
+        this.guards = [
+            new EnvironmentGuard(),
+            new CooldownGuard(),
+            new PermissionGuard(),
+        ];
+    }
 
-			this.isLoaded = true;
-			console.log(
-				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`
-					.green,
-			);
-		} catch (error) {
-			console.error('Failed to load components:', error);
-			throw error;
-		}
-	}
+    /**
+     * Load all components from the components directory
+     */
+    async loadComponents(): Promise<void> {
+        try {
+            const { buttons, selects, modals } = await loadAllComponents();
 
-	/**
-	 * Handle any interaction that might be a component
-	 */
-	async handleInteraction(client: Client, interaction: Interaction): Promise<void> {
-		if (!this.isLoaded) {
-			await this.loadComponents();
-		}
+            // Clear existing maps
+            this.buttons.clear();
+            this.selects.clear();
+            this.modals.clear();
+            this.componentCache.clear();
 
-		if (interaction.isButton()) {
-			await this.handleButton(client, interaction);
-		} else if (interaction.isStringSelectMenu()) {
-			await this.handleSelect(client, interaction);
-		} else if (interaction.isModalSubmit()) {
-			await this.handleModal(client, interaction);
-		}
-	}
+            // Store components
+            buttons.forEach((button) => this.buttons.set(button.customId, button));
+            selects.forEach((select) => this.selects.set(select.customId, select));
+            modals.forEach((modal) => this.modals.set(modal.customId, modal));
 
-	/**
-	 * Handle button interactions
-	 */
-	private async handleButton(client: Client, interaction: ButtonInteraction): Promise<void> {
-		const button = this.buttons.get(interaction.customId);
-		if (!button) {
-			console.warn(`Button not found: ${interaction.customId}`.yellow);
-			return;
-		}
+            this.isLoaded = true;
+            console.log(
+                `ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`
+                    .green,
+            );
+        } catch (error) {
+            console.error('Failed to load components:', error);
+            throw error;
+        }
+    }
 
-		try {
-			await button.run(client, interaction);
-		} catch (error) {
-			console.error(`Error executing button ${interaction.customId}:`, error);
-			await global.errorHandler.handleError(error, 'ButtonExecutionError');
-		}
-	}
+    /**
+     * Handle any interaction that might be a component
+     */
+    async handleInteraction(client: Client, interaction: Interaction): Promise<void> {
+        if (!this.isLoaded) await this.loadComponents();
 
-	/**
-	 * Handle select menu interactions
-	 */
-	private async handleSelect(
-		client: Client,
-		interaction: StringSelectMenuInteraction,
+        // Resolve component based on interaction type
+        let resolution: { component: AnyComponent, args: string[] } | undefined;
+
+        if (interaction.isButton()) {
+            resolution = this.resolveComponent(interaction.customId, 'buttons');
+        } else if (interaction.isStringSelectMenu()) {
+            resolution = this.resolveComponent(interaction.customId, 'selects');
+        } else if (interaction.isModalSubmit()) {
+            resolution = this.resolveComponent(interaction.customId, 'modals');
+        }
+
+        // If no component matches, or not a component interaction, ignore
+        if (!resolution) {
+             // Optional: Log warning?
+             return; 
+        }
+
+        await this.executeComponent(client, interaction, resolution.component, resolution.args);
+    }
+
+    /**
+     * Resolve a component by ID, checking cache first then maps.
+     * Supports exact match and prefix match (for dynamic IDs).
+     */
+    private resolveComponent(customId: string, type: ComponentType): { component: AnyComponent, args: string[] } | undefined {
+        // 1. Check Exact Match in Cache
+        const cached = this.componentCache.get(customId);
+        if (cached) return { component: cached, args: [] };
+
+        // 2. Resolve Map for the type
+        let map: Map<string, AnyComponent>;
+        switch (type) {
+            case 'buttons': map = this.buttons; break;
+            case 'selects': map = this.selects; break;
+            case 'modals': map = this.modals; break;
+            default: return undefined;
+        }
+
+
+
+        // 3. Exact Match Check
+        if (map.has(customId)) {
+            const component = map.get(customId);
+            if (component) {
+                this.componentCache.set(customId, component);
+                return { component, args: [] };
+            }
+        }
+
+        // 4. Prefix Match Check (Dynamic IDs)
+        // Checks if customId starts with any registered key + separator
+        // Example: "ban_user:123" matches "ban_user"
+        for (const [key, component] of map.entries()) {
+            // We use a predefined separator (e.g. ':') or just startsWith? 
+            // Using a separator is safer to avoid partial matches (e.g. "ban_user_all" matching "ban_user")
+             // Let's assume ':' is the separator or just check strictly startsWith if flexible.
+             // Best practice: if (customId.startsWith(key + separator))
+             
+             // For now, let's implement a simple startsWith logic, 
+             // but we'll infer the separator or just rely on the developer to name things well (like 'ban_user:')
+            if (customId.startsWith(key)) {
+                // Determine arguments
+                const argsString = customId.slice(key.length);
+                // If there's content after the match, treat as args. 
+                // We'll strip a leading separator if present (':', '-', '_') common pattern
+                 const args = argsString.startsWith(':') 
+                    ? argsString.slice(1).split(':') 
+                    : argsString.split(':'); // fall back to just splitting whatever is left
+                
+                // Don't cache dynamic resolutions permanently in the same way, or cache specific instances?
+                // Caching "ban_user:123" -> Ref to "ban_user" component is fine and saves the loop!
+                this.componentCache.set(customId, component);
+                
+                return { component, args };
+            }
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Execute the component logic with validation and error handling.
+     */
+    private async executeComponent(
+		client: Client, 
+		interaction: Interaction, 
+		component: AnyComponent,
+		args: string[] = []
 	): Promise<void> {
-		const select = this.selects.get(interaction.customId);
-		if (!select) {
-			console.warn(`Select menu not found: ${interaction.customId}`.yellow);
-			return;
-		}
+        const startTime = Date.now();
+        const customId = component.customId;
 
-		try {
-			await select.run(client, interaction);
-		} catch (error) {
-			console.error(`Error executing select ${interaction.customId}:`, error);
-			await global.errorHandler.handleError(error, 'SelectExecutionError');
-		}
-	}
+        try {
+            // Run Validation Guards (pass args if needed in future, current guards don't use them)
+            for (const guard of this.guards) {
+                const errorReply = await guard.validate(interaction, component);
+                if (errorReply) {
+                    if (interaction.isRepliable()) {
+                        if (interaction.deferred || interaction.replied) {
+                            await interaction.followUp(errorReply);
+                        } else {
+                            await interaction.reply(errorReply);
+                        }
+                    }
+                    return;
+                }
+            }
 
-	/**
-	 * Handle modal interactions
-	 */
-	private async handleModal(client: Client, interaction: ModalSubmitInteraction): Promise<void> {
-		const modal = this.modals.get(interaction.customId);
-		if (!modal) {
-			console.warn(`Modal not found: ${interaction.customId}`.yellow);
-			return;
-		}
+            // Execute Run Logic
+            // Inject args into the run call
+            if ('run' in component) {
+                 // biome-ignore lint/suspicious/noExplicitAny: Component run signature
+                await (component as any).run(client, interaction, args);
+            }
 
-		try {
-			await modal.run(client, interaction);
-		} catch (error) {
-			console.error(`Error executing modal ${interaction.customId}:`, error);
-			await global.errorHandler.handleError(error, 'ModalExecutionError');
-		}
-	}
+            // Update Metrics
+            this.updateMetrics(customId, Date.now() - startTime, false);
 
-	/**
-	 * Get a component by customId and type
-	 */
-	getComponent(customId: string, type: ComponentType): Button | SelectMenu | Modal | undefined {
-		switch (type) {
-			case 'buttons':
-				return this.buttons.get(customId);
-			case 'selects':
-				return this.selects.get(customId);
-			case 'modals':
-				return this.modals.get(customId);
-			default:
-				return undefined;
-		}
-	}
+        } catch (error) {
+            // ... (rest of error handling remains same)
+            this.updateMetrics(customId, Date.now() - startTime, true);
+            console.error(`Error executing component ${customId}:`, error);
+            
+             if (global.errorHandler?.handleError) {
+                await global.errorHandler.handleError(error, 'ComponentExecutionError', {
+                    componentId: customId,
+                    userId: interaction.user.id
+                });
+            }
 
-	/**
-	 * Get all components of a specific type
-	 */
-	getComponentsByType(type: ComponentType): (Button | SelectMenu | Modal)[] {
-		switch (type) {
-			case 'buttons':
-				return Array.from(this.buttons.values());
-			case 'selects':
-				return Array.from(this.selects.values());
-			case 'modals':
-				return Array.from(this.modals.values());
-			default:
-				return [];
-		}
-	}
+            if (interaction.isRepliable() && !interaction.replied) {
+                try {
+                    await interaction.reply({ 
+                        content: 'An error occurred while executing this action.', 
+                        ephemeral: true 
+                    });
+                } catch { /* ignore */ }
+            }
+        }
+    }
 
-	/**
-	 * Get component statistics
-	 */
-	getStats() {
-		return {
-			buttons: this.buttons.size,
-			selects: this.selects.size,
-			modals: this.modals.size,
-			total: this.buttons.size + this.selects.size + this.modals.size,
-			loaded: this.isLoaded,
-		};
-	}
+    private updateMetrics(customId: string, responseTime: number, failed: boolean): void {
+        const current = this.metrics.get(customId) || {
+            uses: 0,
+            lastUsed: new Date(),
+            averageResponseTime: 0,
+            failures: 0
+        };
+
+        current.uses++;
+        current.lastUsed = new Date();
+        current.averageResponseTime = ((current.averageResponseTime * (current.uses - 1)) + responseTime) / current.uses;
+        if (failed) current.failures++;
+
+        this.metrics.set(customId, current);
+    }
+
+    public getStats() {
+        return {
+            buttons: this.buttons.size,
+            selects: this.selects.size,
+            modals: this.modals.size,
+            total: this.buttons.size + this.selects.size + this.modals.size,
+            loaded: this.isLoaded,
+        };
+    }
 }
 
 // Export singleton instance

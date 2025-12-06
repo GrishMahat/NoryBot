@@ -16,7 +16,10 @@ export * from './discord/events';
 
 // Feature Types
 export * from './features/currency';
+// Feature Types
+export * from './features/currency';
 export * from './features/image';
+export * from './components';
 
 // API Integration Types
 export * from './api/reddit';

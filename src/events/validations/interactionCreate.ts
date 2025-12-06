@@ -1,10 +1,7 @@
 import type { Client, Interaction } from 'discord.js';
-import { componentManager } from '../services/ComponentManager';
-import modalValidator from './validations/ModalCommandValidator';
-import buttonValidator from './validations/buttonValidator';
-import chatInputCommandValidator from './validations/chatInputCommandValidator';
-import contextMenuCommandValidator from './validations/contextMenuCommandValidator';
-import selectMenuValidator from './validations/seclectMenuValidator';
+import { componentManager } from '../../services/ComponentManager';
+import chatInputCommandValidator from './chatInputCommandValidator';
+import contextMenuCommandValidator from './contextMenuCommandValidator';
 
 /**
  * Main interaction handler that routes interactions to appropriate validators
@@ -18,14 +15,11 @@ export default async (client: Client, interaction: Interaction): Promise<void> =
 			await chatInputCommandValidator(client, interaction);
 		} else if (interaction.isContextMenuCommand()) {
 			await contextMenuCommandValidator(client, interaction);
-		} else if (interaction.isButton()) {
-			await buttonValidator(client, interaction);
-		} else if (interaction.isStringSelectMenu()) {
-			await selectMenuValidator(client, interaction);
-		} else if (interaction.isModalSubmit()) {
-			await modalValidator(client, interaction);
-		} else {
-			// Handle other component types with the unified component manager
+		} else if (
+			interaction.isButton() ||
+			interaction.isStringSelectMenu() ||
+			interaction.isModalSubmit()
+		) {
 			await componentManager.handleInteraction(client, interaction);
 		}
 	} catch (error) {

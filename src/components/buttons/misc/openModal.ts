@@ -11,7 +11,7 @@ import type { Button } from '../../../types/index';
 
 const openModalButton: Button = {
 	customId: 'open-modal',
-	run: async (_client: Client, interaction: ButtonInteraction) => {
+	run: async (_client: Client, interaction: ButtonInteraction, _args?: string[]) => {
 		const modal = new ModalBuilder().setCustomId('test-modal').setTitle('Test Modal');
 
 		const input = new TextInputBuilder()
