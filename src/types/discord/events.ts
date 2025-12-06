@@ -8,13 +8,23 @@ import type { Client, ClientEvents } from 'discord.js';
 /**
  * Represents information about a Discord event handler
  */
-export interface EventInfo {
+export interface EventOptions {
+	/** Whether the event should only run once */
+	once?: boolean;
+	/** Priority of the event handler (lower numbers execute first) */
+	priority?: number;
+}
+
+/**
+ * Represents information about a Discord event handler
+ */
+export interface EventInfo extends EventOptions {
 	/** The event handler function */
 	function: EventHandler;
 	/** The name of the file containing the event handler */
 	fileName: string;
-	/** Priority of the event handler (lower numbers execute first) */
-	priority: number;
+	/** The name of the event */
+	name: keyof ClientEvents;
 }
 
 /**

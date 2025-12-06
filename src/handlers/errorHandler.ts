@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import os from 'os';
 import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
+import { DevLogger } from '../utils/DevLogger';
 import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
 import determineErrorCategory from '../services/error/determineErrorCategory';
 import determineSeverity from '../services/error/determineSeverity';
@@ -274,19 +275,26 @@ class ErrorHandler {
 
 			// Handle development logging separately
 			if (this.config.environment === 'development' && this.config.development.logToConsole) {
-				console.error(`\n--- Development Error Captured [${type}] ---`);
-				console.error(`Time: ${errorDetails.timestamp}`);
-				console.error(`Severity: ${errorDetails.severity}`);
-				console.error(`Message: ${errorDetails.message}`);
-				if (context && Object.keys(context).length > 0) {
-					console.error('Context:', JSON.stringify(context, null, 2));
+				const contextString = (context && Object.keys(context).length > 0) 
+					? JSON.stringify(context, null, 2) 
+					: '';
+
+				const lines = [
+					`Message: ${errorDetails.message}`,
+					`Type: ${errorDetails.type}`,
+					`Severity: ${errorDetails.severity}`,
+				];
+
+				if (contextString) {
+					lines.push('Context:', ...contextString.split('\n'));
 				}
+				
 				if (this.config.development.verbose) {
-					console.error('Details:', errorDetails);
-				} else {
-					console.error(`Stack: ${errorDetails.stack}`);
+					lines.push('Stack Trace:', ...errorDetails.stack.split('\n').slice(0, 5)); // First 5 stack lines
 				}
-				console.error('--- End Development Error ---\n');
+
+				DevLogger.box(`Error: ${errorDetails.errorId}`, lines, 'red');
+				
 				return; // Don't send to webhook in dev unless specifically configured
 			}
 

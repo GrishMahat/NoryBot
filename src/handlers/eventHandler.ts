@@ -1,195 +1,151 @@
-/**
- * @module eventHandler
- * @description Handles the dynamic loading and registration of Discord.js event handlers.
- * Supports automatic event discovery, priority-based execution, and error handling.
- */
-
 import path from 'path';
 import { EventError, type EventInfo, type EventRegistry } from '@/types';
 import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
-import LRUCache from '../services/manager/LRUCache';
 import getAllFiles from '../utils/helpers/getAllFiles';
 import { isValidEventName } from '../utils/validators/isValidEventName';
+import { DevLogger } from '../utils/DevLogger';
 
-/**
- * Cache to store loaded event modules to prevent redundant imports
- * @type {LRUCache<string, EventInfo>}
- */
-const eventModuleCache = new LRUCache<string, EventInfo>({
-	capacity: 500,
-	defaultTTL: 3600000, // 1 hour
-	cleanupIntervalMs: 300000, // 5 minutes
-	evictionPolicy: 'LRU',
-	onExpiry: (key): void => {
-		console.log(`Event module cache expired: ${key} `.yellow);
-	},
-});
+export class EventManager {
+	private client: Client;
+	private eventRegistry: EventRegistry;
+	private loadedEvents: Set<string>;
 
-/**
- * Registers an event handler in the event registry
- * @param {EventRegistry} eventRegistry - The registry storing all event handlers
- * @param {keyof ClientEvents} eventName - The name of the Discord.js event
- * @param {EventInfo} eventInfo - Information about the event handler
- */
-const registerEvent = (
-	eventRegistry: EventRegistry,
-	eventName: keyof ClientEvents,
-	eventInfo: EventInfo,
-): void => {
-	const events = eventRegistry.get(eventName) ?? [];
-	events.push(eventInfo);
-	eventRegistry.set(eventName, events);
-};
-
-/**
- * Loads and registers a single event file
- * @param {string} eventFile - Path to the event handler file
- * @param {keyof ClientEvents} eventName - Name of the Discord.js event
- * @param {EventRegistry} eventRegistry - Registry to store the event handler
- * @throws {EventError} When the event file cannot be loaded or is invalid
- */
-const loadEventFile = async (
-	eventFile: string,
-	eventName: keyof ClientEvents,
-	eventRegistry: EventRegistry,
-): Promise<void> => {
-	try {
-		const cachedEvent = eventModuleCache.get(eventFile);
-		if (cachedEvent) {
-			registerEvent(eventRegistry, eventName, cachedEvent);
-			return;
-		}
-
-		const eventObject = await import(eventFile);
-
-		if (!eventObject?.default) {
-			console.error(`Error module at ${eventFile} is missing a default expoer`);
-			return null;
-		}
-		const eventFunction = eventObject.default;
-
-		if (typeof eventFunction !== 'function') {
-			console.error('Invalid event handler', { eventFile });
-		}
-
-		const eventInfo: EventInfo = {
-			function: eventFunction,
-			fileName: path.basename(eventFile),
-			priority: eventFunction.priority ?? 0,
-		};
-
-		eventModuleCache.set(eventFile, eventInfo);
-		registerEvent(eventRegistry, eventName, eventInfo);
-	} catch (error) {
-		await global.errorHandler.handleError(error, 'EventFileLoadError');
+	constructor(client: Client) {
+		this.client = client;
+		/**
+		 * Registry to store event handlers mapped by event name
+		 * @type {EventRegistry}
+		 */
+		this.eventRegistry = new Map();
+		this.loadedEvents = new Set();
 	}
-};
 
-/**
- * Processes an event folder and loads all valid event handlers
- * @param {string} eventFolder - Path to the folder containing event handlers
- * @param {EventRegistry} eventRegistry - Registry to store the event handlers
- * @throws {EventError} When the folder cannot be processed
- */
-const processEventFolder = async (
-	eventFolder: string,
-	eventRegistry: EventRegistry,
-): Promise<void> => {
-	try {
-		const files = await fs.readdir(eventFolder);
-		const folderName = path.basename(eventFolder);
-		const eventName = folderName === 'validations' ? 'interactionCreate' : folderName;
+	/**
+	 * Initializes the event manager by loading all events from the events directory
+ 	 */
+	public async init(): Promise<void> {
+		try {
+			const eventFolders = getAllFiles(path.join(__dirname, '..', 'events'), true);
+			await Promise.all(eventFolders.map((folder) => this.processEventFolder(folder)));
+			this.registerEvents();
+		} catch (error) {
+			await global.errorHandler.handleError(error, 'EventManagerInitError');
+		}
+	}
 
-		// Validate event name is a valid Discord.js event
-		if (!isValidEventName(eventName)) {
-			throw new EventError(`Invalid event name: ${eventName}`, {
-				eventFolder,
+	/**
+	 * Reloads all events by clearing the registry and reloading files
+	 */
+	public async reloadEvents(): Promise<void> {
+		this.client.removeAllListeners();
+		this.eventRegistry.clear();
+		this.loadedEvents.clear();
+		await this.init();
+		DevLogger.success('Reload', 'Events reloaded successfully.');
+	}
+
+	private async processEventFolder(eventFolder: string): Promise<void> {
+		try {
+			const files = await fs.readdir(eventFolder);
+			const folderName = path.basename(eventFolder);
+			// Map 'validations' folder to 'interactionCreate' event, otherwise use folder name
+			const eventName = folderName === 'validations' ? 'interactionCreate' : folderName;
+
+			if (!isValidEventName(eventName)) {
+				throw new EventError(`Invalid event name: ${eventName}`, { eventFolder });
+			}
+
+			const eventFiles = files.filter((file) => {
+				return (
+					file &&
+					typeof file === 'string' &&
+					/\.(js|ts)$/.test(file) &&
+					!file.endsWith('.d.ts') &&
+					!file.endsWith('.js.map')
+				);
 			});
+
+			await Promise.all(
+				eventFiles.map((file) =>
+					this.loadEventFile(path.join(eventFolder, file), eventName as keyof ClientEvents)
+				)
+			);
+		} catch (error) {
+			await global.errorHandler.handleError(error, 'EventFolderProcessError', { eventFolder });
 		}
-		const eventFiles = files
-			.filter((file) => {
-				try {
-					return (
-						file &&
-						typeof file === 'string' &&
-						/\.(js|ts)$/.test(file) &&
-						!file.endsWith('.d.ts') &&
-						!file.endsWith('.js.map')
-					);
-				} catch (error) {
-					console.error(`Error processing file: ${file}`, error);
-					return false;
-				}
-			})
-			.filter(Boolean);
-
-		await Promise.all(
-			eventFiles.map((file) =>
-				loadEventFile(
-					path.join(eventFolder, file),
-					eventName as keyof ClientEvents,
-					eventRegistry,
-				).catch(async (error) => {
-					await global.errorHandler.handleError(error, 'EventFileProcessError');
-				}),
-			),
-		);
-	} catch (error) {
-		await global.errorHandler.handleError(error, 'EventFolderProcessError');
 	}
-};
 
-/**
- * Main function to load and register all event handlers for the Discord client
- * @param {Client} client - The Discord.js client instance
- * @throws {EventError} When event handler setup fails
- *
- * @remarks
- * This function performs the following steps:
- * 1. Discovers all event folders in the events directory
- * 2. Loads and validates event handler files
- * 3. Registers handlers with the client, respecting priority order
- * 4. Sets up error handling for each event handler
- */
-const loadEventHandlers = async (client: Client): Promise<void> => {
-	const eventRegistry: EventRegistry = new Map();
-	const loadedEvents = new Set<keyof ClientEvents>();
+	private async loadEventFile(eventFile: string, eventName: keyof ClientEvents): Promise<void> {
+		try {
+			// Delete from require cache to support reloading
+			delete require.cache[require.resolve(eventFile)];
+			
+			const eventModule = await import(eventFile);
+			const eventFunction = eventModule.default;
 
-	try {
-		const eventFolders = getAllFiles(path.join(__dirname, '..', 'events'), true);
+			if (typeof eventFunction !== 'function') {
+				DevLogger.warn('Event Handler', `Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`);
+				return;
+			}
 
-		await Promise.all(eventFolders.map((folder) => processEventFolder(folder, eventRegistry)));
+			const eventInfo: EventInfo = {
+				function: eventFunction,
+				fileName: path.basename(eventFile),
+				name: eventName,
+				priority: eventFunction.priority ?? 0,
+				once: eventFunction.once ?? false,
+			};
 
-		for (const [eventName, handlers] of eventRegistry.entries()) {
+			const handlers = this.eventRegistry.get(eventName) ?? [];
+			handlers.push(eventInfo);
+			this.eventRegistry.set(eventName, handlers);
+		} catch (error) {
+			await global.errorHandler.handleError(error, 'EventFileLoadError', { eventFile });
+		}
+	}
+
+	private registerEvents(): void {
+		const tableData: string[][] = [];
+
+		for (const [eventName, handlers] of this.eventRegistry.entries()) {
 			const typedEventName = eventName as keyof ClientEvents;
-			if (loadedEvents.has(typedEventName)) continue;
 
-			handlers.sort((a, b) => b.priority - a.priority);
+			// Sort by priority (descending logic: b - a)
+			handlers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
-			client.on(typedEventName, async (...args) => {
-				for (const { function: handler, fileName } of handlers) {
+			handlers.forEach(h => {
+				tableData.push([
+					eventName,
+					h.fileName,
+					(h.priority ?? 0).toString(),
+					h.once ? 'ONCE' : 'ON',
+					'✅'
+				]);
+			});
+
+			const wrapper = async (...args: any[]) => {
+				for (const handlerInfo of handlers) {
 					try {
-						await Promise.resolve(handler(client, ...args));
+						await handlerInfo.function(this.client, ...args);
 					} catch (error) {
 						await global.errorHandler.handleError(error, 'EventHandlerExecutionError', {
 							eventName: typedEventName,
-							fileName,
-							handler: handler.name,
+							fileName: handlerInfo.fileName,
 						});
 					}
 				}
-			});
+			};
 
-			loadedEvents.add(typedEventName);
+			this.client.on(typedEventName, wrapper);
+			this.loadedEvents.add(typedEventName);
 		}
-	} catch (error) {
-		await global.errorHandler.handleError(error, 'EventHandlerSetupError');
+
+		if (process.env.NODE_ENV === 'development') {
+			DevLogger.info('Event Manager', 'Loaded Events:');
+			DevLogger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
+		}
 	}
-};
+}
 
-export const cleanup = (): void => {
-	eventModuleCache.close();
-};
-
-export default loadEventHandlers;
+export default EventManager;

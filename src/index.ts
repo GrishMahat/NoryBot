@@ -1,7 +1,8 @@
 import 'dotenv/config';
+import 'colors';
 import { config } from '@/config/config';
 import ErrorHandler from '@/handlers/errorHandler';
-import loadEventHandlers from '@/handlers/eventHandler';
+import { EventManager } from '@/handlers/eventHandler';
 import { Client, GatewayIntentBits } from 'discord.js';
 
 // Create error handler instance
@@ -42,7 +43,8 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 
 	try {
 		// Load event handlers
-		await loadEventHandlers(client);
+		const eventManager = new EventManager(client);
+		await eventManager.init();
 
 		// Log in to Discord
 		await client.login(process.env.TOKEN);
