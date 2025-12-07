@@ -15,12 +15,12 @@ import {
 	PermissionsBitField,
 	TextChannel,
 } from 'discord.js';
-import { config } from '../../config/config';
-import mConfig from '../../config/messageConfig';
-import cooldownManager from '../../services/manager/CooldownManager';
-import LRUCache from '../../services/manager/LRUCache';
-import type { LocalCommand } from '../../types/index';
-import getLocalCommands from '../../utils/helpers/getLocalCommands';
+import { config } from '@/config/config';
+import mConfig from '@/config/messageConfig';
+import cooldownManager from '@/services/manager/CooldownManager';
+import LRUCache from '@/services/manager/LRUCache';
+import type { LocalCommand } from '@/types/index';
+import getLocalCommands from '@/utils/helpers/getLocalCommands';
 
 // Interface for command usage metrics
 interface CommandMetrics {
@@ -423,11 +423,7 @@ class CommandValidator {
 
 			const validationError = this.validateCommand(interaction, command);
 			if (validationError) {
-				await interaction.editReply({
-					content: validationError.content,
-					embeds: validationError.embeds,
-					components: validationError.components,
-				});
+				await interaction.reply(validationError);
 				return;
 			}
 
@@ -476,7 +472,10 @@ class CommandValidator {
 const commandValidator = new CommandValidator();
 
 // Export the handler function that uses the singleton instance
-export default async (client: Client, interaction: Interaction): Promise<void> => {
+export const chatInputCommandValidator = async (
+	client: Client,
+	interaction: Interaction,
+): Promise<void> => {
 	// Delegate handling to the singleton instance
 	await commandValidator.handleInteraction(client, interaction);
 };

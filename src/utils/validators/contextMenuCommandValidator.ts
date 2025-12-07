@@ -10,12 +10,12 @@ import {
 	type PermissionResolvable,
 	TextChannel,
 } from 'discord.js';
-import { config } from '../../config/config';
-import mConfig from '../../config/messageConfig';
-import cooldownManager from '../../services/manager/CooldownManager';
-import LRUCache from '../../services/manager/LRUCache';
-import type { LocalContextMenu } from '../../types/index';
-import getLocalContextMenus from '../../utils/helpers/getLocalContextMenus';
+import { config } from '@/config/config';
+import mConfig from '@/config/messageConfig';
+import cooldownManager from '@/services/manager/CooldownManager';
+import LRUCache from '@/services/manager/LRUCache';
+import type { LocalContextMenu } from '@/types/index';
+import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
 
 interface ContextMenuMetrics {
 	uses: number;
@@ -240,6 +240,9 @@ class ContextMenuManager {
 
 const contextMenuManager = new ContextMenuManager();
 
-export default async (client: Client, interaction: Interaction): Promise<void> => {
+export const contextMenuCommandValidator = async (
+	client: Client,
+	interaction: Interaction,
+): Promise<void> => {
 	await contextMenuManager.handleInteraction(client, interaction);
 };

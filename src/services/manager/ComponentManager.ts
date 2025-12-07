@@ -1,11 +1,11 @@
+import { CooldownGuard } from '@/services/guards/CooldownGuard';
+import { EnvironmentGuard } from '@/services/guards/EnvironmentGuard';
+import type { Guard } from '@/services/guards/Guard';
+import { PermissionGuard } from '@/services/guards/PermissionGuard';
+import LRUCache from '@/services/manager/LRUCache';
+import type { AnyComponent, Button, ComponentMetrics, Modal, SelectMenu } from '@/types/index';
+import { type ComponentType, loadAllComponents } from '@/utils/helpers/loadComponents';
 import type { Client, Interaction } from 'discord.js';
-import type { AnyComponent, Button, ComponentMetrics, Modal, SelectMenu } from '../types/index';
-import { type ComponentType, loadAllComponents } from '../utils/helpers/loadComponents';
-import { CooldownGuard } from './guards/CooldownGuard';
-import { EnvironmentGuard } from './guards/EnvironmentGuard';
-import type { Guard } from './guards/Guard';
-import { PermissionGuard } from './guards/PermissionGuard';
-import LRUCache from './manager/LRUCache';
 
 /**
  * Unified component manager that handles all component types with robust validation.
