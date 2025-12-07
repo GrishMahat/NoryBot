@@ -20,7 +20,6 @@ export * from './features/currency';
 export * from './features/currency';
 export * from './features/image';
 export * from './discord/components';
-export * from './interactive';
 
 // API Integration Types
 export * from './api/reddit';

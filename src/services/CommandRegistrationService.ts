@@ -1,4 +1,5 @@
 import 'colors';
+import compareContextMenus from '@/utils/validators/contextmenusComparing';
 import {
 	type ApplicationCommand,
 	type ApplicationCommandOptionData,
@@ -13,7 +14,6 @@ import getApplicationCommands from '../utils/helpers/getApplicationCommands';
 import getLocalCommands from '../utils/helpers/getLocalCommands';
 import getLocalContextMenus from '../utils/helpers/getLocalContextMenus'; // You might need to make sure this path is correct relative to services
 import compareCommands from '../utils/validators/commandComparing';
-import compareContextMenus from '../utils/validators/contextmenusComparing';
 
 export class CommandRegistrationService {
 	private readonly client: Client;
@@ -211,19 +211,18 @@ export class CommandRegistrationService {
 	): Promise<boolean> {
 		if (compareCommands(existingCommand, localCommand)) {
 			try {
-				const defaultMemberPermissions = localCommand.data.default_member_permissions
-					? new PermissionsBitField(
-							localCommand.data.default_member_permissions as PermissionResolvable,
-						)
+				const commandData = localCommand.data.toJSON();
+				const defaultMemberPermissions = commandData.default_member_permissions
+					? new PermissionsBitField(commandData.default_member_permissions as PermissionResolvable)
 					: null;
 
 				await existingCommand.edit({
-					name: localCommand.data.name,
-					description: localCommand.data.description ?? '',
-					contexts: localCommand.data.contexts ?? [0, 1, 2],
-					integrationTypes: localCommand.data.integration_types ?? [0, 1],
-					options: (localCommand.data.options as ApplicationCommandOptionData[]) ?? [],
-					dmPermission: localCommand.data.dm_permission ?? true,
+					name: commandData.name,
+					description: commandData.description ?? '',
+					contexts: commandData.contexts ?? [0, 1, 2],
+					integrationTypes: commandData.integration_types ?? [0, 1],
+					options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
+					dmPermission: commandData.dm_permission ?? true,
 					defaultMemberPermissions,
 				});
 				return true;
@@ -236,17 +235,18 @@ export class CommandRegistrationService {
 
 	private async createCommand(data: LocalCommand['data']): Promise<void> {
 		try {
-			const defaultMemberPermissions = data.default_member_permissions
-				? new PermissionsBitField(data.default_member_permissions as PermissionResolvable)
+			const commandData = data.toJSON();
+			const defaultMemberPermissions = commandData.default_member_permissions
+				? new PermissionsBitField(commandData.default_member_permissions as PermissionResolvable)
 				: null;
 
 			await this.client.application?.commands.create({
-				name: data.name,
-				description: data.description ?? '',
-				contexts: data.contexts ?? [0, 1, 2],
-				integrationTypes: data.integration_types ?? [0, 1],
-				options: (data.options as ApplicationCommandOptionData[]) ?? [],
-				dmPermission: data.dm_permission ?? true,
+				name: commandData.name,
+				description: commandData.description ?? '',
+				contexts: commandData.contexts ?? [0, 1, 2],
+				integrationTypes: commandData.integration_types ?? [0, 1],
+				options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
+				dmPermission: commandData.dm_permission ?? true,
 				defaultMemberPermissions,
 			});
 		} catch (err) {

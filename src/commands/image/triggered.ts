@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { triggered } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -6,7 +7,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 const triggeredCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('triggered')
@@ -15,8 +15,7 @@ const triggeredCommand: LocalCommand = {
 			option.setName('user').setDescription('The user to trigger').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Fun',

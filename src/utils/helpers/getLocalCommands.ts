@@ -1,5 +1,5 @@
 import path from 'path';
-import type { LocalCommand } from '../../types/index';
+import type { LocalCommand } from '@/types';
 import getAllFiles from './getAllFiles';
 
 /**

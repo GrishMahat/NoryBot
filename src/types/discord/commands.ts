@@ -15,7 +15,9 @@ import type {
 	GuildMember,
 	Message,
 	PermissionResolvable,
-	PermissionsBitField,
+	SlashCommandBuilder,
+	SlashCommandOptionsOnlyBuilder,
+	SlashCommandSubcommandsOnlyBuilder,
 	TextBasedChannel,
 	User,
 } from 'discord.js';
@@ -132,19 +134,7 @@ export interface CompiledChecks<T> {
  * Represents a local command implementation with full type safety
  */
 export interface LocalCommand extends BaseCommandConfig {
-	data: {
-		name: string;
-		description?: string;
-		options?: ApplicationCommandOption[];
-		type?: ApplicationCommandType;
-		contexts?: ApplicationCommandContextType[] | null;
-		integration_types?: ApplicationCommandIntegrationType[] | null;
-		nsfw?: boolean;
-		dm_permission?: boolean;
-		default_member_permissions?: PermissionsBitField | string | null;
-		name_localizations?: Record<string, string> | null;
-		description_localizations?: Record<string, string> | null;
-	};
+	data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder | SlashCommandOptionsOnlyBuilder;
 	category?: string;
 	run: (client: Client, interaction: ChatInputCommandInteraction) => Promise<void>;
 	autocomplete?: (client: Client, interaction: AutocompleteInteraction) => Promise<void>;

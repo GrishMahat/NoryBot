@@ -1,5 +1,5 @@
 import path from 'path';
-import type { Button, Modal, SelectMenu } from '../../types/index';
+import type { Button, Modal, SelectMenu } from '@/types';
 import getAllFiles from './getAllFiles';
 
 /**

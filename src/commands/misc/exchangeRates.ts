@@ -1,4 +1,6 @@
 import path from 'path';
+import emojiConfig from '@/config/emoji';
+import { type Currency, allCurrencies, commonCurrencies } from '@/types';
 import axios from 'axios';
 import {
 	type CacheType,
@@ -9,8 +11,6 @@ import {
 	time,
 } from 'discord.js';
 import fs from 'fs/promises';
-import emojiConfig from '../../config/emoji';
-import { type Currency, allCurrencies, commonCurrencies } from '../../types/index';
 
 const apiUrl = 'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
 const CACHE_FILE = path.join(process.cwd(), 'src/assets/json/exchangeRates.json');
@@ -54,8 +54,7 @@ const currencyCommand: LocalCommand = {
 				.setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Misc',

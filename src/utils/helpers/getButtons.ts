@@ -1,4 +1,4 @@
-import type { Button } from '../../types/index';
+import type { Button } from '@/types';
 import { loadButtons } from './loadComponents';
 
 /**

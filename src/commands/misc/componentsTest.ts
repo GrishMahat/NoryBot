@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -7,15 +8,13 @@ import {
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const componentsTestCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('components-test')
 		.setDescription('Send test components to verify buttons, selects and modals work')
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	devOnly: false,
 	testMode: true,
 	cooldown: 3,

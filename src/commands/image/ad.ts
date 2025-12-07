@@ -18,9 +18,7 @@ const admixCommand: LocalCommand = {
 				.setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

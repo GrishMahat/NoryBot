@@ -1,5 +1,5 @@
 import path from 'path';
-import type { LocalContextMenu } from '../../types/index';
+import type { LocalContextMenu } from '@/types';
 import getAllFiles from './getAllFiles';
 
 /**

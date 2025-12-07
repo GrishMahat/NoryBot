@@ -1,5 +1,5 @@
 import { type Client, MessageFlags, type StringSelectMenuInteraction } from 'discord.js';
-import type { SelectMenu } from '../../../types/index';
+import type { SelectMenu } from '../@/types';
 
 const exampleSelectMenu: SelectMenu = {
 	customId: 'test-select',

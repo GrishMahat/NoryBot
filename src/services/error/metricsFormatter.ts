@@ -1,4 +1,4 @@
-import type { PerformanceMetrics } from '../../types/index';
+import type { PerformanceMetrics } from '@/types';
 
 export class MetricsFormatter {
 	public static formatPerformanceMetrics(metrics: PerformanceMetrics): string {

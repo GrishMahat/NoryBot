@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { gay } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -6,7 +7,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 const gayCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('gay')
@@ -18,8 +18,7 @@ const gayCommand: LocalCommand = {
 				.setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Fun',

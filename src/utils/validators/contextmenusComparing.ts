@@ -1,5 +1,5 @@
+import type { LocalContextMenu } from '@/types';
 import { type ApplicationCommand, ApplicationCommandType } from 'discord.js';
-import type { LocalContextMenu } from '../../types/index';
 
 /**
  * Compares an existing context menu command with a local command to determine if there are any differences.

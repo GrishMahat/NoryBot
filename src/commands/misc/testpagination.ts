@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -6,7 +7,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 import { Pagination } from '../../utils/helpers/Pagination';
 
 const testPagination: LocalCommand = {
@@ -26,10 +26,9 @@ const testPagination: LocalCommand = {
 		.addBooleanOption((option) =>
 			option.setName('jump').setDescription('Enable Jump to Page button'),
 		)
-		.addBooleanOption((option) => option.setName('stop').setDescription('Enable Stop button'))
-		.toJSON(),
+		.addBooleanOption((option) => option.setName('stop').setDescription('Enable Stop button')),
 	devOnly: false,
-	deleted: true,
+	deleted: false,
 	testMode: true,
 	run: async (_client: Client, interaction: ChatInputCommandInteraction) => {
 		const type = (interaction.options.getString('type') as 'button' | 'select' | 'both') || 'both';

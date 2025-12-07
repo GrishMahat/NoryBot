@@ -1,4 +1,4 @@
-import { type ErrorDetails, type ErrorMetrics, ErrorSeverity } from '../../types/index';
+import { type ErrorDetails, type ErrorMetrics, ErrorSeverity } from '@/types';
 
 export class ErrorMetricsService {
 	private metrics: Map<string, ErrorMetrics>;

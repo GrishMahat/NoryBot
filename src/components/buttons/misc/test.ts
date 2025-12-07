@@ -1,5 +1,5 @@
 import type { ButtonInteraction, Client } from 'discord.js';
-import type { Button } from '../../../types/index';
+import type { Button } from '../@/types';
 
 const testButton: Button = {
 	customId: 'test-button',

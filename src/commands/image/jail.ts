@@ -15,8 +15,7 @@ const jailCommand: LocalCommand = {
 			option.setName('user').setDescription('The user to put in jail').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

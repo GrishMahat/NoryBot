@@ -1,13 +1,13 @@
 import type {
+	ApplicationCommandOption,
+	ApplicationCommandOptionChoice,
+	LocalCommand,
+} from '@/types';
+import type {
 	ApplicationCommand,
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
 } from 'discord.js';
-import type {
-	ApplicationCommandOption,
-	ApplicationCommandOptionChoice,
-	LocalCommand,
-} from '../../types/index';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
@@ -27,54 +27,58 @@ import type {
  * This function checks for differences in name, description, type, contexts, integration types, nsfw status, dm permission, default member permissions, and options.
  */
 const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boolean => {
-	// const commandName = local.data.name;
+	// Convert SlashCommandBuilder to plain object for comparison
+	const localData = local.data.toJSON();
 
 	// Quick checks for basic properties with early returns
-	if (existing.name !== local.data.name) {
+	if (existing.name !== localData.name) {
 		return true;
 	}
 
-	if (existing.description !== (local.data.description ?? '')) {
+	if (existing.description !== (localData.description ?? '')) {
 		return true;
 	}
 
-	if (existing.type !== (local.data.type ?? 1)) {
+	// Default type for SlashCommandBuilder is 1 (ChatInput)
+	// We need to handle this because toJSON() might not always strictly include type 1 if it's default
+	const localType = localData.type ?? 1;
+	if (existing.type !== localType) {
 		return true;
 	}
 
-	if (existing.nsfw !== (local.data.nsfw ?? false)) {
+	if (existing.nsfw !== (localData.nsfw ?? false)) {
 		return true;
 	}
 
-	if (existing.dmPermission !== (local.data.dm_permission ?? true)) {
+	if (existing.dmPermission !== (localData.dm_permission ?? true)) {
 		return true;
 	}
 
 	// Check contexts with normalized comparison
 	// Discord API might return different default contexts than our local commands
 	const existingContexts = normalizeContexts(existing.contexts);
-	const localContexts = normalizeContexts(local.data.contexts);
+	const localContexts = normalizeContexts(localData.contexts);
 	if (!arraysEqual(existingContexts, localContexts)) {
 		return true;
 	}
 
 	// Check integration types with normalized comparison
 	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
-	const localIntegrationTypes = normalizeIntegrationTypes(local.data.integration_types);
+	const localIntegrationTypes = normalizeIntegrationTypes(localData.integration_types);
 	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
 		return true;
 	}
 
 	// Check default member permissions
 	const existingPerms = existing.defaultMemberPermissions?.toString() || null;
-	const localPerms = local.data.default_member_permissions?.toString() || null;
+	const localPerms = localData.default_member_permissions?.toString() || null;
 	if (existingPerms !== localPerms) {
 		return true;
 	}
 
 	// Check options only if they exist (most expensive operation)
 	const existingOptions = existing.options || [];
-	const localOptions = local.data.options || [];
+	const localOptions = localData.options || [];
 
 	if (existingOptions.length !== localOptions.length) {
 		return true;
@@ -83,7 +87,7 @@ const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boo
 	// Only do deep comparison if options exist
 	if (existingOptions.length > 0) {
 		const existingOptionsArray = optionsArray(existing);
-		const localOptionsArray = optionsArray(local.data);
+		const localOptionsArray = optionsArray(localData);
 		const optionsEqual = arraysEqual(existingOptionsArray, localOptionsArray);
 		return !optionsEqual;
 	}
@@ -176,7 +180,18 @@ function normalizeObject(
  * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
-function optionsArray(cmd: ApplicationCommand | LocalCommand['data']): unknown[] {
+// Update import to include correct type if needed, but for now we can rely on the fact that toJSON returns RESTPostAPIChatInputApplicationCommandsJSONBody
+import type { RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
+
+/**
+ * Converts command options into an array format for comparison.
+ *
+ * @param {ApplicationCommand | RESTPostAPIChatInputApplicationCommandsJSONBody} cmd - The command whose options need to be processed.
+ * @returns {unknown[]} - The processed array of command options.
+ */
+function optionsArray(
+	cmd: ApplicationCommand | RESTPostAPIChatInputApplicationCommandsJSONBody,
+): unknown[] {
 	return (cmd.options || []).map((option) => {
 		const cleanedOption = normalizeObject(option) as Partial<ApplicationCommandOption>;
 		cleanObject(cleanedOption);

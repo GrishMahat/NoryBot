@@ -1,4 +1,4 @@
-import type { SelectMenu } from '../../types/index';
+import type { SelectMenu } from '@/types';
 import { loadSelects } from './loadComponents';
 
 /**

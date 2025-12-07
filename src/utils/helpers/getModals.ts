@@ -1,4 +1,4 @@
-import type { Modal } from '../../types/index';
+import type { Modal } from '@/types';
 import { loadModals } from './loadComponents';
 
 /**

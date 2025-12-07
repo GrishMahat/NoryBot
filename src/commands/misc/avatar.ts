@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import {
 	type ChatInputCommandInteraction,
 	type Client,
@@ -6,7 +7,6 @@ import {
 	SlashCommandBuilder,
 	type User,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const avatarCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -16,8 +16,7 @@ const avatarCommand: LocalCommand = {
 			option.setName('user').setDescription('User whose avatar you want to see').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 
 	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		try {

@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { rip } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -7,7 +8,6 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const ripCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -15,8 +15,7 @@ const ripCommand: LocalCommand = {
 		.setDescription("Create a memorial tombstone with a user's avatar")
 		.addUserOption((option) =>
 			option.setName('user').setDescription('The user to memorialize').setRequired(false),
-		)
-		.toJSON(),
+		),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

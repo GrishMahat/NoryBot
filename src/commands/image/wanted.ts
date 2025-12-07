@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { wanted } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -6,7 +7,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const wantedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -34,8 +34,7 @@ const wantedCommand: LocalCommand = {
 				.setMaxValue(10000000000000),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

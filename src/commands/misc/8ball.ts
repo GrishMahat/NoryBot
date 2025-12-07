@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import {
 	type ChatInputCommandInteraction,
 	type Client,
@@ -5,7 +6,6 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const responses = [
 	'It is certain.',
@@ -38,8 +38,7 @@ const eightBallCommand: LocalCommand = {
 			option.setName('question').setDescription('The question you want to ask').setRequired(true),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	cooldown: 5,
 
 	run: async (_client: Client, interaction: ChatInputCommandInteraction) => {

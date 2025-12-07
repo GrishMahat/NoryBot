@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { Delete } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -6,7 +7,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const deleteCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -16,8 +16,7 @@ const deleteCommand: LocalCommand = {
 			option.setName('user').setDescription('The user to delete').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

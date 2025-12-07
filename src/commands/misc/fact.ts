@@ -1,3 +1,4 @@
+import emojiConfig from '@/config/emoji';
 import axios from 'axios';
 import {
 	ActionRowBuilder,
@@ -11,7 +12,6 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import emojiConfig from '../../config/emoji';
 
 const factCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -32,8 +32,7 @@ const factCommand: LocalCommand = {
 				),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Misc',

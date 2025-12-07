@@ -1,4 +1,5 @@
 import os from 'os';
+import type { LocalCommand } from '@/types';
 import {
 	type ChatInputCommandInteraction,
 	type Client,
@@ -7,15 +8,13 @@ import {
 	version as discordVersion,
 } from 'discord.js';
 import emojiConfig from '../../config/emoji';
-import type { LocalCommand } from '../../types/index';
 
 const pingCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Shows detailed system statistics and bot performance metrics')
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	devOnly: true,
 
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {

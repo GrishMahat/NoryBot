@@ -1,5 +1,8 @@
 /** @format */
 
+import type { LocalCommand } from '@/types';
+import { Pagination } from '@/utils/helpers/Pagination';
+import { formatTimestamp } from '@/utils/helpers/misc'; // Assuming a helper for timestamp formatting
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -20,9 +23,6 @@ import {
 	type TextChannel,
 	type User,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
-import { Pagination } from '../../utils/helpers/Pagination';
-import { formatTimestamp } from '../../utils/helpers/misc'; // Assuming a helper for timestamp formatting
 
 // Constants
 const DEFAULT_EMBED_COLOR: ColorResolvable = 'Green';
@@ -184,8 +184,7 @@ const serversCommand: LocalCommand = {
 						.setDescription('The search query (server name or ID).')
 						.setRequired(true),
 				),
-		)
-		.toJSON(),
+		),
 	userPermissions: [PermissionFlagsBits.Administrator],
 	botPermissions: [PermissionFlagsBits.CreateInstantInvite], // Added required permission
 	cooldown: 10,
@@ -237,14 +236,15 @@ const serversCommand: LocalCommand = {
 					});
 					break;
 			}
-		} catch (error) {
-			errorHandler.handleError(
-				error,
-				'Servers Command',
-				interaction.guild?.id,
-				interaction.channel?.id,
-				interaction.user.id,
-			);
+		} catch (_error) {
+			// this was remove  now use loggig.error
+			// errorHandler.handleError(
+			// 	error,
+			// 	'Servers Command',
+			// 	interaction.guild?.id,
+			// 	interaction.channel?.id,
+			// 	interaction.user.id,
+			// );
 
 			// console.error(`Error executing servers command (${subcommand}):`, error);
 			// Ensure reply is edited safely

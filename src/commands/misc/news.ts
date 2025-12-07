@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import axios from 'axios';
 import {
 	type ChatInputCommandInteraction,
@@ -5,7 +6,6 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 import { Pagination } from '../../utils/helpers/Pagination';
 
 interface NewsArticle {
@@ -56,8 +56,7 @@ const newsCommand: LocalCommand = {
 					{ name: 'Sports', value: 'sports' },
 					{ name: 'Technology', value: 'technology' },
 				),
-		)
-		.toJSON(),
+		),
 	devOnly: false,
 	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		const category = interaction.options.getString('category') || 'general';

@@ -14,8 +14,7 @@ const greyscaleCommand: LocalCommand = {
 			option.setName('user').setDescription('The user whose avatar to convert').setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

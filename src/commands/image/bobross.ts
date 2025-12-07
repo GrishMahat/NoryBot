@@ -1,3 +1,4 @@
+import type { LocalCommand } from '@/types';
 import { bobross } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
@@ -7,7 +8,6 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '../../types/index';
 
 const bobrossCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -20,8 +20,7 @@ const bobrossCommand: LocalCommand = {
 				.setRequired(false),
 		)
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	userPermissions: [],
 	botPermissions: [],
 	category: 'Image',

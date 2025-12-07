@@ -1,5 +1,7 @@
 import { unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import emojiConfig from '@/config/emoji';
+import type { LocalCommand, QuoteResponse } from '@/types';
 import { Quote } from 'discord-image-utils';
 import {
 	ActionRowBuilder,
@@ -14,16 +16,13 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import emojiConfig from '../../config/emoji';
-import type { LocalCommand, QuoteResponse } from '../../types/index';
 
 const quotesCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('quote')
 		.setDescription('Get an inspirational random quote as an image')
 		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1])
-		.toJSON(),
+		.setIntegrationTypes([0, 1]),
 	devOnly: false,
 	category: 'Misc',
 	cooldown: 15,

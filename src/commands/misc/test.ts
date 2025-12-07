@@ -18,8 +18,7 @@ const testCommand: Command = {
 		.setDescription('Test command')
 		.addSubcommand((subcommand) => subcommand.setName('button').setDescription('Test button'))
 		.addSubcommand((subcommand) => subcommand.setName('modal').setDescription('Test modal'))
-		.addSubcommand((subcommand) => subcommand.setName('select').setDescription('Test select'))
-		.toJSON(),
+		.addSubcommand((subcommand) => subcommand.setName('select').setDescription('Test select')),
 	testMode: false,
 	deleted: true,
 	run: async (_client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {

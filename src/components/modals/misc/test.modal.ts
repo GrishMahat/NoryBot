@@ -1,5 +1,5 @@
+import type { Modal } from '@/types';
 import { type Client, MessageFlags, type ModalSubmitInteraction } from 'discord.js';
-import type { Modal } from '../../../types/index';
 
 const modal: Modal = {
 	customId: 'test-modal',
