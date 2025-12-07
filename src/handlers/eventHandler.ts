@@ -2,8 +2,8 @@ import path from 'path';
 import { EventError, type EventInfo, type EventRegistry } from '@/types';
 import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
-import getAllFiles from '../utils/helpers/getAllFiles';
-import { isValidEventName } from '../utils/validators/isValidEventName';
+import getAllFiles from '@/utils/helpers/getAllFiles';
+import { isValidEventName } from '@/utils/validators/isValidEventName';
 
 export class EventManager {
 	private client: Client;

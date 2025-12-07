@@ -1,10 +1,27 @@
 # NoryBot
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Discord.js](https://img.shields.io/badge/Discord.js-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.js.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 A powerful Discord bot built with Discord.js v14, TypeScript, and MongoDB, featuring a modern and scalable architecture.
+
+## 📚 Documentation
+
+We have comprehensive documentation available to help you get started:
+
+### Basics
+-   **[Getting Started](./docs/getting-started.md)**: Installation, setup, and running the bot.
+-   **[Architecture Overview](./docs/architecture.md)**: Understand the tech stack and design decisions.
+
+### Developer Guides
+-   **[Creating Commands](./docs/guides/creating-commands.md)**: Slash commands, validation, and options.
+-   **[Context Menus](./docs/guides/context-menus.md)**: Right-click commands on Users and Messages.
+-   **[Components](./docs/guides/components.md)**: Buttons, Select Menus, Modals, and the Component Manager.
+-   **[Events](./docs/guides/events.md)**: Handling Discord events (Ready, MessageCreate, etc.).
+-   **[Database & Data Services](./docs/guides/database-and-services.md)**: MongoDB, Models, and the Service pattern.
+-   **[Core Services](./docs/guides/core-services.md)**: Managers, Registration, and Error Handling.
 
 ## ✨ Features
 
@@ -45,11 +62,6 @@ cp .env.example .env
 ```bash
 bun start
 ```
-Alternatively, you can build and run the executable separately:
-```bash
-bun build
-./dist/nory-bot
-```
 
 ## 📝 Available Scripts
 
@@ -72,20 +84,11 @@ bun build
 
 ## 🛡️ Security
 
-We take security seriously. Please review our [Security Policy](SECURITY.md) for:
-- Reporting vulnerabilities
-- Supported versions
-- Security update policy
+We take security seriously. Please review our [Security Policy](SECURITY.md) for details.
 
 ## 🤝 Contributing
 
-Contributions are welcome and appreciated! Here's how you can help:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please check out our [Contributing Guidelines](CONTRIBUTING.md).
 
 ## 📄 License
 
@@ -95,4 +98,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - [Discord.js](https://discord.js.org/) for the amazing Discord API library
 - [TypeScript](https://www.typescriptlang.org/) for the type safety
-- [MongoDB](https://www.mongodb.com/) for the database solution 
+- [MongoDB](https://www.mongodb.com/) for the database solution
