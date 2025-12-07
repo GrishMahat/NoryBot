@@ -1,3 +1,9 @@
+import { config } from '@/config/config';
+import mConfig from '@/config/messageConfig';
+import cooldownManager from '@/services/manager/CooldownManager';
+import LRUCache from '@/services/manager/LRUCache';
+import type { LocalContextMenu } from '@/types/index';
+import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
 import {
 	type Client,
 	type ColorResolvable,
@@ -10,12 +16,6 @@ import {
 	type PermissionResolvable,
 	TextChannel,
 } from 'discord.js';
-import { config } from '@/config/config';
-import mConfig from '@/config/messageConfig';
-import cooldownManager from '@/services/manager/CooldownManager';
-import LRUCache from '@/services/manager/LRUCache';
-import type { LocalContextMenu } from '@/types/index';
-import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
 
 interface ContextMenuMetrics {
 	uses: number;

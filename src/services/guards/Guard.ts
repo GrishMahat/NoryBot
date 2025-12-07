@@ -1,5 +1,5 @@
 import type { Interaction, InteractionReplyOptions } from 'discord.js';
-import type { BaseComponent } from '../../types/components';
+import type { BaseComponent } from '../../types/discord/components';
 
 /**
  * Represents a guard that validates an interaction before execution.

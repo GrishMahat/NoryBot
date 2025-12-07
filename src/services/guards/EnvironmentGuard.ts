@@ -1,7 +1,7 @@
 import { EmbedBuilder, type Interaction, type InteractionReplyOptions } from 'discord.js';
 import { config } from '../../config/config';
 import mConfig from '../../config/messageConfig';
-import type { BaseComponent } from '../../types/components';
+import type { BaseComponent } from '../../types/discord/components';
 import type { Guard } from './Guard';
 
 export class EnvironmentGuard implements Guard {

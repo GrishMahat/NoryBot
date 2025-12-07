@@ -88,14 +88,34 @@ export interface BaseCommandConfig {
 	userPermissions?: PermissionResolvable[];
 	/** Bot permissions required to execute this command */
 	botPermissions?: PermissionResolvable[];
+
 	/** Whether the command contains NSFW content */
 	nsfwMode?: boolean;
 	/** Cooldown period in seconds */
 	cooldown?: number;
+
 	/** Whether the command is only for developers */
 	devOnly?: boolean;
+	/** Whether the command is only for premium users/guilds */
+	premiumOnly?: boolean;
 	/** Whether the command is in test mode */
 	testMode?: boolean;
+
+	/**
+	 * Whether the command is experimental/beta
+	 * Handles adding disclaimers or restricting access automatically
+	 */
+	experimental?: boolean;
+
+	/**
+	 * Automatically defer the reply before running the command
+	 * @default false
+	 */
+	autoDefer?: boolean;
+
+	/** Whether the user must be in a voice channel */
+	voiceChannelOnly?: boolean;
+
 	/** Whether the command is marked as deleted */
 	deleted?: boolean;
 }

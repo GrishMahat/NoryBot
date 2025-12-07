@@ -1,3 +1,5 @@
+import type { RedditListing, RedditPostData } from '@/types/index';
+import { formatTimeAgo } from '@/utils/helpers/misc';
 import axios from 'axios';
 import {
 	ActionRowBuilder,
@@ -18,8 +20,6 @@ import {
 	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
-import type { RedditListing, RedditPostData } from '@/types/index';
-import { formatTimeAgo } from '@/utils/helpers/misc';
 
 // Constants
 const REDDIT_BASE_URL = 'https://www.reddit.com';
@@ -756,10 +756,37 @@ const redditCommand: Command = {
 				}
 			});
 			// Cleanup session after timeout
-			setTimeout(() => {
+			collector.on('end', async (_collected, reason) => {
 				activeSessions.delete(sessionId);
-				collector?.stop();
-			}, COMPONENT_TIMEOUT);
+
+				if (reason === 'time') {
+					try {
+						// Regenerate components to ensure we have the correct state, then disable them
+						const rows = createNavigationComponents(
+							session,
+							interaction as ChatInputCommandInteraction,
+						);
+						const timeFilter = createTimeFilterComponent(session);
+						if (timeFilter) {
+							rows.push(timeFilter);
+						}
+
+						const disabledRows = rows.map((row) => {
+							row.components.forEach((c) => c.setDisabled(true));
+							return row;
+						});
+
+						await interaction.editReply({
+							components: disabledRows,
+						});
+					} catch (error) {
+						// Only log if it's not a "Unknown Message" error (message might be deleted)
+						if (!(error instanceof Error && error.message.includes('Unknown Message'))) {
+							console.error('Failed to disable Reddit components:', error);
+						}
+					}
+				}
+			});
 		} catch (error) {
 			console.error('Reddit Command Error:', error);
 			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}`;

@@ -5,7 +5,7 @@ import {
 	type InteractionReplyOptions,
 } from 'discord.js';
 import mConfig from '../../config/messageConfig';
-import type { BaseComponent } from '../../types/components';
+import type { BaseComponent } from '../../types/discord/components';
 import type { Guard } from './Guard';
 
 export class PermissionGuard implements Guard {

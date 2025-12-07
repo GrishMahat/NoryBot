@@ -14,8 +14,20 @@ export interface BaseComponent {
 	cooldown?: number;
 	devOnly?: boolean;
 	testMode?: boolean;
+
+	/** Whether the component is experimental/beta */
+	experimental?: boolean;
+
+	/**
+	 * Automatically defer the update/reply
+	 * @default false
+	 */
+	autoDefer?: boolean;
 	userPermissions?: PermissionResolvable[];
 	botPermissions?: PermissionResolvable[];
+
+	premiumOnly?: boolean;
+	voiceChannelOnly?: boolean;
 
 	// Optional pre-compiled checks (legacy support, will be superseded by Guards)
 	compiledChecks?: {
