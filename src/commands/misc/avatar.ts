@@ -1,12 +1,15 @@
-import type { LocalCommand } from '@/types';
 import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	type ChatInputCommandInteraction,
 	type Client,
+	ComponentType,
 	EmbedBuilder,
 	type GuildMember,
 	SlashCommandBuilder,
-	type User,
 } from 'discord.js';
+import type { LocalCommand } from '@/types';
 
 const avatarCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -24,62 +27,122 @@ const avatarCommand: LocalCommand = {
 
 			const targetUser = interaction.options.getUser('user') || interaction.user;
 
-			if (!interaction.guild) {
-				await handleDMAvatar(interaction, targetUser);
-				return;
+			// Try to fetch member if in a guild
+			let targetMember: GuildMember | null = null;
+			if (interaction.guild) {
+				targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
 			}
 
-			const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
-			if (!targetMember) {
-				await interaction.editReply({
-					content: '❌ Could not fetch member information.',
+			// State for the interactive session
+			let showingServerAvatar = !!targetMember?.avatar; // Default to server avatar if it exists
+
+			const generateResponse = () => {
+				const isServer = showingServerAvatar && targetMember?.avatar;
+
+				// Get valid URLs
+				const avatarURL = isServer
+					? targetMember?.displayAvatarURL({ size: 4096 })
+					: targetUser.displayAvatarURL({ size: 4096 });
+
+				const isAnimated = isServer
+					? targetMember?.avatar?.startsWith('a_')
+					: targetUser.avatar?.startsWith('a_');
+
+				const embed = new EmbedBuilder()
+					.setAuthor({
+						name: `${targetUser.username}'s ${isServer ? 'Server' : 'Global'} Avatar`,
+						iconURL: avatarURL,
+					})
+					.setTitle('🖼️ Avatar Viewer')
+					.setDescription(
+						`Viewing **${isServer ? 'Server' : 'Global'}** Avatar for ${targetUser.toString()}`,
+					)
+					.setImage(avatarURL)
+					.setColor(targetMember?.displayColor || '#2F3136')
+					.setFooter({
+						text: `Requested by ${interaction.user.username}`,
+						iconURL: interaction.user.displayAvatarURL(),
+					})
+					.setTimestamp();
+
+				// --- Components ---
+				const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+
+				// Row 1: Texture/Format Buttons (Link Buttons)
+				const formatRow = new ActionRowBuilder<ButtonBuilder>();
+
+				// Helper for formats
+				const addFormatBtn = (label: string, ext: string) => {
+					const extension = ext as 'png' | 'jpg' | 'webp' | 'gif';
+					const url = isServer
+						? targetMember?.displayAvatarURL({ extension, size: 4096 })
+						: targetUser.displayAvatarURL({ extension, size: 4096 });
+					formatRow.addComponents(
+						new ButtonBuilder().setLabel(label).setStyle(ButtonStyle.Link).setURL(url),
+					);
+				};
+
+				addFormatBtn('PNG', 'png');
+				addFormatBtn('JPG', 'jpg');
+				addFormatBtn('WEBP', 'webp');
+				if (isAnimated) {
+					addFormatBtn('GIF', 'gif');
+				}
+
+				rows.push(formatRow);
+
+				// Row 2: Toggle Button (Only if server avatar exists and differs from global - simplistically check if member.avatar is set)
+				if (targetMember?.avatar) {
+					const toggleRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+						new ButtonBuilder()
+							.setCustomId('toggle_avatar_mode')
+							.setLabel(showingServerAvatar ? 'Show Global Avatar' : 'Show Server Avatar')
+							.setStyle(showingServerAvatar ? ButtonStyle.Secondary : ButtonStyle.Primary)
+							.setEmoji(showingServerAvatar ? '🌐' : '🏰'),
+					);
+					rows.push(toggleRow);
+				}
+
+				return { embeds: [embed], components: rows };
+			};
+
+			const response = await interaction.editReply(generateResponse());
+
+			// If we have interactive components (the toggle button), set up a collector
+			if (targetMember?.avatar) {
+				const collector = response.createMessageComponentCollector({
+					componentType: ComponentType.Button,
+					time: 60_000,
 				});
-				return;
-			}
 
-			const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+				collector.on('collect', async (i) => {
+					if (i.customId === 'toggle_avatar_mode') {
+						if (i.user.id !== interaction.user.id) {
+							await i.reply({
+								content: "You can't interact with this menu.",
+								ephemeral: true,
+							});
+							return;
+						}
 
-			const avatarData = await getAvatarData(targetUser, targetMember);
-			const { allAvatars } = avatarData;
-
-			if (allAvatars.length === 0) {
-				await interaction.editReply({
-					content: '❌ No avatar found for this user.',
+						// Toggle state
+						showingServerAvatar = !showingServerAvatar;
+						await i.update(generateResponse());
+					}
 				});
-				return;
+
+				collector.on('end', () => {
+					// Disable toggle button, keep link buttons?
+					// Usually we just disable interactions or remove the toggle row.
+					// Let's remove the toggle row to keep it clean, leaving just download links.
+					const finalResponse = generateResponse();
+					// Filter out the toggle row (which is the last one if it exists)
+					if (finalResponse.components.length > 1) {
+						finalResponse.components.pop();
+					}
+					interaction.editReply({ components: finalResponse.components }).catch(() => {});
+				});
 			}
-
-			const embedDescription = [
-				`👤 **User:** ${targetUser.toString()} (${targetUser.id})`,
-				`🖼️ **Global Avatar:** ${targetUser.avatar ? '✅' : '❌'}`,
-				`🖼️ **Server Avatar:** ${targetMember.avatar ? '✅' : '❌'}`,
-				`🎞️ **Animated:** ${targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_') ? '✅' : '❌'}`,
-				`📏 **Available Sizes:** ${sizes.join(', ')}px`,
-			];
-
-			const bannerURL = targetUser.bannerURL({ size: 4096 });
-			if (bannerURL) {
-				embedDescription.push(`🎌 **Banner:** [View Banner](${bannerURL})`);
-			}
-
-			const embed = new EmbedBuilder()
-				.setAuthor({
-					name: targetUser.tag || targetUser.username,
-					iconURL: targetUser.displayAvatarURL({ size: 16 }),
-				})
-				.setTitle('💎 Avatar Information')
-				.setDescription(embedDescription.join('\n'))
-				.setImage(targetUser.displayAvatarURL({ size: 4096 }))
-				.setColor(targetMember.displayColor || '#2F3136')
-				.setFooter({
-					text: `Requested by ${interaction.user.tag || interaction.user.username}`,
-					iconURL: interaction.user.displayAvatarURL(),
-				})
-				.setTimestamp();
-
-			await interaction.editReply({
-				embeds: [embed],
-			});
 		} catch (error) {
 			console.error('Error in avatar command:', error);
 			await interaction.editReply({
@@ -89,68 +152,4 @@ const avatarCommand: LocalCommand = {
 	},
 };
 
-// Rest of the code remains the same, just update the DM handler:
-
-async function handleDMAvatar(
-	interaction: ChatInputCommandInteraction,
-	targetUser: User,
-): Promise<void> {
-	const embed = new EmbedBuilder()
-		.setAuthor({
-			name: targetUser.tag || targetUser.username,
-			iconURL: targetUser.displayAvatarURL({ size: 16 }),
-		})
-		.setTitle('💎 Avatar Information')
-		.setDescription(`👤 **User:** ${targetUser.toString()} (${targetUser.id})`)
-		.setImage(targetUser.displayAvatarURL({ size: 4096 }))
-		.setColor('#2F3136')
-		.setTimestamp();
-
-	await interaction.editReply({ embeds: [embed] });
-}
-
-// The getAvatarData function remains unchanged
-function getAvatarData(
-	targetUser: User,
-	targetMember: GuildMember,
-): {
-	globalAvatars: Array<{ format: string; url: string; type: string }>;
-	serverAvatars: Array<{ format: string; url: string; type: string }>;
-	allAvatars: Array<{ format: string; url: string; type: string }>;
-} {
-	const formats = ['png', 'jpg', 'webp'];
-	if (targetUser.avatar?.startsWith('a_') || targetMember.avatar?.startsWith('a_')) {
-		formats.push('gif');
-	}
-
-	const globalAvatars = formats
-		.map((format) => ({
-			format,
-			url: targetUser.displayAvatarURL({
-				extension: format as 'png' | 'jpg' | 'webp' | 'gif',
-				size: 4096,
-				forceStatic: format !== 'gif',
-			}),
-			type: 'Global',
-		}))
-		.filter((avatar) => avatar.url);
-
-	const serverAvatars = targetMember.avatar
-		? formats
-				.map((format) => ({
-					format,
-					url: targetMember.displayAvatarURL({
-						extension: format as 'png' | 'jpg' | 'webp' | 'gif',
-						size: 4096,
-						forceStatic: format !== 'gif',
-					}),
-					type: 'Server',
-				}))
-				.filter((avatar) => avatar.url)
-		: [];
-
-	const allAvatars = [...globalAvatars, ...serverAvatars];
-
-	return { globalAvatars, serverAvatars, allAvatars };
-}
 export default avatarCommand;

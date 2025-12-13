@@ -1,4 +1,3 @@
-import { jail } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -6,6 +5,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { jail } from 'discord-image-utils';
 
 const jailCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

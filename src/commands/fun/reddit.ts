@@ -1,5 +1,3 @@
-import type { RedditListing, RedditPostData } from '@/types/index';
-import { formatTimeAgo } from '@/utils/helpers/misc';
 import axios from 'axios';
 import {
 	ActionRowBuilder,
@@ -20,6 +18,8 @@ import {
 	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
+import type { RedditListing, RedditPostData } from '@/types/index';
+import { formatTimeAgo } from '@/utils/helpers/misc';
 
 // Constants
 const REDDIT_BASE_URL = 'https://www.reddit.com';

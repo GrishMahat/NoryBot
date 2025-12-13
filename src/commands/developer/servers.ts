@@ -1,8 +1,5 @@
 /** @format */
 
-import type { LocalCommand } from '@/types';
-import { Pagination } from '@/utils/helpers/Pagination';
-import { formatTimestamp } from '@/utils/helpers/misc'; // Assuming a helper for timestamp formatting
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -23,6 +20,9 @@ import {
 	type TextChannel,
 	type User,
 } from 'discord.js';
+import type { LocalCommand } from '@/types';
+import { formatTimestamp } from '@/utils/helpers/misc'; // Assuming a helper for timestamp formatting
+import { Pagination } from '@/utils/helpers/Pagination';
 
 // Constants
 const DEFAULT_EMBED_COLOR: ColorResolvable = 'Green';

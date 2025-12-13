@@ -1,4 +1,3 @@
-import { sepia } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -6,6 +5,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { sepia } from 'discord-image-utils';
 
 const sepiaCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

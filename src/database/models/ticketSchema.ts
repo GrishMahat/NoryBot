@@ -1,4 +1,4 @@
-import { type Document, Schema, model } from 'mongoose';
+import { type Document, model, Schema } from 'mongoose';
 
 interface ITicket extends Document {
 	guildID: string;

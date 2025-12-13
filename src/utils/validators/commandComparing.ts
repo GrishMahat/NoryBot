@@ -1,13 +1,13 @@
 import type {
-	ApplicationCommandOption,
-	ApplicationCommandOptionChoice,
-	LocalCommand,
-} from '@/types';
-import type {
 	ApplicationCommand,
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
 } from 'discord.js';
+import type {
+	ApplicationCommandOption,
+	ApplicationCommandOptionChoice,
+	LocalCommand,
+} from '@/types';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.

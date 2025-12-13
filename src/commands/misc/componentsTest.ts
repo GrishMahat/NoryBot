@@ -1,4 +1,3 @@
-import type { LocalCommand } from '@/types';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -8,6 +7,7 @@ import {
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 } from 'discord.js';
+import type { LocalCommand } from '@/types';
 
 const componentsTestCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

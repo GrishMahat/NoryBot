@@ -1,4 +1,3 @@
-import type { LocalCommand } from '@/types';
 import axios from 'axios';
 import {
 	type ChatInputCommandInteraction,
@@ -6,7 +5,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import { Pagination } from '../../utils/helpers/Pagination';
+import type { LocalCommand } from '@/types';
+import { Pagination } from '@/utils/helpers/Pagination';
 
 interface NewsArticle {
 	title: string;

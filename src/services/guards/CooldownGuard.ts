@@ -1,6 +1,6 @@
 import { EmbedBuilder, type Interaction, type InteractionReplyOptions } from 'discord.js';
-import type { BaseComponent } from '../../types/discord/components';
-import cooldownManager from '../manager/CooldownManager';
+import cooldownManager from '@/services/manager/CooldownManager';
+import type { BaseComponent } from '@/types/discord/components';
 import type { Guard } from './Guard';
 
 export class CooldownGuard implements Guard {

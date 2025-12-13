@@ -1,5 +1,4 @@
 import 'colors';
-import compareContextMenus from '@/utils/validators/contextmenusComparing';
 import {
 	type ApplicationCommand,
 	type ApplicationCommandOptionData,
@@ -9,11 +8,12 @@ import {
 	type PermissionResolvable,
 	PermissionsBitField,
 } from 'discord.js';
-import type { LocalCommand, LocalContextMenu } from '../types/index';
-import getApplicationCommands from '../utils/helpers/getApplicationCommands';
-import getLocalCommands from '../utils/helpers/getLocalCommands';
-import getLocalContextMenus from '../utils/helpers/getLocalContextMenus'; // You might need to make sure this path is correct relative to services
-import compareCommands from '../utils/validators/commandComparing';
+import type { LocalCommand, LocalContextMenu } from '@/types/index';
+import getApplicationCommands from '@/utils/helpers/getApplicationCommands';
+import getLocalCommands from '@/utils/helpers/getLocalCommands';
+import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
+import compareCommands from '@/utils/validators/commandComparing';
+import compareContextMenus from '@/utils/validators/contextmenusComparing';
 
 export class CommandRegistrationService {
 	private readonly client: Client;

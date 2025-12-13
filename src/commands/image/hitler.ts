@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { hitler } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +5,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { hitler } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
 
 const hitlerCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

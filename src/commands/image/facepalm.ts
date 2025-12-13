@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { facepalm } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +5,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { facepalm } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
 
 const facepalmCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

@@ -1,5 +1,5 @@
-import { ErrorSeverity, type PerformanceMetrics } from '@/types';
 import { DiscordAPIError } from 'discord.js';
+import { ErrorSeverity, type PerformanceMetrics } from '@/types';
 
 export default function determineSeverity(
 	error: Error,

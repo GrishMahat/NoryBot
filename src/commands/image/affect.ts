@@ -1,4 +1,3 @@
-import { affect } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +6,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { affect } from 'discord-image-utils';
 
 const affectCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

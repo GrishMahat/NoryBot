@@ -1,19 +1,18 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
+	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"files": {
-		"ignore": [
-			"node_modules",
-			"dist",
-			"build",
-			"*.min.js",
-			".vscode",
-			"pnpm-lock.yaml",
-			"bun.lock",
-			"docs",
-			".github"
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/build",
+			"!**/*.min.js",
+			"!**/.vscode",
+			"!**/pnpm-lock.yaml",
+			"!**/bun.lock",
+			"!**/docs",
+			"!**/.github"
 		]
 	},
 	"formatter": {
@@ -46,11 +45,12 @@
 				"noAsyncPromiseExecutor": "error",
 				"noGlobalIsNan": "error",
 				"noAssignInExpressions": "error",
-				"noImplicitAnyLet": "warn"
+				"noImplicitAnyLet": "warn",
+				"noVar": "error",
+				"useIterableCallbackReturn": "off"
 			},
 			"style": {
 				"useConst": "warn",
-				"noVar": "error",
 				"useShorthandFunctionType": "off",
 				"useTemplate": "off",
 				"useNodejsImportProtocol": "off",
@@ -75,7 +75,7 @@
 	},
 	"overrides": [
 		{
-			"include": ["src/config/*", "src/types/*"],
+			"includes": ["**/src/config/**/*", "**/src/types/**/*"],
 			"linter": {
 				"rules": {
 					"correctness": {

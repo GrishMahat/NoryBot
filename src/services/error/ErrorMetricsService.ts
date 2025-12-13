@@ -113,7 +113,7 @@ export class ErrorMetricsService {
 	private cleanupOldMetrics(): void {
 		const cutoff = Date.now() - this.retentionPeriod;
 		for (const [key] of this.metrics) {
-			const timestamp = Number.parseInt(key.split(':')[1]);
+			const timestamp = Number.parseInt(key.split(':')[1], 10);
 			if (timestamp < cutoff) {
 				this.metrics.delete(key);
 			}

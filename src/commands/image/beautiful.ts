@@ -1,4 +1,3 @@
-import { beautiful } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -6,6 +5,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { beautiful } from 'discord-image-utils';
+
 const beautifulCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')

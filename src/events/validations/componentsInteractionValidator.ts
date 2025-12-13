@@ -1,7 +1,7 @@
+import type { Client, Interaction } from 'discord.js';
 import { componentManager } from '@/services/manager/ComponentManager';
 import { chatInputCommandValidator } from '@/utils/validators/chatInputCommandValidator';
 import { contextMenuCommandValidator } from '@/utils/validators/contextMenuCommandValidator';
-import type { Client, Interaction } from 'discord.js';
 
 /**
  * Main interaction handler that routes interactions to appropriate validators

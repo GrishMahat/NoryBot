@@ -1,8 +1,3 @@
-import { unlinkSync, writeFileSync } from 'fs';
-import { join } from 'path';
-import emojiConfig from '@/config/emoji';
-import type { LocalCommand, QuoteResponse } from '@/types';
-import { Quote } from 'discord-image-utils';
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -16,6 +11,11 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { Quote } from 'discord-image-utils';
+import { unlinkSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import emojiConfig from '@/config/emoji';
+import type { LocalCommand, QuoteResponse } from '@/types';
 
 const quotesCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

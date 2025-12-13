@@ -1,4 +1,3 @@
-import { bed } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +6,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { bed } from 'discord-image-utils';
 
 const bedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

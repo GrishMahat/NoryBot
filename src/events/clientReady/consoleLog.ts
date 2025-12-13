@@ -1,6 +1,6 @@
 import 'colors';
 import type { Client } from 'discord.js';
-import { MongoService } from '../../database/services/MongoService';
+import { MongoService } from '@/database/services/MongoService';
 
 const SEPARATOR = {
 	DOUBLE: '═',

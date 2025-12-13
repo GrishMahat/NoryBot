@@ -4,7 +4,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import emojiConfig from '../../config/emoji';
+import emojiConfig from '@/config/emoji';
 
 const timestampCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -73,8 +73,8 @@ const timestampCommand: Command = {
 				const timeParts = timeInput.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
 				if (timeParts) {
 					const [, hours, minutes, meridiem] = timeParts;
-					let hrs = Number.parseInt(hours);
-					const mins = Number.parseInt(minutes);
+					let hrs = Number.parseInt(hours, 10);
+					const mins = Number.parseInt(minutes, 10);
 
 					// Convert 12-hour to 24-hour format if needed
 					if (meridiem) {

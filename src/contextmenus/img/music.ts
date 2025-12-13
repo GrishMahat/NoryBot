@@ -1,4 +1,3 @@
-import { Music } from 'discord-image-utils';
 import {
 	ApplicationCommandType,
 	AttachmentBuilder,
@@ -7,6 +6,7 @@ import {
 	type ContextMenuCommandInteraction,
 	// MessageFlags,
 } from 'discord.js';
+import { Music } from 'discord-image-utils';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()

@@ -1,4 +1,3 @@
-import emojiConfig from '@/config/emoji';
 import axios from 'axios';
 import {
 	ActionRowBuilder,
@@ -12,6 +11,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import emojiConfig from '@/config/emoji';
 
 const factCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

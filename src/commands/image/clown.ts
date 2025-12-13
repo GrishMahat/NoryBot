@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { clown } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +5,9 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { clown } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
+
 const clownCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('clown')

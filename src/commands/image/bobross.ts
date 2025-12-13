@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { bobross } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -8,6 +6,8 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { bobross } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
 
 const bobrossCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

@@ -1,4 +1,3 @@
-import type { LocalCommand } from '@/types';
 import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -7,7 +6,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import { Pagination } from '../../utils/helpers/Pagination';
+import type { LocalCommand } from '@/types';
+import { Pagination } from '@/utils/helpers/Pagination';
 
 const testPagination: LocalCommand = {
 	data: new SlashCommandBuilder()

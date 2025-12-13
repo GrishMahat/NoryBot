@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { wanted } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +5,8 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { wanted } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
 
 const wantedCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

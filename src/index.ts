@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import 'colors';
-import { config } from '@/config/config';
-import Logger from '@/handlers/Logger';
-import { EventManager } from '@/handlers/eventHandler';
 import { Client, GatewayIntentBits } from 'discord.js';
+import { config } from '@/config/config';
+import { EventManager } from '@/handlers/eventHandler';
+import Logger from '@/handlers/Logger';
 
 // Create logger instance
 const logger = new Logger({

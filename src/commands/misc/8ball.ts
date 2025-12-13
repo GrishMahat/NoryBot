@@ -1,4 +1,3 @@
-import type { LocalCommand } from '@/types';
 import {
 	type ChatInputCommandInteraction,
 	type Client,
@@ -6,6 +5,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import type { LocalCommand } from '@/types';
 
 const responses = [
 	'It is certain.',

@@ -466,7 +466,7 @@ export class Pagination {
 						return;
 				}
 			} else if (i.isStringSelectMenu() && i.customId === 'pagination_select') {
-				this.currentPage = Number.parseInt(i.values[0]);
+				this.currentPage = Number.parseInt(i.values[0], 10);
 			}
 
 			await this.updateMessage();
@@ -500,7 +500,7 @@ export class Pagination {
 					modalInteraction.user.id === i.user.id,
 			});
 
-			const pageNum = Number.parseInt(submitted.fields.getTextInputValue('page_number'));
+			const pageNum = Number.parseInt(submitted.fields.getTextInputValue('page_number'), 10);
 
 			if (Number.isNaN(pageNum) || pageNum < 1 || pageNum > this.pages.length) {
 				await submitted.reply({

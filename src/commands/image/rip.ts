@@ -1,5 +1,3 @@
-import type { LocalCommand } from '@/types';
-import { rip } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -8,6 +6,8 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { rip } from 'discord-image-utils';
+import type { LocalCommand } from '@/types';
 
 const ripCommand: LocalCommand = {
 	data: new SlashCommandBuilder()

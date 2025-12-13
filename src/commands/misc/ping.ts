@@ -1,13 +1,26 @@
-import os from 'os';
-import type { LocalCommand } from '@/types';
 import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	type ChatInputCommandInteraction,
 	type Client,
+	ComponentType,
+	version as discordVersion,
 	EmbedBuilder,
 	SlashCommandBuilder,
-	version as discordVersion,
 } from 'discord.js';
-import emojiConfig from '../../config/emoji';
+import os from 'os';
+import emojiConfig from '@/config/emoji';
+import type { LocalCommand } from '@/types';
+
+const createProgressBar = (value: number, total: number, segments = 10): string => {
+	const percentage = value / total;
+	const filled = Math.round(percentage * segments);
+	const empty = segments - filled;
+	const filledChar = '■';
+	const emptyChar = '□';
+	return `[${filledChar.repeat(filled)}${emptyChar.repeat(empty)}]`;
+};
 
 const pingCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
@@ -19,106 +32,143 @@ const pingCommand: LocalCommand = {
 
 	run: async (client: Client, interaction: ChatInputCommandInteraction) => {
 		try {
-			const execStart = process.hrtime();
-			const startTime = Date.now();
 			await interaction.deferReply();
-			const endTime = Date.now();
 
-			const botLatency = endTime - startTime;
-			const apiLatency = Math.round(client.ws.ping);
+			const updatePingEmbed = async () => {
+				const _startTime = Date.now();
+				// Use a small ping to estimate internal latency if needed,
+				// or just measure execution of stats gathering.
+				// For 'Bot Latency' we usually compare now vs createdTimestamp
+				const botLatency = Math.abs(Date.now() - interaction.createdTimestamp);
+				const apiLatency = Math.round(client.ws.ping);
 
-			// Calculate uptime
-			const uptime = process.uptime();
-			const days = Math.floor(uptime / 86400);
-			const hours = Math.floor((uptime % 86400) / 3600);
-			const minutes = Math.floor((uptime % 3600) / 60);
-			const seconds = Math.floor(uptime % 60);
+				// Determine Color
+				let color: 0x57f287 | 0xfee75c | 0xed4245 = 0x57f287; // Green
+				if (botLatency > 200) color = 0xfee75c; // Yellow
+				if (botLatency > 500) color = 0xed4245; // Red
 
-			// Memory calculations
-			const memoryUsage = process.memoryUsage();
-			const totalMemory = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-			const freeMemory = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
-			const usedMemory = (memoryUsage.heapUsed / 1024 / 1024).toFixed(2);
+				// Uptime
+				const uptime = process.uptime();
+				const uptimeTimestamp = Math.floor(Date.now() / 1000 - uptime);
 
-			// CPU information
-			const cpuCount = os.cpus().length;
-			const cpuModel = os.cpus()[0].model;
-			const loadAvg = os.loadavg()[0];
-			const cpuUsage = ((loadAvg * 100) / cpuCount).toFixed(2);
+				// Memory
+				const memoryUsage = process.memoryUsage();
+				const totalMemoryBytes = os.totalmem();
+				const usedMemoryBytes = memoryUsage.rss; // RSS is more representative of process size
+				const totalMemoryGB = (totalMemoryBytes / 1024 / 1024 / 1024).toFixed(2);
+				const usedMemoryMB = (usedMemoryBytes / 1024 / 1024).toFixed(0);
+				const memoryPercent = Math.round((usedMemoryBytes / totalMemoryBytes) * 100);
 
-			// Calculate command execution time
-			const execEnd = process.hrtime(execStart);
-			const execTime = Math.round((execEnd[0] * 1e9 + execEnd[1]) / 1e6);
+				// CPU
+				const cpuCount = os.cpus().length;
+				const loadAvg = os.loadavg()[0]; // 1 min load average
+				// Load avg is often relative to 1 core, or all cores? On Linux it's system load.
+				// A rough approximation for %: (loadAvg / cpuCount) * 100
+				const cpuUsage = Math.min(100, Math.round((loadAvg / cpuCount) * 100));
 
-			const pongEmbed = new EmbedBuilder()
-				.setAuthor({
-					name: client.user?.username || 'Bot Status',
-					iconURL: client.user?.displayAvatarURL(),
-				})
-				.setTitle(`${emojiConfig.statistics} System Statistics`)
-				.setColor('#2b2d31')
-				.addFields(
-					{
-						name: `${emojiConfig.OfficeComputer} Bot Performance`,
-						value: [
-							`${emojiConfig.goodconnection} Bot Latency: \`${botLatency}ms\``,
-							`${emojiConfig.lowconnection} API Latency: \`${apiLatency}ms\``,
-							`${emojiConfig.chart_increasing} Execution Time: \`${execTime}ms\``,
-							`${emojiConfig.live} Discord.js: \`v${discordVersion}\``,
-						].join('\n'),
-						inline: false,
-					},
-					{
-						name: `${emojiConfig.statistics} Bot Statistics`,
-						value: [
-							`${emojiConfig.admintag} Servers: \`${client.guilds.cache.size}\``,
-							`${emojiConfig.user} Users: \`${client.users.cache.size}\``,
-							`${emojiConfig.mic} Channels: \`${client.channels.cache.size}\``,
-						].join('\n'),
-						inline: true,
-					},
-					{
-						name: `${emojiConfig.chart_increasing} Uptime`,
-						value: `\`${days}d ${hours}h ${minutes}m ${seconds}s\``,
-						inline: true,
-					},
-					{
-						name: '\u200b',
-						value: '\u200b',
-						inline: true,
-					},
-					{
-						name: `${emojiConfig.statistics} Memory`,
-						value: [
-							`${emojiConfig.yestag} Used: \`${usedMemory} MB\``,
-							`${emojiConfig.yestag} Total: \`${totalMemory} GB\``,
-							`${emojiConfig.yestag} Free: \`${freeMemory} GB\``,
-						].join('\n'),
-						inline: true,
-					},
-					{
-						name: `${emojiConfig.cpu} CPU`,
-						value: [
-							`${emojiConfig.yestag} Model: \`${cpuModel.split(' ')[0]}\``,
-							`${emojiConfig.yestag} Cores: \`${cpuCount}\``,
-							`${emojiConfig.yestag} Usage: \`${cpuUsage}%\``,
-						].join('\n'),
-						inline: true,
-					},
-					{
-						name: `${emojiConfig.OfficeComputer} System`,
-						value: [
-							`${emojiConfig.yestag} OS: \`${os.platform()} ${os.release()}\``,
-							`${emojiConfig.yestag} Node: \`${process.version}\``,
-							`${emojiConfig.yestag} Arch: \`${os.arch()}\``,
-						].join('\n'),
-						inline: false,
-					},
-				)
-				.setFooter({ text: `Last Updated • Host: ${os.hostname()}` })
-				.setTimestamp();
+				const embed = new EmbedBuilder()
+					.setAuthor({
+						name: `${client.user?.username} System Metrics`,
+						iconURL: client.user?.displayAvatarURL(),
+					})
+					.setTitle(`${emojiConfig.statistics} System Status`)
+					.setColor(color)
+					.addFields(
+						{
+							name: `${emojiConfig.OfficeComputer} Performance`,
+							value: [
+								`**Latency**: \`${botLatency}ms\``,
+								`**API**: \`${apiLatency}ms\``,
+								`**Uptime**: <t:${uptimeTimestamp}:R>`,
+							].join('\n'),
+							inline: true,
+						},
+						{
+							name: `${emojiConfig.statistics} Stats`,
+							value: [
+								`**Servers**: \`${client.guilds.cache.size}\``,
+								`**Users**: \`${client.users.cache.size}\``,
+								`**Channels**: \`${client.channels.cache.size}\``,
+							].join('\n'),
+							inline: true,
+						},
+						{
+							name: '\u200b',
+							value: '\u200b',
+							inline: true,
+						},
+						{
+							name: `${emojiConfig.cpu} Resource Usage`,
+							value: [
+								`**RAM**: \`${createProgressBar(memoryPercent, 100)}\` **${memoryPercent}%**`,
+								`\`${usedMemoryMB}MB / ${totalMemoryGB}GB\``,
+								'',
+								`**CPU**: \`${createProgressBar(cpuUsage, 100)}\` **${cpuUsage}%**`,
+								`\`${cpuCount} Cores\``,
+							].join('\n'),
+							inline: false,
+						},
+						{
+							name: `${emojiConfig.gear} Tech Stack`,
+							value: [
+								// Hardcoding Bun version/TS version if not easily available via process,
+								// but we can try process.version for Node/Bun
+								`**Runtime**: \`Bun ${process.version}\``,
+								`**Library**: \`Discord.js v${discordVersion}\``,
+							].join(' • '),
+							inline: false,
+						},
+					)
+					.setFooter({
+						text: `Last Updated`,
+					})
+					.setTimestamp();
 
-			await interaction.editReply({ embeds: [pongEmbed] });
+				return embed;
+			};
+
+			const initialEmbed = await updatePingEmbed();
+
+			const refreshButton = new ButtonBuilder()
+				.setCustomId('refresh_ping')
+				.setLabel('Refresh')
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji('🔄');
+
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(refreshButton);
+
+			const response = await interaction.editReply({
+				embeds: [initialEmbed],
+				components: [row],
+			});
+
+			const collector = response.createMessageComponentCollector({
+				componentType: ComponentType.Button,
+				time: 60_000, // 1 minute timeout
+			});
+
+			collector.on('collect', async (i) => {
+				if (i.customId === 'refresh_ping') {
+					if (i.user.id !== interaction.user.id) {
+						await i.reply({
+							content: "You can't interact with this menu.",
+							ephemeral: true,
+						});
+						return;
+					}
+
+					await i.deferUpdate();
+					const newEmbed = await updatePingEmbed();
+					await i.editReply({ embeds: [newEmbed] });
+				}
+			});
+
+			collector.on('end', () => {
+				const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+					refreshButton.setDisabled(true),
+				);
+				interaction.editReply({ components: [disabledRow] }).catch(() => {});
+			});
 		} catch (error) {
 			console.error('Error in ping command:', error);
 			await interaction.editReply({

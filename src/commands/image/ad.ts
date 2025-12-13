@@ -1,4 +1,3 @@
-import { ad } from 'discord-image-utils';
 import {
 	AttachmentBuilder,
 	type ChatInputCommandInteraction,
@@ -7,6 +6,8 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { ad } from 'discord-image-utils';
+
 const admixCommand: LocalCommand = {
 	data: new SlashCommandBuilder()
 		.setName('admix')

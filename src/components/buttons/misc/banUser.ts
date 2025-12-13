@@ -1,5 +1,5 @@
 import type { ButtonInteraction, Client } from 'discord.js';
-import type { Button } from '../@/types';
+import type { Button } from '@/types';
 
 const banUserButton: Button = {
 	customId: 'ban-user',

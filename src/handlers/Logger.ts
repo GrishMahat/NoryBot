@@ -1,25 +1,24 @@
 import { createHash } from 'crypto';
+import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } from 'discord.js';
-import { ErrorMetricsService } from '../services/error/ErrorMetricsService';
-import determineErrorCategory from '../services/error/determineErrorCategory';
-import determineSeverity from '../services/error/determineSeverity';
-import getRecoverySuggestions from '../services/error/getRecoverySuggestions';
-import { MetricsFormatter } from '../services/error/metricsFormatter';
-import { PerformanceMonitor } from '../services/error/performanceMonitor';
+import determineErrorCategory from '@/services/error/determineErrorCategory';
+import determineSeverity from '@/services/error/determineSeverity';
+import { ErrorMetricsService } from '@/services/error/ErrorMetricsService';
+import getRecoverySuggestions from '@/services/error/getRecoverySuggestions';
+import { MetricsFormatter } from '@/services/error/metricsFormatter';
+import { PerformanceMonitor } from '@/services/error/performanceMonitor';
 import {
 	type ErrorContext,
 	type ErrorDetails,
 	type ErrorGroup,
 	type ErrorHandlerConfig,
 	type ErrorInfo,
-	type ErrorMetrics,
 	ErrorSeverity,
 	type PerformanceMetrics,
-} from '../types/index';
-import { DevLogger } from '../utils/DevLogger';
+} from '@/types/index';
+import { DevLogger } from '@/utils/DevLogger';
 
 // Interface for Discord rate limit errors
 interface DiscordRateLimitError extends Error {
@@ -37,7 +36,6 @@ export class Logger {
 	private errorCache: Map<string, ErrorInfo>;
 	private errorGroups: Map<string, ErrorGroup>;
 	private config: ErrorHandlerConfig;
-	private metrics: Map<string, ErrorMetrics>;
 	private performanceMonitor: PerformanceMonitor | null = null;
 	private metricsService: ErrorMetricsService | null = null;
 	private logDirectory: string;
@@ -726,7 +724,7 @@ export class Logger {
 
 		// Enforce cache size limit - evict least recently seen
 		if (this.errorCache.size > this.config.maxCacheSize) {
-			let oldestKey: string | undefined = undefined;
+			let oldestKey: string | undefined;
 			let oldestTime = Number.POSITIVE_INFINITY;
 
 			for (const [k, v] of this.errorCache.entries()) {

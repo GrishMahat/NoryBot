@@ -1,4 +1,3 @@
-import type { Button } from '@/types/index';
 import {
 	ActionRowBuilder,
 	type ButtonInteraction,
@@ -8,6 +7,7 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 } from 'discord.js';
+import type { Button } from '@/types/index';
 
 const openModalButton: Button = {
 	customId: 'open-modal',

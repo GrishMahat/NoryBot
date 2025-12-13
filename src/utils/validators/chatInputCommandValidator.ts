@@ -1,10 +1,4 @@
 import 'colors';
-import { config } from '@/config/config';
-import mConfig from '@/config/messageConfig';
-import cooldownManager from '@/services/manager/CooldownManager';
-import LRUCache from '@/services/manager/LRUCache';
-import type { LocalCommand } from '@/types/index';
-import getLocalCommands from '@/utils/helpers/getLocalCommands';
 import {
 	type AutocompleteInteraction,
 	type ChatInputCommandInteraction,
@@ -21,6 +15,12 @@ import {
 	PermissionsBitField,
 	TextChannel,
 } from 'discord.js';
+import { config } from '@/config/config';
+import mConfig from '@/config/messageConfig';
+import cooldownManager from '@/services/manager/CooldownManager';
+import LRUCache from '@/services/manager/LRUCache';
+import type { LocalCommand } from '@/types/index';
+import getLocalCommands from '@/utils/helpers/getLocalCommands';
 
 // Interface for command usage metrics
 interface CommandMetrics {
