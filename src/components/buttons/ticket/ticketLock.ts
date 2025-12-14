@@ -1,9 +1,11 @@
-import type { TextChannel } from 'discord.js';
+import { PermissionFlagsBits, type TextChannel } from 'discord.js';
 import Ticket from '@/database/models/ticketSchema';
 import type { Button } from '@/types';
 
 const button: Button = {
 	customId: 'ticket_lock',
+	userPermissions: [PermissionFlagsBits.ManageChannels],
+	botPermissions: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.SendMessages],
 	run: async (_client, interaction) => {
 		try {
 			await interaction.deferReply({ ephemeral: true });

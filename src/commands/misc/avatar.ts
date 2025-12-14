@@ -40,9 +40,10 @@ const avatarCommand: Command = {
 				const isServer = showingServerAvatar && !!targetMember?.avatar;
 
 				// Get valid URLs
-				const avatarURL = isServer
-					? targetMember?.displayAvatarURL({ size: 4096 })
-					: targetUser.displayAvatarURL({ size: 4096 });
+				const avatarURL =
+					isServer && targetMember
+						? targetMember.displayAvatarURL({ size: 4096 })
+						: targetUser.displayAvatarURL({ size: 4096 });
 
 				const isAnimated = isServer
 					? targetMember?.avatar?.startsWith('a_')
@@ -74,9 +75,10 @@ const avatarCommand: Command = {
 				// Helper for formats
 				const addFormatBtn = (label: string, ext: string) => {
 					const extension = ext as 'png' | 'jpg' | 'webp' | 'gif';
-					const url = isServer
-						? targetMember?.displayAvatarURL({ extension, size: 4096 })
-						: targetUser.displayAvatarURL({ extension, size: 4096 });
+					const url =
+						isServer && targetMember
+							? targetMember.displayAvatarURL({ extension, size: 4096 })
+							: targetUser.displayAvatarURL({ extension, size: 4096 });
 					formatRow.addComponents(
 						new ButtonBuilder().setLabel(label).setStyle(ButtonStyle.Link).setURL(url),
 					);

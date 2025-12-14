@@ -47,42 +47,47 @@ const button: Button = {
 				return;
 			}
 
+			const overwrites = [
+				{
+					id: guild.id,
+					deny: [PermissionFlagsBits.ViewChannel],
+				},
+				{
+					id: interaction.user.id,
+					allow: [
+						PermissionFlagsBits.ViewChannel,
+						PermissionFlagsBits.SendMessages,
+						PermissionFlagsBits.ReadMessageHistory,
+					],
+				},
+				{
+					id: setup.staffRoleID,
+					allow: [
+						PermissionFlagsBits.ViewChannel,
+						PermissionFlagsBits.SendMessages,
+						PermissionFlagsBits.ReadMessageHistory,
+					],
+				},
+			];
+
+			if (client.user) {
+				overwrites.push({
+					id: client.user.id,
+					allow: [
+						PermissionFlagsBits.ViewChannel,
+						PermissionFlagsBits.SendMessages,
+						PermissionFlagsBits.ReadMessageHistory,
+						PermissionFlagsBits.ManageChannels,
+					],
+				});
+			}
+
 			// Create Ticket Channel
 			const channel = await guild.channels.create({
 				name: `ticket-${interaction.user.username}`,
 				type: ChannelType.GuildText,
 				parent: setup.categoryID,
-				permissionOverwrites: [
-					{
-						id: guild.id,
-						deny: [PermissionFlagsBits.ViewChannel],
-					},
-					{
-						id: interaction.user.id,
-						allow: [
-							PermissionFlagsBits.ViewChannel,
-							PermissionFlagsBits.SendMessages,
-							PermissionFlagsBits.ReadMessageHistory,
-						],
-					},
-					{
-						id: setup.staffRoleID,
-						allow: [
-							PermissionFlagsBits.ViewChannel,
-							PermissionFlagsBits.SendMessages,
-							PermissionFlagsBits.ReadMessageHistory,
-						],
-					},
-					{
-						id: client.user?.id || '',
-						allow: [
-							PermissionFlagsBits.ViewChannel,
-							PermissionFlagsBits.SendMessages,
-							PermissionFlagsBits.ReadMessageHistory,
-							PermissionFlagsBits.ManageChannels,
-						],
-					},
-				],
+				permissionOverwrites: overwrites,
 			});
 
 			// Save to DB
