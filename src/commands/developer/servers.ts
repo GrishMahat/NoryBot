@@ -20,8 +20,8 @@ import {
 	type TextChannel,
 	type User,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
-import { formatTimestamp } from '@/utils/helpers/misc'; // Assuming a helper for timestamp formatting
+import type { Command } from '@/types';
+import { formatTimestamp } from '@/utils/helpers/misc';
 import { Pagination } from '@/utils/helpers/Pagination';
 
 // Constants
@@ -96,7 +96,7 @@ async function generateInvite(guild: Guild): Promise<string | null> {
  * /servers stats
  * /servers search <query>
  */
-const serversCommand: LocalCommand = {
+const serversCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('servers')
 		.setDescription('Manage and view information about servers the bot is in.')

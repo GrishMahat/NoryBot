@@ -7,9 +7,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { bobross } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const bobrossCommand: LocalCommand = {
+const bobrossCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('bobross')
 		.setDescription("Turn someone's avatar into a Bob Ross painting")

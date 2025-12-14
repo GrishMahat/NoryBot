@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { facepalm } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const facepalmCommand: LocalCommand = {
+const facepalmCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('facepalm')
 		.setDescription("Generate a facepalm image with someone's avatar")

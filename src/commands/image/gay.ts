@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { gay } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const gayCommand: LocalCommand = {
+const gayCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('gay')
 		.setDescription("Add a rainbow effect to user's avatar")

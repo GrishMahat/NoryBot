@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { wanted } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const wantedCommand: LocalCommand = {
+const wantedCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('wanted')
 		.setDescription("Create a wanted poster with someone's avatar")

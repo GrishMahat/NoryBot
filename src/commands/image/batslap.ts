@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { Batslap } from 'discord-image-utils';
 
-const batslapCommand: LocalCommand = {
+const batslapCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('batslap')
 		.setDescription('Generate a batslap image with two users')

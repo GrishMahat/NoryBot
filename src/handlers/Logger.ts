@@ -78,7 +78,6 @@ export class Logger {
 
 		this.errorCache = new Map();
 		this.errorGroups = new Map();
-		this.metrics = new Map();
 
 		this.logDirectory = path.join(process.cwd(), 'logs');
 		this.ensureLogDirectory();

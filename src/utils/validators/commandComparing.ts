@@ -3,30 +3,26 @@ import type {
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
 } from 'discord.js';
-import type {
-	ApplicationCommandOption,
-	ApplicationCommandOptionChoice,
-	LocalCommand,
-} from '@/types';
+import type { ApplicationCommandOption, ApplicationCommandOptionChoice, Command } from '@/types';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
  * Optimized for better performance with early returns and efficient comparisons.
  *
  * @param {ApplicationCommand} existing - The existing application command.
- * @param {LocalCommand} local - The local command to compare against.
+ * @param {Command} local - The local command to compare against.
  * @returns {boolean} - Returns true if there are differences, otherwise false.
  * @example
  * // Basic usage
  * const existingCommand = { name: 'test', description: 'A test command' };
- * const localCommand = { data: { name: 'test', description: 'A test command' } };
- * const hasChanged = compareCommands(existingCommand, localCommand);
+ * const Command = { data: { name: 'test', description: 'A test command' } };
+ * const hasChanged = compareCommands(existingCommand, Command);
  * // hasChanged: false
  *
  * @note
  * This function checks for differences in name, description, type, contexts, integration types, nsfw status, dm permission, default member permissions, and options.
  */
-const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boolean => {
+const compareCommands = (existing: ApplicationCommand, local: Command): boolean => {
 	// Convert SlashCommandBuilder to plain object for comparison
 	const localData = local.data.toJSON();
 
@@ -177,7 +173,7 @@ function normalizeObject(
 /**
  * Converts command options into an array format for comparison.
  *
- * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
+ * @param {ApplicationCommand | Command['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
 // Update import to include correct type if needed, but for now we can rely on the fact that toJSON returns RESTPostAPIChatInputApplicationCommandsJSONBody

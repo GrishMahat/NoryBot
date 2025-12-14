@@ -395,7 +395,7 @@ export class Pagination {
 				// For DMs, try to create or fetch the DM channel
 				if (!channel && this.interaction.user) {
 					try {
-						channel = (await this.interaction.user.createDM()) as GuildTextBasedChannel;
+						channel = (await this.interaction.user.createDM()) as unknown as GuildTextBasedChannel;
 					} catch {
 						// DM channel creation failed
 					}

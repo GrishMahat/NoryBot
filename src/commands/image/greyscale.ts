@@ -6,8 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { greyscale } from 'discord-image-utils';
+import type { Command } from '@/types';
 
-const greyscaleCommand: LocalCommand = {
+const greyscaleCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('greyscale')
 		.setDescription("Convert someone's avatar to black and white")

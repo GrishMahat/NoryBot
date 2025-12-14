@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { beautiful } from 'discord-image-utils';
 
-const beautifulCommand: LocalCommand = {
+const beautifulCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')
 		.setDescription("Create a 'This is Beautiful' meme with someone's avatar")

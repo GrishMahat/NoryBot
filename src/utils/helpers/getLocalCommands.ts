@@ -1,5 +1,5 @@
 import path from 'path';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 import getAllFiles from './getAllFiles';
 
 /**
@@ -9,7 +9,7 @@ import getAllFiles from './getAllFiles';
  *
  * @param {string} commandFile - The path to the command file.
  * @param {string[]} exceptions - An array of command names to exclude from the import process.
- * @returns {Promise<LocalCommand | null>} The command object if valid, otherwise null.
+ * @returns {Promise<Command | null>} The command object if valid, otherwise null.
  * @throws {Error} Throws an error if there's a problem importing or processing the file, or if the command is in the exception list.
  * @example
  * // Basic usage
@@ -29,7 +29,7 @@ import getAllFiles from './getAllFiles';
 async function importCommandFile(
 	commandFile: string,
 	exceptions: string[],
-): Promise<LocalCommand | null> {
+): Promise<Command | null> {
 	try {
 		// Use dynamic import instead of pathToFileURL and require
 		const commandModule = await import(commandFile);
@@ -39,7 +39,7 @@ async function importCommandFile(
 			return null;
 		}
 
-		const commandObject: LocalCommand = commandModule.default;
+		const commandObject: Command = commandModule.default;
 
 		// Validate the command file by checking if it exports a default object with a 'name' property.
 		if (!commandObject?.data?.name) {
@@ -66,7 +66,7 @@ async function importCommandFile(
 	}
 }
 
-export default async function loadCommands(exceptions: string[] = []): Promise<LocalCommand[]> {
+export default async function loadCommands(exceptions: string[] = []): Promise<Command[]> {
 	// Update path to point to the src/commands directory
 	const commandsPath = path.join(__dirname, '..', '..', 'commands');
 
@@ -81,7 +81,7 @@ export default async function loadCommands(exceptions: string[] = []): Promise<L
 		const commandResults = await Promise.all(commandPromises);
 
 		// Filter out null results and return valid commands
-		return commandResults.filter((command): command is LocalCommand => command !== null);
+		return commandResults.filter((command): command is Command => command !== null);
 	} catch (error) {
 		console.error('Error loading commands:'.red, error);
 		return [];

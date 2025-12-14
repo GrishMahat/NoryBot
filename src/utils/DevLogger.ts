@@ -46,7 +46,6 @@ export class DevLogger {
 		const top = `┌${horizontal}┐`;
 		const bottom = `└${horizontal}┘`;
 
-		// @ts-expect-error - Dynamic color access
 		const c = (str: string) => str[color] as string;
 
 		console.log(c(top));

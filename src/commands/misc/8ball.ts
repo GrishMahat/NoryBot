@@ -5,7 +5,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
 const responses = [
 	'It is certain.',
@@ -30,7 +30,7 @@ const responses = [
 	'Very doubtful.',
 ];
 
-const eightBallCommand: LocalCommand = {
+const eightBallCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('8ball')
 		.setDescription('Ask the Magic 8 Ball a question')

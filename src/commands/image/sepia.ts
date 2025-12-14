@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { sepia } from 'discord-image-utils';
 
-const sepiaCommand: LocalCommand = {
+const sepiaCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('sepia')
 		.setDescription("Add a vintage sepia effect to someone's avatar")

@@ -9,9 +9,9 @@ import {
 	type GuildMember,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const avatarCommand: LocalCommand = {
+const avatarCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('avatar')
 		.setDescription('Show and interact with user avatars')

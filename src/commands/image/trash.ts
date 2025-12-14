@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { trash } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const trashCommand: LocalCommand = {
+const trashCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('trash')
 		.setDescription("Put someone's avatar in the trash")

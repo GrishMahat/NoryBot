@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { hitler } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const hitlerCommand: LocalCommand = {
+const hitlerCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('hitler')
 		.setDescription('Create a "Worse than Hitler" history channel meme')

@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { bed } from 'discord-image-utils';
 
-const bedCommand: LocalCommand = {
+const bedCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('bed')
 		.setDescription('Create a "Dad, there\'s a monster under my bed" meme')

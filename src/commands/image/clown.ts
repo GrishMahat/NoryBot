@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { clown } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const clownCommand: LocalCommand = {
+const clownCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('clown')
 		.setDescription("Generates an image of a user's avatar as a clown")

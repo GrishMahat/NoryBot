@@ -16,7 +16,7 @@ const apiUrl = 'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/late
 const CACHE_FILE = path.join(process.cwd(), 'src/assets/json/exchangeRates.json');
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
-const currencyCommand: LocalCommand = {
+const currencyCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('currency_converter')
 		.setDescription('Convert an amount between currencies')

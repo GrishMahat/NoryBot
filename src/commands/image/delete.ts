@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { Delete } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const deleteCommand: LocalCommand = {
+const deleteCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('delete')
 		.setDescription('Generate a "Delete This" meme with someone\'s avatar')

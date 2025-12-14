@@ -57,7 +57,7 @@ export interface ApplicationCommandOption {
 /**
  * Defines the structure of a command
  */
-export interface Command {
+export interface APICommand {
 	name: string;
 	description?: string;
 	options?: CommandOption[];
@@ -133,7 +133,7 @@ export interface CompiledChecks<T> {
 /**
  * Represents a local command implementation with full type safety
  */
-export interface LocalCommand extends BaseCommandConfig {
+export interface Command extends BaseCommandConfig {
 	data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder | SlashCommandOptionsOnlyBuilder;
 	category?: string;
 	run: (client: Client, interaction: ChatInputCommandInteraction) => Promise<void>;

@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { ad } from 'discord-image-utils';
 
-const admixCommand: LocalCommand = {
+const admixCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('admix')
 		.setDescription("Apply a cool effect to someone's avatar")
