@@ -5,7 +5,7 @@ declare global {
 	type Command = import('./discord/commands').Command;
 	type LocalContextMenu = import('./discord/commands').LocalContextMenu;
 	//New type   and old type  with  new name
-	// !todo  change all the Command  => Command; LocalContextMenu => ContextMenu
+	// TODO: Rename LocalContextMenu to ContextMenu throughout the codebase
 	type ContextMenu = import('./discord/commands').LocalContextMenu;
 	type SelectMenu = import('./discord/commands').SelectMenu;
 	type Button = import('./discord/commands').Button;
