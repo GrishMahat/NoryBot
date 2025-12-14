@@ -3,30 +3,26 @@ import type {
 	// ApplicationCommandOptionType, commante becouse of eslint
 	// PermissionsBitField,
 } from 'discord.js';
-import type {
-	ApplicationCommandOption,
-	ApplicationCommandOptionChoice,
-	LocalCommand,
-} from '@/types';
+import type { ApplicationCommandOption, ApplicationCommandOptionChoice, Command } from '@/types';
 
 /**
  * Compares an existing application command with a local command to determine if there are any differences.
  * Optimized for better performance with early returns and efficient comparisons.
  *
  * @param {ApplicationCommand} existing - The existing application command.
- * @param {LocalCommand} local - The local command to compare against.
+ * @param {Command} local - The local command to compare against.
  * @returns {boolean} - Returns true if there are differences, otherwise false.
  * @example
  * // Basic usage
  * const existingCommand = { name: 'test', description: 'A test command' };
- * const localCommand = { data: { name: 'test', description: 'A test command' } };
- * const hasChanged = compareCommands(existingCommand, localCommand);
+ * const Command = { data: { name: 'test', description: 'A test command' } };
+ * const hasChanged = compareCommands(existingCommand, Command);
  * // hasChanged: false
  *
  * @note
  * This function checks for differences in name, description, type, contexts, integration types, nsfw status, dm permission, default member permissions, and options.
  */
-const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boolean => {
+const compareCommands = (existing: ApplicationCommand, local: Command): boolean => {
 	// Convert SlashCommandBuilder to plain object for comparison
 	const localData = local.data.toJSON();
 
@@ -56,15 +52,23 @@ const compareCommands = (existing: ApplicationCommand, local: LocalCommand): boo
 
 	// Check contexts with normalized comparison
 	// Discord API might return different default contexts than our local commands
-	const existingContexts = normalizeContexts(existing.contexts);
-	const localContexts = normalizeContexts(localData.contexts);
+	// biome-ignore lint/suspicious/noExplicitAny: Context types are numbers but TS complains about compatibility
+	const existingContexts = normalizeContexts((existing.contexts as any) || undefined);
+	// biome-ignore lint/suspicious/noExplicitAny: Context types are numbers but TS complains about compatibility
+	const localContexts = normalizeContexts((localData.contexts as any) || undefined);
 	if (!arraysEqual(existingContexts, localContexts)) {
 		return true;
 	}
 
 	// Check integration types with normalized comparison
-	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
-	const localIntegrationTypes = normalizeIntegrationTypes(localData.integration_types);
+	const existingIntegrationTypes = normalizeIntegrationTypes(
+		// biome-ignore lint/suspicious/noExplicitAny: Integration types are numbers but TS complains about compatibility
+		(existing.integrationTypes as any) || undefined,
+	);
+	const localIntegrationTypes = normalizeIntegrationTypes(
+		// biome-ignore lint/suspicious/noExplicitAny: Integration types are numbers but TS complains about compatibility
+		(localData.integration_types as any) || undefined,
+	);
 	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
 		return true;
 	}
@@ -168,7 +172,8 @@ function normalizeObject(
 		name: input.name,
 		description: input.description,
 		options: input.options
-			? (normalizeObject(input.options) as Partial<ApplicationCommandOption[]>)
+			? // biome-ignore lint/suspicious/noExplicitAny: Casting to any to handle type mismatch
+				(normalizeObject(input.options as ApplicationCommandOption[]) as any)
 			: undefined,
 		required: input.required,
 	};
@@ -177,7 +182,7 @@ function normalizeObject(
 /**
  * Converts command options into an array format for comparison.
  *
- * @param {ApplicationCommand | LocalCommand['data']} cmd - The command whose options need to be processed.
+ * @param {ApplicationCommand | Command['data']} cmd - The command whose options need to be processed.
  * @returns {unknown[]} - The processed array of command options.
  */
 // Update import to include correct type if needed, but for now we can rely on the fact that toJSON returns RESTPostAPIChatInputApplicationCommandsJSONBody
@@ -193,7 +198,8 @@ function optionsArray(
 	cmd: ApplicationCommand | RESTPostAPIChatInputApplicationCommandsJSONBody,
 ): unknown[] {
 	return (cmd.options || []).map((option) => {
-		const cleanedOption = normalizeObject(option) as Partial<ApplicationCommandOption>;
+		// biome-ignore lint/suspicious/noExplicitAny: Casting to any to handle type mismatch
+		const cleanedOption = normalizeObject(option as any) as Partial<ApplicationCommandOption>;
 		cleanObject(cleanedOption);
 		return {
 			...cleanedOption,

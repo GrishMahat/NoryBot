@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { hitler } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const hitlerCommand: LocalCommand = {
+const hitlerCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('hitler')
 		.setDescription('Create a "Worse than Hitler" history channel meme')
@@ -47,7 +47,7 @@ const hitlerCommand: LocalCommand = {
 				.setColor('#8B4513')
 				.setAuthor({
 					name: 'History Channel at Midnight',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

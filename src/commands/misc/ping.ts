@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 import os from 'os';
 import emojiConfig from '@/config/emoji';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
 const createProgressBar = (value: number, total: number, segments = 10): string => {
 	const percentage = value / total;
@@ -22,7 +22,7 @@ const createProgressBar = (value: number, total: number, segments = 10): string 
 	return `[${filledChar.repeat(filled)}${emptyChar.repeat(empty)}]`;
 };
 
-const pingCommand: LocalCommand = {
+const pingCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Shows detailed system statistics and bot performance metrics')

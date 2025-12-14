@@ -9,9 +9,9 @@ import {
 	type GuildMember,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const avatarCommand: LocalCommand = {
+const avatarCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('avatar')
 		.setDescription('Show and interact with user avatars')
@@ -37,12 +37,13 @@ const avatarCommand: LocalCommand = {
 			let showingServerAvatar = !!targetMember?.avatar; // Default to server avatar if it exists
 
 			const generateResponse = () => {
-				const isServer = showingServerAvatar && targetMember?.avatar;
+				const isServer = showingServerAvatar && !!targetMember?.avatar;
 
 				// Get valid URLs
-				const avatarURL = isServer
-					? targetMember?.displayAvatarURL({ size: 4096 })
-					: targetUser.displayAvatarURL({ size: 4096 });
+				const avatarURL =
+					isServer && targetMember
+						? targetMember.displayAvatarURL({ size: 4096 })
+						: targetUser.displayAvatarURL({ size: 4096 });
 
 				const isAnimated = isServer
 					? targetMember?.avatar?.startsWith('a_')
@@ -74,9 +75,10 @@ const avatarCommand: LocalCommand = {
 				// Helper for formats
 				const addFormatBtn = (label: string, ext: string) => {
 					const extension = ext as 'png' | 'jpg' | 'webp' | 'gif';
-					const url = isServer
-						? targetMember?.displayAvatarURL({ extension, size: 4096 })
-						: targetUser.displayAvatarURL({ extension, size: 4096 });
+					const url =
+						isServer && targetMember
+							? targetMember.displayAvatarURL({ extension, size: 4096 })
+							: targetUser.displayAvatarURL({ extension, size: 4096 });
 					formatRow.addComponents(
 						new ButtonBuilder().setLabel(label).setStyle(ButtonStyle.Link).setURL(url),
 					);

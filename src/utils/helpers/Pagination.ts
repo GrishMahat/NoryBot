@@ -395,7 +395,7 @@ export class Pagination {
 				// For DMs, try to create or fetch the DM channel
 				if (!channel && this.interaction.user) {
 					try {
-						channel = (await this.interaction.user.createDM()) as GuildTextBasedChannel;
+						channel = (await this.interaction.user.createDM()) as unknown as GuildTextBasedChannel;
 					} catch {
 						// DM channel creation failed
 					}
@@ -462,7 +462,7 @@ export class Pagination {
 						this.currentPage = this.pages.length - 1;
 						break;
 					case 'pagination_stop':
-						this.collector.stop('user');
+						this.collector?.stop('user');
 						return;
 				}
 			} else if (i.isStringSelectMenu() && i.customId === 'pagination_select') {

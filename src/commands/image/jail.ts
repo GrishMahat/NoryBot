@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { jail } from 'discord-image-utils';
 
-const jailCommand: LocalCommand = {
+const jailCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('jail')
 		.setDescription("Put someone's avatar behind bars")

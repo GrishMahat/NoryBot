@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { beautiful } from 'discord-image-utils';
 
-const beautifulCommand: LocalCommand = {
+const beautifulCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('beautiful')
 		.setDescription("Create a 'This is Beautiful' meme with someone's avatar")
@@ -49,7 +49,7 @@ const beautifulCommand: LocalCommand = {
 				.setColor('#FF69B4') // Pink color for beauty
 				.setAuthor({
 					name: 'This is Beautiful',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

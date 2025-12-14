@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { trash } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const trashCommand: LocalCommand = {
+const trashCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('trash')
 		.setDescription("Put someone's avatar in the trash")
@@ -47,7 +47,7 @@ const trashCommand: LocalCommand = {
 				.setColor('#8B4513')
 				.setAuthor({
 					name: 'Taking Out the Trash!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

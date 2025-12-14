@@ -7,9 +7,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { bobross } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const bobrossCommand: LocalCommand = {
+const bobrossCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('bobross')
 		.setDescription("Turn someone's avatar into a Bob Ross painting")
@@ -72,7 +72,7 @@ const bobrossCommand: LocalCommand = {
 				.setColor('#1a472a') // Forest green color
 				.setAuthor({
 					name: 'Bob Ross Masterpiece',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

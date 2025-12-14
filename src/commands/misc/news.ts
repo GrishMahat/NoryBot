@@ -5,7 +5,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 import { Pagination } from '@/utils/helpers/Pagination';
 
 interface NewsArticle {
@@ -38,7 +38,7 @@ const newsSettings = {
 	fastSkip: true,
 };
 
-const newsCommand: LocalCommand = {
+const newsCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('news')
 		.setDescription('Fetches the latest news articles.')

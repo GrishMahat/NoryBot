@@ -6,8 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { invert } from 'discord-image-utils';
+import type { Command } from '@/types';
 
-const invertCommand: LocalCommand = {
+const invertCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('invert')
 		.setDescription("Invert the colors of someone's avatar")

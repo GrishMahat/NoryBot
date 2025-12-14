@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { Batslap } from 'discord-image-utils';
 
-const batslapCommand: LocalCommand = {
+const batslapCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('batslap')
 		.setDescription('Generate a batslap image with two users')
@@ -34,7 +34,7 @@ const batslapCommand: LocalCommand = {
 		try {
 			await interaction.deferReply();
 
-			const targetUser = interaction.options.get('target').user;
+			const targetUser = interaction.options.get('target')?.user;
 			const slapperUser = interaction.options.get('slapper')?.user || interaction.user;
 
 			if (!targetUser) {
@@ -64,7 +64,7 @@ const batslapCommand: LocalCommand = {
 				.setColor('#FFD700')
 				.setAuthor({
 					name: 'BAT SLAP! 👋',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					`💥 **${slapperUser.username}** just bat-slapped **${targetUser.username}**!`,

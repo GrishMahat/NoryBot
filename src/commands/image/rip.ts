@@ -7,9 +7,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { rip } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const ripCommand: LocalCommand = {
+const ripCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('rip')
 		.setDescription("Create a memorial tombstone with a user's avatar")
@@ -63,7 +63,7 @@ const ripCommand: LocalCommand = {
 				.setColor('#808080') // Gray color
 				.setAuthor({
 					name: 'Memorial Service',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

@@ -8,9 +8,9 @@ import {
 	type PermissionResolvable,
 	PermissionsBitField,
 } from 'discord.js';
-import type { LocalCommand, LocalContextMenu } from '@/types/index';
+import type { Command, LocalContextMenu } from '@/types/index';
 import getApplicationCommands from '@/utils/helpers/getApplicationCommands';
-import getLocalCommands from '@/utils/helpers/getLocalCommands';
+import getCommands from '@/utils/helpers/getLocalCommands';
 import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
 import compareCommands from '@/utils/validators/commandComparing';
 import compareContextMenus from '@/utils/validators/contextmenusComparing';
@@ -25,24 +25,21 @@ export class CommandRegistrationService {
 	public async synchronize(): Promise<void> {
 		try {
 			const fetchStartTime = process.hrtime.bigint();
-			const [localCommands, localContextMenus, applicationCommands] = await Promise.all([
-				getLocalCommands(),
+			const [Commands, localContextMenus, applicationCommands] = await Promise.all([
+				getCommands(),
 				getLocalContextMenus(),
 				getApplicationCommands(this.client),
 			]);
 			const fetchEndTime = process.hrtime.bigint();
 			const fetchTime = Number(fetchEndTime - fetchStartTime) / 1_000_000;
 
-			if (!localCommands || !localContextMenus || !applicationCommands) {
+			if (!Commands || !localContextMenus || !applicationCommands) {
 				throw new Error('Failed to fetch commands or context menus');
 			}
 
 			const processStartTime = process.hrtime.bigint();
 
-			const commandChanges = await this.processApplicationCommands(
-				localCommands,
-				applicationCommands,
-			);
+			const commandChanges = await this.processApplicationCommands(Commands, applicationCommands);
 			const contextMenuChanges = await this.processContextMenus(
 				localContextMenus,
 				applicationCommands,
@@ -58,7 +55,7 @@ export class CommandRegistrationService {
 				fetchTime,
 				processTime,
 				totalTime,
-				localCommands.length,
+				Commands.length,
 				localContextMenus.length,
 			);
 		} catch (err: unknown) {
@@ -89,7 +86,7 @@ export class CommandRegistrationService {
 	}
 
 	private async processApplicationCommands(
-		localCommands: LocalCommand[],
+		Commands: Command[],
 		applicationCommands: ApplicationCommand[],
 	): Promise<{ updated: string[]; new: string[]; deleted: string[] }> {
 		const updated: string[] = [];
@@ -98,8 +95,7 @@ export class CommandRegistrationService {
 
 		// 1. Delete Obsolete
 		const validCommandNames = new Set(
-			localCommands
-				.filter((cmd) => !cmd.deleted)
+			Commands.filter((cmd) => !cmd.deleted)
 				.map((cmd) => cmd.data?.name)
 				.filter(Boolean),
 		);
@@ -123,19 +119,19 @@ export class CommandRegistrationService {
 		);
 
 		// 2. Update or Create
-		const validCommands = localCommands.filter((cmd) => cmd?.data?.name && cmd.deleted !== true);
+		const validCommands = Commands.filter((cmd) => cmd?.data?.name && cmd.deleted !== true);
 		const existingCommandsMap = new Map(applicationCommands.map((cmd) => [cmd.name, cmd]));
 
 		await Promise.all(
-			validCommands.map(async (localCommand) => {
-				const { data } = localCommand;
+			validCommands.map(async (Command) => {
+				const { data } = Command;
 				const commandName = data.name;
 				const existingCommand = existingCommandsMap.get(commandName);
 
 				if (existingCommand) {
 					// Check if it's the right type (ChatInput)
 					if (existingCommand.type === ApplicationCommandType.ChatInput) {
-						if (await this.handleExistingCommand(existingCommand, localCommand)) {
+						if (await this.handleExistingCommand(existingCommand, Command)) {
 							updated.push(commandName);
 						}
 					}
@@ -207,11 +203,11 @@ export class CommandRegistrationService {
 
 	private async handleExistingCommand(
 		existingCommand: ApplicationCommand,
-		localCommand: LocalCommand,
+		Command: Command,
 	): Promise<boolean> {
-		if (compareCommands(existingCommand, localCommand)) {
+		if (compareCommands(existingCommand, Command)) {
 			try {
-				const commandData = localCommand.data.toJSON();
+				const commandData = Command.data.toJSON();
 				const defaultMemberPermissions = commandData.default_member_permissions
 					? new PermissionsBitField(commandData.default_member_permissions as PermissionResolvable)
 					: null;
@@ -227,13 +223,13 @@ export class CommandRegistrationService {
 				});
 				return true;
 			} catch (error) {
-				console.error(`Error updating command ${localCommand.data.name}:`, error);
+				console.error(`Error updating command ${Command.data.name}:`, error);
 			}
 		}
 		return false;
 	}
 
-	private async createCommand(data: LocalCommand['data']): Promise<void> {
+	private async createCommand(data: Command['data']): Promise<void> {
 		try {
 			const commandData = data.toJSON();
 			const defaultMemberPermissions = commandData.default_member_permissions

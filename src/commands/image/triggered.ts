@@ -6,9 +6,9 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { triggered } from 'discord-image-utils';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const triggeredCommand: LocalCommand = {
+const triggeredCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('triggered')
 		.setDescription("Generate a triggered version of user's avatar")
@@ -50,7 +50,7 @@ const triggeredCommand: LocalCommand = {
 				.setColor('#FF0000')
 				.setAuthor({
 					name: 'TRIGGERED!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					userOption.id === interaction.user.id

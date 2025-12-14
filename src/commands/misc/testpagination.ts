@@ -6,10 +6,10 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 import { Pagination } from '@/utils/helpers/Pagination';
 
-const testPagination: LocalCommand = {
+const testPagination: Command = {
 	data: new SlashCommandBuilder()
 		.setName('testpagination')
 		.setDescription('Test the enhanced pagination system')

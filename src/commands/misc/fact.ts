@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import emojiConfig from '@/config/emoji';
 
-const factCommand: LocalCommand = {
+const factCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('fact')
 		.setDescription('Send a random fact')

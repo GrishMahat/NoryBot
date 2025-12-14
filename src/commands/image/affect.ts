@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { affect } from 'discord-image-utils';
 
-const affectCommand: LocalCommand = {
+const affectCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('affect')
 		.setDescription("Use the 'This won't affect my baby' meme template with a user's avatar")
@@ -52,7 +52,7 @@ const affectCommand: LocalCommand = {
 				.setColor('#9B59B6') // Purple color for aesthetic
 				.setAuthor({
 					name: 'The Baby Effect',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

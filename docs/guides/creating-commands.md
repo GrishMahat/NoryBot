@@ -21,7 +21,7 @@ When a user sends a Slash Command:
 
 ## 2. Command Configuration
 
-Every command object must implement the `Command` (or `LocalCommand`) interface.
+Every command object must implement the `Command` (or `Command`) interface.
 
 ### The `Command` Object
 

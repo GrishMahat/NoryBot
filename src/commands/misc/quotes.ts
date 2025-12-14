@@ -15,9 +15,9 @@ import { Quote } from 'discord-image-utils';
 import { unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import emojiConfig from '@/config/emoji';
-import type { LocalCommand, QuoteResponse } from '@/types';
+import type { Command, QuoteResponse } from '@/types';
 
-const quotesCommand: LocalCommand = {
+const quotesCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('quote')
 		.setDescription('Get an inspirational random quote as an image')

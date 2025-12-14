@@ -7,9 +7,9 @@ import {
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 } from 'discord.js';
-import type { LocalCommand } from '@/types';
+import type { Command } from '@/types';
 
-const componentsTestCommand: LocalCommand = {
+const componentsTestCommand: Command = {
 	data: new SlashCommandBuilder()
 		.setName('components-test')
 		.setDescription('Send test components to verify buttons, selects and modals work')

@@ -19,8 +19,8 @@ import { config } from '@/config/config';
 import mConfig from '@/config/messageConfig';
 import cooldownManager from '@/services/manager/CooldownManager';
 import LRUCache from '@/services/manager/LRUCache';
-import type { LocalCommand } from '@/types/index';
-import getLocalCommands from '@/utils/helpers/getLocalCommands';
+import type { Command } from '@/types/index';
+import getCommands from '@/utils/helpers/getLocalCommands';
 
 // Interface for command usage metrics
 interface CommandMetrics {
@@ -35,23 +35,23 @@ interface CommandMetrics {
  */
 class CommandValidator {
 	// Map storing command definitions by name
-	private commandMap: Map<string, LocalCommand>;
+	private commandMap: Map<string, Command>;
 	// Cache for the list of local commands to avoid frequent file reads
-	private commandListCache: LRUCache<string, LocalCommand[]>;
+	private commandListCache: LRUCache<string, Command[]>;
 	// Map storing usage metrics for each command
 	private metrics: Map<string, CommandMetrics>;
 	// Flag indicating if commands have been loaded initially
 	private isInitialized: boolean;
 
 	// Cache key for the list of all local commands
-	private static readonly LOCAL_COMMANDS_CACHE_KEY = 'localCommands';
+	private static readonly LOCAL_COMMANDS_CACHE_KEY = 'Commands';
 
 	constructor() {
 		this.commandMap = new Map();
 		this.metrics = new Map();
 		this.isInitialized = false;
 		// Initialize LRU cache for command definitions
-		this.commandListCache = new LRUCache<string, LocalCommand[]>({
+		this.commandListCache = new LRUCache<string, Command[]>({
 			capacity: 1, // Only cache the single list of commands
 			defaultTTL: 2 * 60 * 60 * 1000, // 2 hour TTL
 			cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 minutes
@@ -148,9 +148,9 @@ class CommandValidator {
 
 		try {
 			console.log('Initializing commands...'.cyan);
-			const localCommands = await this.getCachedLocalCommands();
+			const Commands = await this.getCachedCommands();
 			this.commandMap.clear(); // Clear existing map before reloading
-			localCommands.forEach((cmd) => {
+			Commands.forEach((cmd) => {
 				if (cmd?.data?.name) {
 					this.commandMap.set(cmd.data.name, cmd);
 				} else {
@@ -176,7 +176,7 @@ class CommandValidator {
 	 * Retrieves the list of local commands, utilizing the cache.
 	 * @returns A promise resolving to the array of local commands.
 	 */
-	private async getCachedLocalCommands(): Promise<LocalCommand[]> {
+	private async getCachedCommands(): Promise<Command[]> {
 		// Try fetching from cache first
 		const cachedCommands = this.commandListCache.get(CommandValidator.LOCAL_COMMANDS_CACHE_KEY);
 		if (cachedCommands) {
@@ -186,7 +186,7 @@ class CommandValidator {
 
 		// If not cached, fetch from source and cache it
 		console.log('Fetching command list from source...'.blue);
-		const commands = await getLocalCommands();
+		const commands = await getCommands();
 		this.commandListCache.set(CommandValidator.LOCAL_COMMANDS_CACHE_KEY, commands);
 		return commands;
 	}
@@ -226,7 +226,7 @@ class CommandValidator {
 	 */
 	private validateCommand(
 		interaction: ChatInputCommandInteraction,
-		command: LocalCommand,
+		command: Command,
 	): InteractionReplyOptions | null {
 		const { developersId, testServerId, maintenance } = config;
 		const userId = interaction.user.id;

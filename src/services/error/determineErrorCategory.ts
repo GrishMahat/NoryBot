@@ -5,7 +5,7 @@ import { DiscordAPIError } from 'discord.js';
  * @param error The error to determine the category of
  * @returns String  category of the error
  */
-export default function determineErrorCategory(error: Error): string {
+export default function determineErrorCategory(error: Error | undefined): string {
 	if (!error) return 'Unknown Error';
 
 	if (error instanceof DiscordAPIError) {
