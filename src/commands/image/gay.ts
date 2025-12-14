@@ -51,7 +51,7 @@ const gayCommand: Command = {
 				.setColor('#FF1493')
 				.setAuthor({
 					name: `${targetUser.username}'s Rainbow Avatar`,
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

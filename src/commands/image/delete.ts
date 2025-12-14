@@ -47,7 +47,7 @@ const deleteCommand: Command = {
 				.setColor('#FF4444')
 				.setAuthor({
 					name: 'Delete This!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

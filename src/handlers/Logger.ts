@@ -401,7 +401,7 @@ export class Logger {
 		const err = error instanceof Error ? error : new Error(String(error ?? 'Unknown error'));
 
 		const isDiscordError = err instanceof DiscordAPIError;
-		const category = determineErrorCategory(isDiscordError ? err : undefined);
+		const category = determineErrorCategory(isDiscordError ? (err as DiscordAPIError) : undefined);
 		const performance = await this.capturePerformanceMetrics();
 		const severity = determineSeverity(err, performance); // Determine severity early
 

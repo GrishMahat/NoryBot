@@ -462,7 +462,7 @@ export class Pagination {
 						this.currentPage = this.pages.length - 1;
 						break;
 					case 'pagination_stop':
-						this.collector.stop('user');
+						this.collector?.stop('user');
 						return;
 				}
 			} else if (i.isStringSelectMenu() && i.customId === 'pagination_select') {

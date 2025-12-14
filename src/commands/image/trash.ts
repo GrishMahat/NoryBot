@@ -47,7 +47,7 @@ const trashCommand: Command = {
 				.setColor('#8B4513')
 				.setAuthor({
 					name: 'Taking Out the Trash!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

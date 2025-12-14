@@ -49,7 +49,7 @@ const beautifulCommand: Command = {
 				.setColor('#FF69B4') // Pink color for beauty
 				.setAuthor({
 					name: 'This is Beautiful',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

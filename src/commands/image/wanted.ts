@@ -75,7 +75,7 @@ const wantedCommand: Command = {
 				.setColor('#8B0000')
 				.setAuthor({
 					name: 'WANTED: DEAD OR ALIVE',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					`🤠 **WANTED:** ${targetUser.toString()}\n💰 **Reward:** ${currency}${amount.toLocaleString()}`,

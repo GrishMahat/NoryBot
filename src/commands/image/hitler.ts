@@ -47,7 +47,7 @@ const hitlerCommand: Command = {
 				.setColor('#8B4513')
 				.setAuthor({
 					name: 'History Channel at Midnight',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

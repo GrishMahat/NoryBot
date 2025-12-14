@@ -52,15 +52,23 @@ const compareCommands = (existing: ApplicationCommand, local: Command): boolean 
 
 	// Check contexts with normalized comparison
 	// Discord API might return different default contexts than our local commands
-	const existingContexts = normalizeContexts(existing.contexts);
-	const localContexts = normalizeContexts(localData.contexts);
+	// biome-ignore lint/suspicious/noExplicitAny: Context types are numbers but TS complains about compatibility
+	const existingContexts = normalizeContexts((existing.contexts as any) || undefined);
+	// biome-ignore lint/suspicious/noExplicitAny: Context types are numbers but TS complains about compatibility
+	const localContexts = normalizeContexts((localData.contexts as any) || undefined);
 	if (!arraysEqual(existingContexts, localContexts)) {
 		return true;
 	}
 
 	// Check integration types with normalized comparison
-	const existingIntegrationTypes = normalizeIntegrationTypes(existing.integrationTypes);
-	const localIntegrationTypes = normalizeIntegrationTypes(localData.integration_types);
+	const existingIntegrationTypes = normalizeIntegrationTypes(
+		// biome-ignore lint/suspicious/noExplicitAny: Integration types are numbers but TS complains about compatibility
+		(existing.integrationTypes as any) || undefined,
+	);
+	const localIntegrationTypes = normalizeIntegrationTypes(
+		// biome-ignore lint/suspicious/noExplicitAny: Integration types are numbers but TS complains about compatibility
+		(localData.integration_types as any) || undefined,
+	);
 	if (!arraysEqual(existingIntegrationTypes, localIntegrationTypes)) {
 		return true;
 	}
@@ -164,7 +172,8 @@ function normalizeObject(
 		name: input.name,
 		description: input.description,
 		options: input.options
-			? (normalizeObject(input.options) as Partial<ApplicationCommandOption[]>)
+			? // biome-ignore lint/suspicious/noExplicitAny: Casting to any to handle type mismatch
+				(normalizeObject(input.options as ApplicationCommandOption[]) as any)
 			: undefined,
 		required: input.required,
 	};
@@ -189,7 +198,8 @@ function optionsArray(
 	cmd: ApplicationCommand | RESTPostAPIChatInputApplicationCommandsJSONBody,
 ): unknown[] {
 	return (cmd.options || []).map((option) => {
-		const cleanedOption = normalizeObject(option) as Partial<ApplicationCommandOption>;
+		// biome-ignore lint/suspicious/noExplicitAny: Casting to any to handle type mismatch
+		const cleanedOption = normalizeObject(option as any) as Partial<ApplicationCommandOption>;
 		cleanObject(cleanedOption);
 		return {
 			...cleanedOption,

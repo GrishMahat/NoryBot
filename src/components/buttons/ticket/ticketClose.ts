@@ -70,9 +70,11 @@ const button: Button = {
 		} catch (error) {
 			console.error(error);
 			if (interaction.deferred || interaction.replied) {
-				await interaction.editReply({
-					content: 'Failed to close ticket. Please try again or contact an admin.',
-				}).catch(() => {});
+				await interaction
+					.editReply({
+						content: 'Failed to close ticket. Please try again or contact an admin.',
+					})
+					.catch(() => {});
 			}
 		}
 	},

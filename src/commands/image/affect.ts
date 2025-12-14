@@ -52,7 +52,7 @@ const affectCommand: Command = {
 				.setColor('#9B59B6') // Purple color for aesthetic
 				.setAuthor({
 					name: 'The Baby Effect',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

@@ -37,7 +37,7 @@ const avatarCommand: Command = {
 			let showingServerAvatar = !!targetMember?.avatar; // Default to server avatar if it exists
 
 			const generateResponse = () => {
-				const isServer = showingServerAvatar && targetMember?.avatar;
+				const isServer = showingServerAvatar && !!targetMember?.avatar;
 
 				// Get valid URLs
 				const avatarURL = isServer

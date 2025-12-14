@@ -3,7 +3,7 @@ import { type ErrorDetails, type ErrorMetrics, ErrorSeverity } from '@/types';
 export class ErrorMetricsService {
 	private metrics: Map<string, ErrorMetrics>;
 	private readonly retentionPeriod: number;
-	private cleanupInterval: NodeJS.Timeout;
+	private cleanupInterval!: NodeJS.Timeout;
 
 	constructor(retentionPeriod: number = 24 * 60 * 60 * 1000) {
 		this.metrics = new Map();

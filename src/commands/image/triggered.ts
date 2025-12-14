@@ -50,7 +50,7 @@ const triggeredCommand: Command = {
 				.setColor('#FF0000')
 				.setAuthor({
 					name: 'TRIGGERED!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					userOption.id === interaction.user.id

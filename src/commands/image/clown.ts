@@ -52,7 +52,7 @@ const clownCommand: Command = {
 				.setAuthor({
 					name:
 						targetUser.id === interaction.user.id ? 'Self-Clownification' : 'Clown Transformation',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

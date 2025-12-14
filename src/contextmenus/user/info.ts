@@ -67,7 +67,7 @@ export default {
 						`**Username:** ${user.tag}`,
 						`**Display Name:** ${member?.displayName || user.username}`,
 						`**ID:** ${user.id}`,
-						`**Status:** ${getStatusEmoji(member)}`,
+						`**Status:** ${getStatusEmoji(member ?? null)}`,
 						`**Account Created:** ${formatDate(user.createdAt)}`,
 						member?.joinedAt ? `**Joined Server:** ${formatDate(member.joinedAt)}` : '',
 					].join('\n'),

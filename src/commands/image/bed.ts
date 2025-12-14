@@ -71,7 +71,7 @@ const bedCommand: Command = {
 				.setColor('#6B4423') // Brown color for bed theme
 				.setAuthor({
 					name: 'Monster Under The Bed!',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					`👻 **${scaredUser.username}** found **${targetUser.username}** under their bed!`,

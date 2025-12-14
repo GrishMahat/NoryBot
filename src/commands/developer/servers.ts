@@ -58,9 +58,10 @@ async function generateInvite(guild: Guild): Promise<string | null> {
 		const channel = guild.channels.cache.find(
 			(ch): ch is TextChannel =>
 				ch.type === ChannelType.GuildText &&
-				ch
+				(ch
 					.permissionsFor(guild.members.me ?? guild.client.user) // Use optional chaining + fallback instead of !
-					?.has(PermissionFlagsBits.CreateInstantInvite),
+					?.has(PermissionFlagsBits.CreateInstantInvite) ??
+					false),
 		);
 
 		if (channel) {

@@ -63,7 +63,7 @@ const ripCommand: Command = {
 				.setColor('#808080') // Gray color
 				.setAuthor({
 					name: 'Memorial Service',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

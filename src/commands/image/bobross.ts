@@ -72,7 +72,7 @@ const bobrossCommand: Command = {
 				.setColor('#1a472a') // Forest green color
 				.setAuthor({
 					name: 'Bob Ross Masterpiece',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id

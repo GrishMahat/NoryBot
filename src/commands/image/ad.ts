@@ -51,7 +51,7 @@ const admixCommand: Command = {
 				.setColor('#1E90FF')
 				.setAuthor({
 					name: 'Admix Effect',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					userOption.id === interaction.user.id

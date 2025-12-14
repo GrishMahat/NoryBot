@@ -49,7 +49,7 @@ const facepalmCommand: Command = {
 				.setColor('#FFA500')
 				.setAuthor({
 					name: '*facepalm*',
-					iconURL: client.user.displayAvatarURL(),
+					iconURL: client.user?.displayAvatarURL(),
 				})
 				.setDescription(
 					targetUser.id === interaction.user.id
