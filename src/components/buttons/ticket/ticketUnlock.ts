@@ -14,7 +14,12 @@ const button: Button = {
 				return;
 			}
 
-			const channel = interaction.channel as TextChannel;
+		if (!interaction.channel?.isTextBased() || interaction.channel.isDMBased()) {
+			await interaction.editReply('This command can only be used in a guild text channel.');
+			return;
+		}
+
+		const channel = interaction.channel as TextChannel;
 
 			// Update Permissions to allow send messages for the ticket owner
 			await channel.permissionOverwrites.edit(ticket.ticketMemberID, {
