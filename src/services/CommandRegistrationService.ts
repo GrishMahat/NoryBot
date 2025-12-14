@@ -215,8 +215,8 @@ export class CommandRegistrationService {
 				await existingCommand.edit({
 					name: commandData.name,
 					description: commandData.description ?? '',
-					contexts: commandData.contexts ?? [0, 1, 2],
-					integrationTypes: commandData.integration_types ?? [0, 1],
+					contexts: commandData.contexts,
+					integrationTypes: commandData.integration_types ?? [0], // Default to Guild Install to fix lingering [0, 1]
 					options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
 					dmPermission: commandData.dm_permission ?? true,
 					defaultMemberPermissions,
@@ -239,8 +239,8 @@ export class CommandRegistrationService {
 			await this.client.application?.commands.create({
 				name: commandData.name,
 				description: commandData.description ?? '',
-				contexts: commandData.contexts ?? [0, 1, 2],
-				integrationTypes: commandData.integration_types ?? [0, 1],
+				contexts: commandData.contexts,
+				integrationTypes: commandData.integration_types ?? [0], // Default to Guild Install
 				options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
 				dmPermission: commandData.dm_permission ?? true,
 				defaultMemberPermissions,

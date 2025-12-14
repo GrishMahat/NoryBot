@@ -46,7 +46,14 @@ const compareCommands = (existing: ApplicationCommand, local: Command): boolean 
 		return true;
 	}
 
-	if (existing.dmPermission !== (localData.dm_permission ?? true)) {
+	// Determine default DM permission based on contexts if not explicitly set
+	// If contexts are provided and don't include Bot DM (1), default dm_permission to false
+	let defaultDmPermission = true;
+	if (localData.contexts && !localData.contexts.includes(1)) {
+		defaultDmPermission = false;
+	}
+
+	if (existing.dmPermission !== (localData.dm_permission ?? defaultDmPermission)) {
 		return true;
 	}
 
@@ -118,7 +125,7 @@ function normalizeContexts(contexts: number[] | undefined): number[] {
  */
 function normalizeIntegrationTypes(integrationTypes: number[] | undefined): number[] {
 	if (!integrationTypes || integrationTypes.length === 0) {
-		return [0, 1]; // Default: Guild Install, User Install
+		return [0]; // Default: Guild Install only
 	}
 	return [...integrationTypes].sort(); // Sort for consistent comparison
 }

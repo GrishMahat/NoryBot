@@ -1,11 +1,13 @@
 import {
 	ActionRowBuilder,
+	ApplicationIntegrationType,
 	ButtonBuilder,
 	ButtonStyle,
 	ChannelType,
 	type ChatInputCommandInteraction,
 	type Client,
 	EmbedBuilder,
+	InteractionContextType,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	type TextChannel,
@@ -17,6 +19,8 @@ const command: Command = {
 	data: new SlashCommandBuilder()
 		.setName('ticket')
 		.setDescription('Manage the ticket system')
+		.setContexts(InteractionContextType.Guild)
+		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('setup')

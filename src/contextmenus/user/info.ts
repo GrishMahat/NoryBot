@@ -41,7 +41,11 @@ function formatDate(date: Date): string {
 }
 
 export default {
-	data: new ContextMenuCommandBuilder().setName('User Info').setType(ApplicationCommandType.User),
+	data: new ContextMenuCommandBuilder()
+		.setName('User Info')
+		.setType(ApplicationCommandType.User)
+		.setDMPermission(false)
+		.setContexts([0]),
 
 	async run(_client: Client, interaction: ContextMenuCommandInteraction): Promise<void> {
 		if (!interaction.isUserContextMenuCommand()) return;

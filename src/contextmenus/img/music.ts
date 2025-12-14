@@ -12,6 +12,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()
 		.setName('Music Player View')
 		.setType(ApplicationCommandType.Message)
+		.setIntegrationTypes([0, 1])
 		.setContexts([0, 1, 2]),
 	async run(_client: Client, interaction: ContextMenuCommandInteraction) {
 		if (!interaction.isMessageContextMenuCommand()) return;

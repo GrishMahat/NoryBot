@@ -18,7 +18,8 @@ const compareContextMenuCommands = (
 	const defaultValues = {
 		name: null,
 		type: null,
-		integration_types: [0, 1],
+		integration_types: [0], // Default: Guild Install only
+		contexts: [0], // Default: Guild only
 		nsfw: false,
 		dm_permission: true,
 		default_member_permissions: null,
@@ -57,6 +58,21 @@ const compareContextMenuCommands = (
 		return JSON.stringify(existingValue) !== JSON.stringify(localValue);
 	};
 
+	// Helper to compare arrays (order-insensitive)
+	const arraysChanged = (
+		existingArr: unknown[] | undefined | null,
+		localArr: unknown[] | undefined | null,
+		defaultArr: unknown[] | null,
+	): boolean => {
+		const normalize = (arr: unknown[] | undefined | null) => {
+			if (!arr || arr.length === 0) return defaultArr ? [...defaultArr].sort() : [];
+			return [...arr].sort();
+		};
+		const sortedExisting = normalize(existingArr);
+		const sortedLocal = normalize(localArr);
+		return JSON.stringify(sortedExisting) !== JSON.stringify(sortedLocal);
+	};
+
 	// Validate context menu type
 	if (
 		!local.data ||
@@ -74,6 +90,7 @@ const compareContextMenuCommands = (
 		defaultValue: unknown;
 		description?: string;
 		specialHandling?: boolean;
+		isArray?: boolean; // Flag for array comparison
 	}
 
 	// Define all properties to compare with descriptions
@@ -95,9 +112,18 @@ const compareContextMenuCommands = (
 		{
 			key: 'integrationTypes',
 			existing: existing.integrationTypes,
-			local: local.data.integration_types ?? defaultValues.integration_types,
+			local: local.data.integration_types,
 			defaultValue: defaultValues.integration_types,
 			description: 'Integration types',
+			isArray: true,
+		},
+		{
+			key: 'contexts',
+			existing: existing.contexts,
+			local: local.data.contexts,
+			defaultValue: defaultValues.contexts,
+			description: 'Contexts',
+			isArray: true,
 		},
 		{
 			key: 'dmPermission',
@@ -109,7 +135,11 @@ const compareContextMenuCommands = (
 		},
 		{
 			key: 'defaultMemberPermissions',
-			existing: existing.defaultMemberPermissions?.toString() ?? null,
+			existing: existing.defaultMemberPermissions
+				? 'bitfield' in existing.defaultMemberPermissions
+					? existing.defaultMemberPermissions.bitfield.toString()
+					: existing.defaultMemberPermissions.toString()
+				: null,
 			local: local.data.default_member_permissions?.toString() ?? null,
 			defaultValue: defaultValues.default_member_permissions,
 			description: 'Default member permissions',
@@ -125,28 +155,40 @@ const compareContextMenuCommands = (
 	for (const comparison of comparisons) {
 		// Special handling for dmPermission
 		if (comparison.key === 'dmPermission') {
-			// If existing is true and local is undefined or true, they're the same
-			if (
-				comparison.existing === true &&
-				(comparison.local === undefined || comparison.local === true)
-			) {
-				continue;
-			}
+			// Infer default dmPermission based on contexts
+			// If contexts are provided and don't include Bot DM (1) or Private Channel (2), default is false
+			const contexts = local.data.contexts ?? defaultValues.contexts;
+			const impliesNoDM = contexts && !contexts.includes(1) && !contexts.includes(2);
+			const effectiveLocalDmPermission = local.data.dm_permission ?? !impliesNoDM;
 
-			// If explicit false in local, keep it for comparison
-			if (comparison.local === false) {
-				if (comparison.existing !== false) {
-					return true;
-				}
-				continue;
+			if (comparison.existing !== effectiveLocalDmPermission) {
+				return true;
 			}
+			continue;
+		}
+
+		if (comparison.isArray) {
+			if (
+				arraysChanged(
+					comparison.existing as unknown[],
+					comparison.local as unknown[],
+					comparison.defaultValue as unknown[],
+				)
+			) {
+				return true;
+			}
+			continue;
 		}
 
 		// For other properties, handle normally
 		const localValue = comparison.local === undefined ? comparison.defaultValue : comparison.local;
 
 		if (changed(comparison.existing, localValue, comparison.defaultValue)) {
-			// Log differences with context
+			console.log(
+				`[DEBUG] Context Menu mismatch for ${local.data.name} on key '${comparison.key}'`,
+			);
+			console.log(`  Existing: ${JSON.stringify(comparison.existing)}`);
+			console.log(`  Local:    ${JSON.stringify(localValue)}`);
 			return true;
 		}
 	}
