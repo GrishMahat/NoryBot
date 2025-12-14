@@ -40,7 +40,12 @@ const button: Button = {
 			}
 
 			const guild = interaction.guild;
-			if (!guild) return;
+			if (!guild) {
+				await interaction.editReply({
+					content: 'This command can only be used in a server.',
+				});
+				return;
+			}
 
 			// Create Ticket Channel
 			const channel = await guild.channels.create({
