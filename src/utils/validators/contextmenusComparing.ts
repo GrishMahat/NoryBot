@@ -18,8 +18,8 @@ const compareContextMenuCommands = (
 	const defaultValues = {
 		name: null,
 		type: null,
-		integration_types: [0], // Default: Guild Install only
-		contexts: [0], // Default: Guild only
+		integration_types: [0,1,2], // Default: Guild Install only
+		contexts: [0,1], // Default: Guild only
 		nsfw: false,
 		dm_permission: true,
 		default_member_permissions: null,

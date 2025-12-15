@@ -1,36 +1,42 @@
 import 'colors';
+import { inspect } from 'util';
 
 /**
  * Utility for pretty console logging during development.
  * Uses the 'colors' package for styling.
  */
 export class DevLogger {
+	private static formatMessage(message: unknown): string {
+		if (typeof message === 'string') return message;
+		return inspect(message, { colors: true, depth: null });
+	}
+
 	/**
 	 * Log info message
 	 */
-	static info(title: string, message: string): void {
-		console.log(`[${'INFO'.cyan}] ${title.bold}: ${message}`);
+	static info(title: string, message: unknown): void {
+		console.log(`[${'INFO'.cyan}] ${title.bold}: ${this.formatMessage(message)}`);
 	}
 
 	/**
 	 * Log success message
 	 */
-	static success(title: string, message: string): void {
-		console.log(`[${'SUCCESS'.green}] ${title.bold}: ${message}`);
+	static success(title: string, message: unknown): void {
+		console.log(`[${'SUCCESS'.green}] ${title.bold}: ${this.formatMessage(message)}`);
 	}
 
 	/**
 	 * Log warning message
 	 */
-	static warn(title: string, message: string): void {
-		console.log(`[${'WARN'.yellow}] ${title.bold}: ${message}`);
+	static warn(title: string, message: unknown): void {
+		console.log(`[${'WARN'.yellow}] ${title.bold}: ${this.formatMessage(message)}`);
 	}
 
 	/**
 	 * Log error message
 	 */
-	static error(title: string, message: string): void {
-		console.log(`[${'ERROR'.red}] ${title.bold}: ${message}`);
+	static error(title: string, message: unknown): void {
+		console.log(`[${'ERROR'.red}] ${title.bold}: ${this.formatMessage(message)}`);
 	}
 
 	/**

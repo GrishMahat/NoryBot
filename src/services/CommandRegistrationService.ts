@@ -5,6 +5,7 @@ import {
 	ApplicationCommandType,
 	type Client,
 	type ContextMenuCommandBuilder,
+	DiscordAPIError,
 	type PermissionResolvable,
 	PermissionsBitField,
 } from 'discord.js';
@@ -113,7 +114,14 @@ export class CommandRegistrationService {
 					await cmd.delete();
 					deleted.push(cmd.name);
 				} catch (err) {
-					console.error(`Failed to delete command ${cmd.name}:`, err);
+					if (err instanceof DiscordAPIError && err.code === 50035) {
+						console.warn(
+							`[Warning] Could not delete command '${cmd.name}': Discord API validation failed (likely invalid Redirect URIs in Developer Portal).`
+								.yellow,
+						);
+					} else {
+						console.error(`Failed to delete command ${cmd.name}:`, err);
+					}
 				}
 			}),
 		);

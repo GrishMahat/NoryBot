@@ -4,14 +4,17 @@ import path from 'path';
 import { EventError, type EventInfo, type EventRegistry } from '@/types';
 import getAllFiles from '@/utils/helpers/getAllFiles';
 import { isValidEventName } from '@/utils/validators/isValidEventName';
+import type Logger from '../handlers/Logger';
 
 export class EventManager {
 	private client: Client;
+	private logger: Logger;
 	private eventRegistry: EventRegistry;
 	private loadedEvents: Set<string>;
 
-	constructor(client: Client) {
+	constructor(client: Client, logger: Logger) {
 		this.client = client;
+		this.logger = logger;
 		/**
 		 * Registry to store event handlers mapped by event name
 		 * @type {EventRegistry}
@@ -29,7 +32,7 @@ export class EventManager {
 			await Promise.all(eventFolders.map((folder) => this.processEventFolder(folder)));
 			this.registerEvents();
 		} catch (error) {
-			await global.logger.error(error, 'EventManagerInitError');
+			await this.logger.error(error, 'EventManagerInitError');
 		}
 	}
 
@@ -41,7 +44,7 @@ export class EventManager {
 		this.eventRegistry.clear();
 		this.loadedEvents.clear();
 		await this.init();
-		global.logger.success('Reload', 'Events reloaded successfully.');
+		this.logger.success('Reload', 'Events reloaded successfully.');
 	}
 
 	private async processEventFolder(eventFolder: string): Promise<void> {
@@ -71,7 +74,7 @@ export class EventManager {
 				),
 			);
 		} catch (error) {
-			await global.logger.error(error, 'EventFolderProcessError', { eventFolder });
+			await this.logger.error(error, 'EventFolderProcessError', { eventFolder });
 		}
 	}
 
@@ -84,7 +87,7 @@ export class EventManager {
 			const eventFunction = eventModule.default;
 
 			if (typeof eventFunction !== 'function') {
-				global.logger.warn(
+				this.logger.warn(
 					'Event Handler',
 					`Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`,
 				);
@@ -103,7 +106,7 @@ export class EventManager {
 			handlers.push(eventInfo);
 			this.eventRegistry.set(eventName, handlers);
 		} catch (error) {
-			await global.logger.error(error, 'EventFileLoadError', { eventFile });
+			await this.logger.error(error, 'EventFileLoadError', { eventFile });
 		}
 	}
 
@@ -132,7 +135,7 @@ export class EventManager {
 					try {
 						await handlerInfo.function(this.client, ...args);
 					} catch (error) {
-						await global.logger.error(error, 'EventHandlerExecutionError', {
+						await this.logger.error(error, 'EventHandlerExecutionError', {
 							eventName: typedEventName,
 							fileName: handlerInfo.fileName,
 						});
@@ -145,8 +148,8 @@ export class EventManager {
 		}
 
 		if (process.env.NODE_ENV === 'development') {
-			global.logger.info('Event Manager', 'Loaded Events:');
-			global.logger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
+			this.logger.info('Event Manager', 'Loaded Events:');
+			this.logger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
 		}
 	}
 }

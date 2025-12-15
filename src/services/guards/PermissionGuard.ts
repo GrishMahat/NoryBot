@@ -14,6 +14,7 @@ export class PermissionGuard implements Guard {
 	async validate(
 		interaction: Interaction,
 		component: BaseComponent,
+		_args: string[],
 	): Promise<InteractionReplyOptions | null> {
 		// User Permissions Check
 		if (component.userPermissions && component.userPermissions.length > 0) {

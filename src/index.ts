@@ -44,7 +44,7 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 
 	try {
 		// Load event handlers
-		const eventManager = new EventManager(client);
+		const eventManager = new EventManager(client, logger);
 		await eventManager.init();
 
 		// Log in to Discord

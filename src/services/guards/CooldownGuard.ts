@@ -9,6 +9,7 @@ export class CooldownGuard implements Guard {
 	async validate(
 		interaction: Interaction,
 		component: BaseComponent,
+		_args: string[],
 	): Promise<InteractionReplyOptions | null> {
 		if (!component.cooldown) return null;
 

@@ -434,7 +434,9 @@ export class Pagination {
 			}
 		};
 
-		setupCollector();
+		setupCollector().catch((error) => {
+			console.error('Failed to setup pagination collector in background:', error);
+		});
 	}
 
 	private async handleCollect(i: MessageComponentInteraction): Promise<void> {
