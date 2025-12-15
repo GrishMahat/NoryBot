@@ -89,12 +89,12 @@ const SORT_OPTIONS = {
 };
 
 const TIME_OPTIONS = {
-	hour: { name: '⏱️ Past Hour', description: 'Last 60 minutes', emoji: '⏱️' },
+	hour: { name: '⏱ Past Hour', description: 'Last 60 minutes', emoji: '⏱' },
 	day: { name: '📅 Today', description: 'Last 24 hours', emoji: '📅' },
 	week: { name: '📊 This Week', description: 'Last 7 days', emoji: '📊' },
 	month: { name: '📆 This Month', description: 'Last 30 days', emoji: '📆' },
-	year: { name: '🗓️ This Year', description: 'Last 365 days', emoji: '🗓️' },
-	all: { name: '♾️ All Time', description: 'The greatest hits', emoji: '♾️' },
+	year: { name: '🗓 This Year', description: 'Last 365 days', emoji: '🗓' },
+	all: { name: '♾ All Time', description: 'The greatest hits', emoji: '♾' },
 };
 
 interface RedditSession {
@@ -502,8 +502,8 @@ const redditCommand: Command = {
 					})),
 				),
 		)
-		.setContexts([0, 1, 2])
-		.setIntegrationTypes([0, 1]),
+		.setContexts([0])
+		.setIntegrationTypes([0]),
 
 	userPermissions: [],
 	botPermissions: [],

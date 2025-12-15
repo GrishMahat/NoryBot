@@ -10,11 +10,10 @@ import {
 	PermissionsBitField,
 } from 'discord.js';
 import type { Command, LocalContextMenu } from '@/types/index';
+import { hashCommand } from '@/utils/helpers/commandHasher';
 import getApplicationCommands from '@/utils/helpers/getApplicationCommands';
 import getCommands from '@/utils/helpers/getLocalCommands';
 import getLocalContextMenus from '@/utils/helpers/getLocalContextMenus';
-import compareCommands from '@/utils/validators/commandComparing';
-import compareContextMenus from '@/utils/validators/contextmenusComparing';
 
 export class CommandRegistrationService {
 	private readonly client: Client;
@@ -65,8 +64,6 @@ export class CommandRegistrationService {
 					err instanceof Error ? err.message : 'Unknown error'
 				}`.red,
 			);
-			// Assuming global.errorHandler exists based on previous file content
-			// global.errorHandler was remove now global.logger.error
 			if (
 				(
 					global as unknown as {
@@ -213,7 +210,13 @@ export class CommandRegistrationService {
 		existingCommand: ApplicationCommand,
 		Command: Command,
 	): Promise<boolean> {
-		if (compareCommands(existingCommand, Command)) {
+		const localHash = hashCommand(Command);
+		const existingHash = hashCommand(existingCommand);
+
+		if (localHash !== existingHash) {
+			console.log(`[DEBUG] Hash mismatch for command ${Command.data.name}`.yellow);
+			// console.log(`Local: ${localHash}, Remote: ${existingHash}`);
+
 			try {
 				const commandData = Command.data.toJSON();
 				const defaultMemberPermissions = commandData.default_member_permissions
@@ -224,7 +227,7 @@ export class CommandRegistrationService {
 					name: commandData.name,
 					description: commandData.description ?? '',
 					contexts: commandData.contexts,
-					integrationTypes: commandData.integration_types ?? [0], // Default to Guild Install to fix lingering [0, 1]
+					integrationTypes: commandData.integration_types,
 					options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
 					dmPermission: commandData.dm_permission ?? true,
 					defaultMemberPermissions,
@@ -248,7 +251,7 @@ export class CommandRegistrationService {
 				name: commandData.name,
 				description: commandData.description ?? '',
 				contexts: commandData.contexts,
-				integrationTypes: commandData.integration_types ?? [0], // Default to Guild Install
+				integrationTypes: commandData.integration_types,
 				options: (commandData.options as ApplicationCommandOptionData[]) ?? [],
 				dmPermission: commandData.dm_permission ?? true,
 				defaultMemberPermissions,
@@ -262,7 +265,12 @@ export class CommandRegistrationService {
 		existingContextMenu: ApplicationCommand,
 		localContextMenu: LocalContextMenu,
 	): Promise<boolean> {
-		if (compareContextMenus(existingContextMenu, localContextMenu)) {
+		const localHash = hashCommand(localContextMenu);
+		const existingHash = hashCommand(existingContextMenu);
+
+		if (localHash !== existingHash) {
+			console.log(`[DEBUG] Hash mismatch for context menu ${localContextMenu.data.name}`.yellow);
+
 			try {
 				await existingContextMenu.edit(localContextMenu.data);
 				return true;
