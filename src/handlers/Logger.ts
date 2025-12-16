@@ -3,6 +3,7 @@ import { type Client, DiscordAPIError, EmbedBuilder, Events, WebhookClient } fro
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { inspect } from 'util';
 import determineErrorCategory from '@/services/error/determineErrorCategory';
 import determineSeverity from '@/services/error/determineSeverity';
 import { ErrorMetricsService } from '@/services/error/ErrorMetricsService';
@@ -18,7 +19,7 @@ import {
 	ErrorSeverity,
 	type PerformanceMetrics,
 } from '@/types/index';
-import { DevLogger } from '@/utils/DevLogger';
+import 'colors';
 
 // Interface for Discord rate limit errors
 interface DiscordRateLimitError extends Error {
@@ -129,9 +130,14 @@ export class Logger {
 		}
 	}
 
+	private formatMessage(message: unknown): string {
+		if (typeof message === 'string') return message;
+		return inspect(message, { colors: true, depth: null });
+	}
+
 	public info(title: string, message: string, context?: Record<string, unknown>): void {
 		if (this.config.environment === 'development') {
-			DevLogger.info(title, message);
+			console.log(`[${'INFO'.cyan}] ${title.bold}: ${this.formatMessage(message)}`);
 			if (context && this.config.development.verbose) console.log(context);
 		} else {
 			// Production logging
@@ -142,7 +148,7 @@ export class Logger {
 
 	public success(title: string, message: string): void {
 		if (this.config.environment === 'development') {
-			DevLogger.success(title, message);
+			console.log(`[${'SUCCESS'.green}] ${title.bold}: ${this.formatMessage(message)}`);
 		} else {
 			this.logToFile('SUCCESS', `${title}: ${message}`);
 		}
@@ -150,7 +156,7 @@ export class Logger {
 
 	public warn(title: string, message: string, context?: Record<string, unknown>): void {
 		if (this.config.environment === 'development') {
-			DevLogger.warn(title, message);
+			console.log(`[${'WARN'.yellow}] ${title.bold}: ${this.formatMessage(message)}`);
 			if (context) console.warn(context);
 		} else {
 			console.warn(`[WARN] ${title}: ${message}`);
@@ -163,15 +169,55 @@ export class Logger {
 
 	public debug(title: string, message: string, context?: Record<string, unknown>): void {
 		if (this.config.environment === 'development' && this.config.development.verbose) {
-			DevLogger.info(title, message); // Use info style for now, maybe add debug style later
+			console.log(`[${'INFO'.cyan}] ${title.bold}: ${this.formatMessage(message)}`);
 			if (context) console.log(context);
 		}
 	}
 
 	public table(headers: string[], rows: string[][]): void {
 		if (this.config.environment === 'development') {
-			DevLogger.table(headers, rows);
+			const colWidths = headers.map((h, i) => {
+				const maxRow = Math.max(...rows.map((r) => (r[i] || '').length));
+				return Math.max(h.length, maxRow) + 2;
+			});
+
+			const buildRow = (items: string[]) => {
+				return items.map((item, i) => item.padEnd(colWidths[i])).join(' | ');
+			};
+
+			const separator = colWidths.map((w) => '-'.repeat(w)).join('-+-');
+
+			console.log(buildRow(headers).bold);
+			console.log(separator.gray);
+
+			for (const row of rows) {
+				console.log(buildRow(row));
+			}
+			console.log('');
 		}
+	}
+
+	private box(
+		title: string,
+		lines: string[],
+		color: 'red' | 'yellow' | 'green' | 'blue' = 'blue',
+	): void {
+		const width = 60;
+		const horizontal = '─'.repeat(width);
+		const top = `┌${horizontal}┐`;
+		const bottom = `└${horizontal}┘`;
+
+		const c = (str: string) => str[color] as string;
+
+		console.log(c(top));
+		console.log(c(`│ ${title.padEnd(width - 1)}│`));
+		console.log(c(`├${horizontal}┤`));
+
+		for (const line of lines) {
+			console.log(c(`│ ${line.padEnd(width - 1)}│`));
+		}
+
+		console.log(c(bottom));
 	}
 
 	/**
@@ -369,7 +415,7 @@ export class Logger {
 					lines.push('Stack Trace:', ...errorDetails.stack.split('\n').slice(0, 5)); // First 5 stack lines
 				}
 
-				DevLogger.box(`Error: ${errorDetails.errorId}`, lines, 'red');
+				this.box(`Error: ${errorDetails.errorId}`, lines, 'red');
 
 				return; // Don't send to webhook in dev unless specifically configured
 			}

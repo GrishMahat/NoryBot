@@ -1,16 +1,9 @@
 import { createHash } from 'node:crypto';
 import {
 	type ApplicationCommand,
-	// type ApplicationCommandOption, // Unused
-	// ApplicationCommandOptionType, // Unused
-	// type ApplicationCommandOptionChoice, // Unused
-	// type ContextMenuCommandBuilder, // Unused
 	PermissionsBitField,
 	type RESTPostAPIChatInputApplicationCommandsJSONBody,
 	type RESTPostAPIContextMenuApplicationCommandsJSONBody,
-	// type SlashCommandBuilder, // Unused
-	// type SlashCommandOptionsOnlyBuilder, // Unused
-	// type SlashCommandSubcommandsOnlyBuilder, // Unused
 } from 'discord.js';
 import type { Command, LocalContextMenu } from '@/types/index';
 

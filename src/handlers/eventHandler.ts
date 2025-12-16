@@ -1,10 +1,10 @@
 import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
 import path from 'path';
+import type Logger from '@/handlers/Logger';
 import { EventError, type EventInfo, type EventRegistry } from '@/types';
 import getAllFiles from '@/utils/helpers/getAllFiles';
 import { isValidEventName } from '@/utils/validators/isValidEventName';
-import type Logger from '../handlers/Logger';
 
 export class EventManager {
 	private client: Client;
