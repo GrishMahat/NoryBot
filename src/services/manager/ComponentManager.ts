@@ -3,6 +3,7 @@ import { CooldownGuard } from '@/services/guards/CooldownGuard';
 import { EnvironmentGuard } from '@/services/guards/EnvironmentGuard';
 import type { Guard } from '@/services/guards/Guard';
 import { PermissionGuard } from '@/services/guards/PermissionGuard';
+import { logs } from '@/services/logs';
 import cooldownManager from '@/services/manager/CooldownManager';
 import LRUCache from '@/services/manager/LRUCache';
 import type { AnyComponent, Button, ComponentMetrics, Modal, SelectMenu } from '@/types/index';
@@ -54,12 +55,12 @@ export class ComponentManager {
 			modals.forEach((modal) => this.modals.set(modal.customId, modal));
 
 			this.isLoaded = true;
-			console.log(
-				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`
-					.green,
+			logs.info(
+				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`,
+				{ tag: 'ComponentManager' },
 			);
 		} catch (error) {
-			console.error('Failed to load components:', error);
+			logs.error(error, { tag: 'ComponentManager', context: 'loadComponents' });
 			throw error;
 		}
 	}
@@ -83,7 +84,6 @@ export class ComponentManager {
 
 		// If no component matches, or not a component interaction, ignore
 		if (!resolution) {
-			// Optional: Log warning?
 			return;
 		}
 
@@ -196,16 +196,8 @@ export class ComponentManager {
 			// Update Metrics
 			this.updateMetrics(customId, Date.now() - startTime, false);
 		} catch (error) {
-			// ... (rest of error handling remains same)
 			this.updateMetrics(customId, Date.now() - startTime, true);
-			console.error(`Error executing component ${customId}:`, error);
-
-			if (global.errorHandler?.handleError) {
-				await global.errorHandler.handleError(error, 'ComponentExecutionError', {
-					componentId: customId,
-					userId: interaction.user.id,
-				});
-			}
+			logs.error(error, { tag: 'ComponentManager', context: `executeComponent:${customId}` });
 
 			if (interaction.isRepliable() && !interaction.replied) {
 				try {

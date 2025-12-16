@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import 'colors';
 import { EventEmitter } from 'events';
+import { logs } from '@/services/logs';
 
 export class MongoService extends EventEmitter {
 	private static instance: MongoService;
@@ -29,13 +30,13 @@ export class MongoService extends EventEmitter {
 		});
 
 		mongoose.connection.on('error', (error) => {
-			console.error('MongoDB connection error:'.red, error);
+			logs.error(error, { tag: 'MongoDB', context: 'connection' });
 			this.emit('error', error);
 		});
 
 		mongoose.connection.on('disconnected', () => {
 			this.isConnected = false;
-			console.log('MongoDB disconnected'.yellow);
+			logs.warn('MongoDB disconnected', { tag: 'MongoDB' });
 			this.emit('disconnected');
 			this.handleReconnect();
 		});
@@ -43,21 +44,27 @@ export class MongoService extends EventEmitter {
 
 	private handleReconnect(): void {
 		if (this.reconnectAttempts >= this.MAX_RECONNECT_ATTEMPTS) {
-			console.error('Max reconnection attempts reached. Please check your MongoDB connection.'.red);
+			logs.error('Max reconnection attempts reached. Please check your MongoDB connection.', {
+				tag: 'MongoDB',
+			});
 			this.emit('maxReconnectAttemptsReached');
 			return;
 		}
+
 		this.reconnectAttempts++;
-		console.log(
-			`Attempting to reconnect (${this.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS})...`
-				.yellow,
+		logs.warn(
+			`Attempting to reconnect (${this.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS})...`,
+			{ tag: 'MongoDB' },
 		);
 
 		setTimeout(async () => {
 			try {
 				await this.connect();
 			} catch (error) {
-				console.error(`Reconnection attempt ${this.reconnectAttempts} failed:`.red, error);
+				logs.error(
+					`Reconnection attempt ${this.reconnectAttempts} failed: ${error instanceof Error ? error.message : String(error)}`,
+					{ tag: 'MongoDB', context: error },
+				);
 			}
 		}, this.RECONNECT_INTERVAL);
 	}
@@ -82,7 +89,7 @@ export class MongoService extends EventEmitter {
 				socketTimeoutMS: 45000,
 			});
 		} catch (error) {
-			console.error('Failed to connect to MongoDB:'.red, error);
+			logs.error(error, { tag: 'MongoDB', context: 'connect' });
 			throw error;
 		}
 	}
@@ -91,9 +98,9 @@ export class MongoService extends EventEmitter {
 		try {
 			await mongoose.disconnect();
 			this.isConnected = false;
-			console.log('MongoDB disconnected successfully'.yellow);
+			logs.info('MongoDB disconnected successfully', { tag: 'MongoDB' });
 		} catch (error) {
-			console.error('Error disconnecting from MongoDB:'.red, error);
+			logs.error(error, { tag: 'MongoDB', context: 'disconnect' });
 			throw error;
 		}
 	}

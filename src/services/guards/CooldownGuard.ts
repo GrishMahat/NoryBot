@@ -1,4 +1,5 @@
 import { EmbedBuilder, type Interaction, type InteractionReplyOptions } from 'discord.js';
+import { logs } from '@/services/logs';
 import cooldownManager from '@/services/manager/CooldownManager';
 import type { BaseComponent } from '@/types/discord/components';
 import type { Guard } from './Guard';
@@ -17,6 +18,10 @@ export class CooldownGuard implements Guard {
 			const remainingTime = cooldownManager.getRemainingTime(
 				interaction.user.id,
 				component.customId,
+			);
+			logs.warn(
+				`User ${interaction.user.tag} is on cooldown for component ${component.customId}. Remaining: ${remainingTime}s`,
+				{ tag: 'CooldownGuard' },
 			);
 
 			return this.createErrorEmbed(

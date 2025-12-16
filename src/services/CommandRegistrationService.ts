@@ -9,6 +9,7 @@ import {
 	type PermissionResolvable,
 	PermissionsBitField,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command, LocalContextMenu } from '@/types/index';
 import { hashCommand } from '@/utils/helpers/commandHasher';
 import getApplicationCommands from '@/utils/helpers/getApplicationCommands';
@@ -24,62 +25,25 @@ export class CommandRegistrationService {
 
 	public async synchronize(): Promise<void> {
 		try {
-			const fetchStartTime = process.hrtime.bigint();
 			const [Commands, localContextMenus, applicationCommands] = await Promise.all([
 				getCommands(),
 				getLocalContextMenus(),
 				getApplicationCommands(this.client),
 			]);
-			const fetchEndTime = process.hrtime.bigint();
-			const fetchTime = Number(fetchEndTime - fetchStartTime) / 1_000_000;
 
 			if (!Commands || !localContextMenus || !applicationCommands) {
 				throw new Error('Failed to fetch commands or context menus');
 			}
 
-			const processStartTime = process.hrtime.bigint();
-
 			const commandChanges = await this.processApplicationCommands(Commands, applicationCommands);
-			const contextMenuChanges = await this.processContextMenus(
-				localContextMenus,
-				applicationCommands,
-			);
+			await this.processContextMenus(localContextMenus, applicationCommands);
 
-			const processEndTime = process.hrtime.bigint();
-			const processTime = Number(processEndTime - processStartTime) / 1_000_000;
-			const totalTime = Number(processEndTime - fetchStartTime) / 1_000_000;
-
-			this.logChanges(
-				commandChanges,
-				contextMenuChanges,
-				fetchTime,
-				processTime,
-				totalTime,
-				Commands.length,
-				localContextMenus.length,
+			logs.info(
+				`Command Sync: ${commandChanges.updated.length} updated, ${commandChanges.new.length} new, ${commandChanges.deleted.length} deleted.`,
+				{ tag: 'CommandRegistration' },
 			);
 		} catch (err: unknown) {
-			console.error(
-				`[${new Date().toISOString()}] Error during synchronization: ${
-					err instanceof Error ? err.message : 'Unknown error'
-				}`.red,
-			);
-			if (
-				(
-					global as unknown as {
-						errorHandler: { handleError: (err: unknown, context: string) => Promise<void> };
-					}
-				).errorHandler
-			) {
-				await (
-					global as unknown as {
-						errorHandler: { handleError: (err: unknown, context: string) => Promise<void> };
-					}
-				).errorHandler.handleError(err, 'CommandRegistrationError');
-			} else {
-				// Fallback if errorHandler is missing
-				console.error(err);
-			}
+			logs.error(err, { tag: 'CommandRegistration', context: 'synchronize' });
 		}
 	}
 
@@ -112,12 +76,12 @@ export class CommandRegistrationService {
 					deleted.push(cmd.name);
 				} catch (err) {
 					if (err instanceof DiscordAPIError && err.code === 50035) {
-						console.warn(
-							`[Warning] Could not delete command '${cmd.name}': Discord API validation failed (likely invalid Redirect URIs in Developer Portal).`
-								.yellow,
+						logs.warn(
+							`Could not delete command '${cmd.name}': Discord API validation failed (likely invalid Redirect URIs).`,
+							{ tag: 'CommandRegistration' },
 						);
 					} else {
-						console.error(`Failed to delete command ${cmd.name}:`, err);
+						logs.error(err, { tag: 'CommandRegistration', context: `deleteCommand:${cmd.name}` });
 					}
 				}
 			}),
@@ -175,7 +139,7 @@ export class CommandRegistrationService {
 					await cmd.delete();
 					deleted.push(cmd.name);
 				} catch (err) {
-					console.error(`Failed to delete context menu ${cmd.name}:`, err);
+					logs.error(err, { tag: 'CommandRegistration', context: `deleteContextMenu:${cmd.name}` });
 				}
 			}),
 		);
@@ -214,8 +178,7 @@ export class CommandRegistrationService {
 		const existingHash = hashCommand(existingCommand);
 
 		if (localHash !== existingHash) {
-			console.log(`[DEBUG] Hash mismatch for command ${Command.data.name}`.yellow);
-			// console.log(`Local: ${localHash}, Remote: ${existingHash}`);
+			logs.debug(`Hash mismatch for command ${Command.data.name}`, { tag: 'CommandRegistration' });
 
 			try {
 				const commandData = Command.data.toJSON();
@@ -234,7 +197,10 @@ export class CommandRegistrationService {
 				});
 				return true;
 			} catch (error) {
-				console.error(`Error updating command ${Command.data.name}:`, error);
+				logs.error(error, {
+					tag: 'CommandRegistration',
+					context: `updateCommand:${Command.data.name}`,
+				});
 			}
 		}
 		return false;
@@ -257,7 +223,7 @@ export class CommandRegistrationService {
 				defaultMemberPermissions,
 			});
 		} catch (err) {
-			console.error(`Failed to create command ${data.name}:`, err);
+			logs.error(err, { tag: 'CommandRegistration', context: `createCommand:${data.name}` });
 		}
 	}
 
@@ -269,13 +235,18 @@ export class CommandRegistrationService {
 		const existingHash = hashCommand(existingContextMenu);
 
 		if (localHash !== existingHash) {
-			console.log(`[DEBUG] Hash mismatch for context menu ${localContextMenu.data.name}`.yellow);
+			logs.debug(`Hash mismatch for context menu ${localContextMenu.data.name}`, {
+				tag: 'CommandRegistration',
+			});
 
 			try {
 				await existingContextMenu.edit(localContextMenu.data);
 				return true;
 			} catch (error) {
-				console.error(`Error updating context menu ${localContextMenu.data.name}:`, error);
+				logs.error(error, {
+					tag: 'CommandRegistration',
+					context: `updateContextMenu:${localContextMenu.data.name}`,
+				});
 			}
 		}
 		return false;
@@ -285,125 +256,7 @@ export class CommandRegistrationService {
 		try {
 			await this.client.application?.commands.create(data);
 		} catch (err) {
-			console.error(`Failed to create context menu ${data.name}:`, err);
+			logs.error(err, { tag: 'CommandRegistration', context: `createContextMenu:${data.name}` });
 		}
-	}
-
-	private logChanges(
-		commandChanges: { updated: string[]; new: string[]; deleted: string[] },
-		contextMenuChanges: { updated: string[]; new: string[]; deleted: string[] },
-		fetchTime: number,
-		processTime: number,
-		totalTime: number,
-		totalCommands: number,
-		totalContextMenus: number,
-	): void {
-		const SEPARATOR = {
-			DOUBLE: '═',
-			SINGLE: '─',
-			LENGTH: 60,
-		};
-
-		const header = `╔${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╗`.cyan;
-		const footer = `╚${SEPARATOR.DOUBLE.repeat(SEPARATOR.LENGTH)}╝`.cyan;
-		const divider = `╟${SEPARATOR.SINGLE.repeat(SEPARATOR.LENGTH)}╢`.cyan;
-
-		console.log(header);
-		console.log(`║ Command & Menu Sync Report${' '.repeat(SEPARATOR.LENGTH - 26)} ║`.cyan);
-		console.log(divider);
-
-		// Stats
-		console.log(
-			`║ Total Commands: ${totalCommands.toString().yellow}${' '.repeat(
-				SEPARATOR.LENGTH - 16 - totalCommands.toString().length,
-			)} ║`.cyan,
-		);
-		console.log(
-			`║ Total Context Menus: ${totalContextMenus.toString().yellow}${' '.repeat(
-				SEPARATOR.LENGTH - 21 - totalContextMenus.toString().length,
-			)} ║`.cyan,
-		);
-		console.log(divider);
-		console.log(
-			`║ Fetch Time: ${fetchTime.toFixed(2).toString().blue}ms${' '.repeat(
-				SEPARATOR.LENGTH - 13 - fetchTime.toFixed(2).toString().length,
-			)} ║`.cyan,
-		);
-		console.log(
-			`║ Process Time: ${processTime.toFixed(2).toString().green}ms${' '.repeat(
-				SEPARATOR.LENGTH - 15 - processTime.toFixed(2).toString().length,
-			)} ║`.cyan,
-		);
-		console.log(
-			`║ Total Time: ${totalTime.toFixed(2).toString().yellow}ms${' '.repeat(
-				SEPARATOR.LENGTH - 13 - totalTime.toFixed(2).toString().length,
-			)} ║`.cyan,
-		);
-
-		// Command Changes
-		if (
-			commandChanges.updated.length ||
-			commandChanges.new.length ||
-			commandChanges.deleted.length
-		) {
-			console.log(divider);
-			console.log(`║ App Commands Changes${' '.repeat(SEPARATOR.LENGTH - 20)} ║`.cyan);
-			if (commandChanges.new.length) {
-				console.log(`║   New: ${' '.repeat(SEPARATOR.LENGTH - 8)} ║`.cyan);
-				commandChanges.new.forEach((cmd) =>
-					console.log(
-						`║     + ${cmd.green}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan,
-					),
-				);
-			}
-			if (commandChanges.updated.length) {
-				console.log(`║   Updated: ${' '.repeat(SEPARATOR.LENGTH - 12)} ║`.cyan);
-				commandChanges.updated.forEach((cmd) =>
-					console.log(
-						`║     ~ ${cmd.yellow}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan,
-					),
-				);
-			}
-			if (commandChanges.deleted.length) {
-				console.log(`║   Deleted: ${' '.repeat(SEPARATOR.LENGTH - 12)} ║`.cyan);
-				commandChanges.deleted.forEach((cmd) =>
-					console.log(`║     - ${cmd.red}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan),
-				);
-			}
-		}
-
-		// Context Menu Changes
-		if (
-			contextMenuChanges.updated.length ||
-			contextMenuChanges.new.length ||
-			contextMenuChanges.deleted.length
-		) {
-			console.log(divider);
-			console.log(`║ Context Menus Changes${' '.repeat(SEPARATOR.LENGTH - 21)} ║`.cyan);
-			if (contextMenuChanges.new.length) {
-				console.log(`║   New: ${' '.repeat(SEPARATOR.LENGTH - 8)} ║`.cyan);
-				contextMenuChanges.new.forEach((cmd) =>
-					console.log(
-						`║     + ${cmd.green}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan,
-					),
-				);
-			}
-			if (contextMenuChanges.updated.length) {
-				console.log(`║   Updated: ${' '.repeat(SEPARATOR.LENGTH - 12)} ║`.cyan);
-				contextMenuChanges.updated.forEach((cmd) =>
-					console.log(
-						`║     ~ ${cmd.yellow}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan,
-					),
-				);
-			}
-			if (contextMenuChanges.deleted.length) {
-				console.log(`║   Deleted: ${' '.repeat(SEPARATOR.LENGTH - 12)} ║`.cyan);
-				contextMenuChanges.deleted.forEach((cmd) =>
-					console.log(`║     - ${cmd.red}${' '.repeat(SEPARATOR.LENGTH - 7 - cmd.length)} ║`.cyan),
-				);
-			}
-		}
-
-		console.log(footer);
 	}
 }

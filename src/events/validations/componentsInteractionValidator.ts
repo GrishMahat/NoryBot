@@ -1,4 +1,5 @@
 import type { Client, Interaction } from 'discord.js';
+import { logs } from '@/services/logs';
 import { componentManager } from '@/services/manager/ComponentManager';
 import { chatInputCommandValidator } from '@/utils/validators/chatInputCommandValidator';
 import { contextMenuCommandValidator } from '@/utils/validators/contextMenuCommandValidator';
@@ -23,7 +24,6 @@ export default async (client: Client, interaction: Interaction): Promise<void> =
 			await componentManager.handleInteraction(client, interaction);
 		}
 	} catch (error) {
-		console.error('Error in interactionCreate handler:', error);
-		await global.errorHandler.handleError(error, 'InteractionCreateError');
+		logs.error(error, { tag: 'ComponentsInteractionValidator', context: 'interactionCreate' });
 	}
 };
