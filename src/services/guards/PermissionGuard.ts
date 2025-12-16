@@ -5,6 +5,7 @@ import {
 	type InteractionReplyOptions,
 } from 'discord.js';
 import mConfig from '@/config/messageConfig';
+import { logs } from '@/services/logs';
 import type { BaseComponent } from '@/types/discord/components';
 import type { Guard } from './Guard';
 
@@ -14,11 +15,16 @@ export class PermissionGuard implements Guard {
 	async validate(
 		interaction: Interaction,
 		component: BaseComponent,
+		_args: string[],
 	): Promise<InteractionReplyOptions | null> {
 		// User Permissions Check
 		if (component.userPermissions && component.userPermissions.length > 0) {
 			const member = interaction.member as GuildMember;
 			if (!member || !this.checkPermissions(member, component.userPermissions)) {
+				logs.warn(
+					`User ${interaction.user.tag} (${interaction.user.id}) needs permissions: ${component.userPermissions.join(', ')}`,
+					{ tag: 'PermissionGuard', context: { component: component.customId } },
+				);
 				return this.createErrorEmbed(interaction, mConfig.userNoPermissions);
 			}
 		}
@@ -27,6 +33,10 @@ export class PermissionGuard implements Guard {
 		if (component.botPermissions && component.botPermissions.length > 0) {
 			const botMember = interaction.guild?.members.me;
 			if (!botMember || !this.checkPermissions(botMember, component.botPermissions)) {
+				logs.warn(`Bot needs permissions: ${component.botPermissions.join(', ')}`, {
+					tag: 'PermissionGuard',
+					context: { component: component.customId, guild: interaction.guild?.id },
+				});
 				return this.createErrorEmbed(interaction, mConfig.botNoPermissions);
 			}
 		}

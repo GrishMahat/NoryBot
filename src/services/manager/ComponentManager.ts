@@ -3,6 +3,8 @@ import { CooldownGuard } from '@/services/guards/CooldownGuard';
 import { EnvironmentGuard } from '@/services/guards/EnvironmentGuard';
 import type { Guard } from '@/services/guards/Guard';
 import { PermissionGuard } from '@/services/guards/PermissionGuard';
+import { logs } from '@/services/logs';
+import cooldownManager from '@/services/manager/CooldownManager';
 import LRUCache from '@/services/manager/LRUCache';
 import type { AnyComponent, Button, ComponentMetrics, Modal, SelectMenu } from '@/types/index';
 import { type ComponentType, loadAllComponents } from '@/utils/helpers/loadComponents';
@@ -53,12 +55,12 @@ export class ComponentManager {
 			modals.forEach((modal) => this.modals.set(modal.customId, modal));
 
 			this.isLoaded = true;
-			console.log(
-				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`
-					.green,
+			logs.info(
+				`ComponentManager: Loaded ${buttons.length} buttons, ${selects.length} selects, ${modals.length} modals`,
+				{ tag: 'ComponentManager' },
 			);
 		} catch (error) {
-			console.error('Failed to load components:', error);
+			logs.error(error, { tag: 'ComponentManager', context: 'loadComponents' });
 			throw error;
 		}
 	}
@@ -82,7 +84,6 @@ export class ComponentManager {
 
 		// If no component matches, or not a component interaction, ignore
 		if (!resolution) {
-			// Optional: Log warning?
 			return;
 		}
 
@@ -117,7 +118,7 @@ export class ComponentManager {
 				return undefined;
 		}
 
-		// 3. Exact Match Check
+		// 3. Exact Match Check (O(1))
 		if (map.has(customId)) {
 			const component = map.get(customId);
 			if (component) {
@@ -126,28 +127,23 @@ export class ComponentManager {
 			}
 		}
 
-		// 4. Prefix Match Check (Dynamic IDs)
-		// Checks if customId starts with any registered key + separator
-		// Example: "ban_user:123" matches "ban_user"
-		for (const [key, component] of map.entries()) {
-			// We use a predefined separator (e.g. ':') or just startsWith?
-			// Using a separator is safer to avoid partial matches (e.g. "ban_user_all" matching "ban_user")
-			// Let's assume ':' is the separator or just check strictly startsWith if flexible.
-			// Best practice: if (customId.startsWith(key + separator))
+		// 4. Dynamic ID Check (Split by Separator)
+		// Assumption: Dynamic IDs follow the format "prefix:arg1:arg2"
+		const separator = ':';
+		const firstSeparatorIndex = customId.indexOf(separator);
 
-			// For now, let's implement a simple startsWith logic,
-			// but we'll infer the separator or just rely on the developer to name things well (like 'ban_user:')
-			if (customId.startsWith(key)) {
-				// Determine arguments
-				const argsString = customId.slice(key.length);
-				// If there's content after the match, treat as args.
-				// We'll strip a leading separator if present (':', '-', '_') common pattern
-				const args = argsString.startsWith(':')
-					? argsString.slice(1).split(':')
-					: argsString.split(':'); // fall back to just splitting whatever is left
+		if (firstSeparatorIndex !== -1) {
+			const prefix = customId.substring(0, firstSeparatorIndex);
+			const component = map.get(prefix);
 
-				// Don't cache dynamic resolutions permanently in the same way, or cache specific instances?
-				// Caching "ban_user:123" -> Ref to "ban_user" component is fine and saves the loop!
+			if (component) {
+				// We found a matching component for the prefix
+				const argsString = customId.substring(firstSeparatorIndex + 1);
+				const args = argsString.split(separator);
+
+				// Cache the specific instance if needed, or just return it
+				// Caching dynamic IDs might fill up the cache quickly if they are unique per user/interaction
+				// But LRU handles that.
 				this.componentCache.set(customId, component);
 
 				return { component, args };
@@ -172,7 +168,7 @@ export class ComponentManager {
 		try {
 			// Run Validation Guards (pass args if needed in future, current guards don't use them)
 			for (const guard of this.guards) {
-				const errorReply = await guard.validate(interaction, component);
+				const errorReply = await guard.validate(interaction, component, args);
 				if (errorReply) {
 					if (interaction.isRepliable()) {
 						if (interaction.deferred || interaction.replied) {
@@ -192,19 +188,16 @@ export class ComponentManager {
 				await (component as any).run(client, interaction, args);
 			}
 
+			// Set Cooldown on Success
+			if (component.cooldown) {
+				cooldownManager.setCooldown(interaction.user.id, component.customId, component.cooldown);
+			}
+
 			// Update Metrics
 			this.updateMetrics(customId, Date.now() - startTime, false);
 		} catch (error) {
-			// ... (rest of error handling remains same)
 			this.updateMetrics(customId, Date.now() - startTime, true);
-			console.error(`Error executing component ${customId}:`, error);
-
-			if (global.errorHandler?.handleError) {
-				await global.errorHandler.handleError(error, 'ComponentExecutionError', {
-					componentId: customId,
-					userId: interaction.user.id,
-				});
-			}
+			logs.error(error, { tag: 'ComponentManager', context: `executeComponent:${customId}` });
 
 			if (interaction.isRepliable() && !interaction.replied) {
 				try {

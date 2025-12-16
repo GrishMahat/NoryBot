@@ -4,15 +4,16 @@
 	"version": "0.1.0",
 	"main": "dist/index.js",
 	"license": "Apache-2.0",
+	"type": "module",
 	"keywords": [
 		"discord",
 		"bot",
 		"discord.js"
 	],
 	"scripts": {
-		"start": "bun build ./src/index.ts --compile --outfile ./dist/nory-bot && ./dist/nory-bot",
-		"start:exec": "./dist/nory-bot",
-		"dev": "bun --hot src/index.ts",
+		"start": "bun run src/index.ts",
+		"start:prod": "bun run src/index.ts",
+		"dev": "bun --watch src/index.ts",
 		"build": "bun build ./src/index.ts --compile --outfile ./dist/nory-bot",
 		"lint": "biome lint ./src",
 		"lint:fix": "biome lint --write ./src",

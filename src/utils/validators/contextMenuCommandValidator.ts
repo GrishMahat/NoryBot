@@ -12,6 +12,7 @@ import {
 } from 'discord.js';
 import { config } from '@/config/config';
 import mConfig from '@/config/messageConfig';
+import { logs } from '@/services/logs';
 import cooldownManager from '@/services/manager/CooldownManager';
 import LRUCache from '@/services/manager/LRUCache';
 import type { LocalContextMenu } from '@/types';
@@ -50,7 +51,10 @@ class ContextMenuManager {
 		const metrics = await this.metrics.get(key);
 		if (metrics) {
 			await Promise.resolve(
-				console.log(`Context menu ${key} expired from cache. Usage stats:`, metrics),
+				logs.info(`Context menu ${key} expired from cache. Usage stats:`, {
+					tag: 'ContextMenu',
+					context: metrics,
+				}),
 			);
 		}
 	}
@@ -104,7 +108,8 @@ class ContextMenuManager {
 				this.contextMenus.set(menu.data.name, menu);
 			}
 			this.isLoaded = true;
-			console.log(`Successfully loaded ${menus.length} context menus`);
+			this.isLoaded = true;
+			logs.info(`Successfully loaded ${menus.length} context menus`, { tag: 'ContextMenu' });
 		} catch (error) {
 			if (retryCount < 3) {
 				await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -214,10 +219,12 @@ class ContextMenuManager {
 
 			await menu.run(client, interaction);
 			this.updateMetrics(commandName, Date.now() - startTime);
-			console.log(`Context menu executed: ${commandName} by ${interaction.user.tag}`.green);
+			logs.info(`Context menu executed: ${commandName} by ${interaction.user.tag}`, {
+				tag: 'ContextMenu',
+			});
 		} catch (error) {
 			this.updateMetrics(commandName, Date.now() - startTime, true);
-			await global.errorHandler.handleError(error, 'ContextMenuExecutionError');
+			logs.error(error, { tag: 'ContextMenu', context: `executeContextMenu:${commandName}` });
 
 			if (!interaction.replied) {
 				await interaction.reply(

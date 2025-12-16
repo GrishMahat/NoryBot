@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 /**
  * Recursively retrieves only .js and .ts files from a specified directory,
  * explicitly excluding .d.ts and .js.map files.

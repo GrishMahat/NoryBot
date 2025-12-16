@@ -17,6 +17,7 @@ import {
 } from 'discord.js';
 import { config } from '@/config/config';
 import mConfig from '@/config/messageConfig';
+import { logs } from '@/services/logs';
 import cooldownManager from '@/services/manager/CooldownManager';
 import LRUCache from '@/services/manager/LRUCache';
 import type { Command } from '@/types/index';
@@ -68,7 +69,9 @@ class CommandValidator {
 	 */
 	private handleCacheExpiry(key: string): void {
 		if (key === CommandValidator.LOCAL_COMMANDS_CACHE_KEY) {
-			console.log('Command list cache expired. Will reload on next interaction.'.yellow);
+			logs.warn('Command list cache expired. Will reload on next interaction.', {
+				tag: 'CommandValidator',
+			});
 			// Reset initialization status so commands are reloaded
 			this.isInitialized = false;
 			this.commandMap.clear();
@@ -143,28 +146,26 @@ class CommandValidator {
 	 * Initializes the command validator by loading commands from the cache or source.
 	 * This is called lazily on the first interaction.
 	 */
-	private async initializeCommands(): Promise<void> {
+	private async initializeCommands(_client?: Client): Promise<void> {
 		if (this.isInitialized) return; // Already initialized
 
 		try {
-			console.log('Initializing commands...'.cyan);
+			logs.info('Initializing commands...', { tag: 'CommandValidator' });
 			const Commands = await this.getCachedCommands();
 			this.commandMap.clear(); // Clear existing map before reloading
 			Commands.forEach((cmd) => {
 				if (cmd?.data?.name) {
 					this.commandMap.set(cmd.data.name, cmd);
 				} else {
-					console.warn('Found command with missing data or name.'.yellow);
+					logs.warn('Found command with missing data or name.', { tag: 'CommandValidator' });
 				}
 			});
 			this.isInitialized = true;
-			console.log(`Successfully loaded ${this.commandMap.size} commands.`.green);
+			logs.info(`Successfully loaded ${this.commandMap.size} commands.`, {
+				tag: 'CommandValidator',
+			});
 		} catch (error) {
-			console.error('Failed to initialize commands:'.red, error);
-			// Use global error handler if available
-			if (global.errorHandler?.handleError) {
-				await global.errorHandler.handleError(error, 'CommandInitializationError');
-			}
+			logs.error(error, { tag: 'CommandValidator', context: 'initializeCommands' });
 			// Re-throw the error to indicate initialization failure
 			throw new Error(
 				`Command Initialization Failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -180,12 +181,12 @@ class CommandValidator {
 		// Try fetching from cache first
 		const cachedCommands = this.commandListCache.get(CommandValidator.LOCAL_COMMANDS_CACHE_KEY);
 		if (cachedCommands) {
-			console.log('Retrieved command list from cache.'.blue);
+			logs.debug('Retrieved command list from cache.', { tag: 'CommandValidator' });
 			return cachedCommands;
 		}
 
 		// If not cached, fetch from source and cache it
-		console.log('Fetching command list from source...'.blue);
+		logs.debug('Fetching command list from source...', { tag: 'CommandValidator' });
 		const commands = await getCommands();
 		this.commandListCache.set(CommandValidator.LOCAL_COMMANDS_CACHE_KEY, commands);
 		return commands;
@@ -300,9 +301,9 @@ class CommandValidator {
 		// Ensure commands are loaded before handling any interaction
 		// This might introduce a small delay on the very first command after startup/cache expiry
 		try {
-			await this.initializeCommands();
+			await this.initializeCommands(client);
 		} catch (initError) {
-			console.error('Initialization failed, cannot handle interaction:'.red, initError);
+			logs.error(initError, { tag: 'CommandValidator', context: 'handleInteraction:init' }); // No red needed
 			// Attempt to inform the user if possible (and makes sense)
 			if (interaction.isRepliable()) {
 				try {
@@ -314,7 +315,12 @@ class CommandValidator {
 						),
 					);
 				} catch (replyError) {
-					console.error('Failed to send initialization error reply:'.red, replyError);
+					console.error('Failed to send initialization error reply:', replyError);
+					// logs.error(replyError, ...) // Could log this too but console.error implies low-level panic or keep simple
+					logs.error(replyError, {
+						tag: 'CommandValidator',
+						context: 'handleInteraction:replyError',
+					});
 				}
 			}
 			return; // Stop processing if initialization failed
@@ -348,12 +354,17 @@ class CommandValidator {
 		const command = this.commandMap.get(commandName);
 
 		if (!command) {
-			console.warn(`Autocomplete received for unknown command: ${commandName}`.yellow);
+			logs.warn(`Autocomplete received for unknown command: ${commandName}`, {
+				tag: 'CommandValidator',
+			});
 			// Cannot reply with embeds here, respond with empty choices or handle error
 			try {
 				await interaction.respond([]);
 			} catch (e) {
-				console.error(`Error responding to autocomplete for unknown command: ${commandName}`, e);
+				logs.error(e, {
+					tag: 'CommandValidator',
+					context: `handleAutocomplete:respond:${commandName}`,
+				});
 			}
 			return;
 		}
@@ -363,20 +374,16 @@ class CommandValidator {
 			try {
 				await command.autocomplete(client, interaction);
 			} catch (error) {
-				console.error(`Error during autocomplete for command ${commandName}:`.red, error);
-				// Avoid crashing, maybe log to global handler
-				if (global.errorHandler?.handleError) {
-					await global.errorHandler.handleError(error, 'AutocompleteError');
-				}
+				logs.error(error, { tag: 'CommandValidator', context: `autocomplete:${commandName}` });
 				// Attempt to respond with empty choices to prevent timeout
 				if (!interaction.responded) {
 					try {
 						await interaction.respond([]);
 					} catch (respondError) {
-						console.error(
-							`Failed to send empty response after autocomplete error for ${commandName}:`,
-							respondError,
-						);
+						logs.error(respondError, {
+							tag: 'CommandValidator',
+							context: `autocomplete:respondError:${commandName}`,
+						});
 					}
 				}
 			}
@@ -385,7 +392,10 @@ class CommandValidator {
 			try {
 				await interaction.respond([]);
 			} catch (e) {
-				console.error(`Error sending default empty response for autocomplete: ${commandName}`, e);
+				logs.error(e, {
+					tag: 'CommandValidator',
+					context: `autocomplete:defaultError:${commandName}`,
+				});
 			}
 		}
 	}
@@ -400,7 +410,7 @@ class CommandValidator {
 		interaction: ChatInputCommandInteraction,
 	): Promise<void> {
 		if (!this.isInitialized) {
-			await this.initializeCommands();
+			await this.initializeCommands(client);
 		}
 
 		const startTime = Date.now();
@@ -429,10 +439,12 @@ class CommandValidator {
 
 			await command.run(client, interaction);
 			this.updateMetrics(commandName, Date.now() - startTime);
-			console.log(`Command executed: ${commandName} by ${interaction.user.tag}`.green);
+			logs.info(`Command executed: ${commandName} by ${interaction.user.tag}`, {
+				tag: 'CommandValidator',
+			});
 		} catch (error) {
 			this.updateMetrics(commandName, Date.now() - startTime, true);
-			await global.errorHandler.handleError(error, 'CommandExecutionError');
+			logs.error(error, { tag: 'CommandValidator', context: `executeCommand:${commandName}` });
 
 			try {
 				if (!interaction.deferred && !interaction.replied) {
@@ -446,7 +458,10 @@ class CommandValidator {
 					});
 				}
 			} catch (replyError) {
-				console.error('Failed to send error response:', replyError);
+				logs.error(replyError, {
+					tag: 'CommandValidator',
+					context: 'handleChatInputCommand:replyError',
+				});
 			}
 		}
 	}
@@ -464,7 +479,7 @@ class CommandValidator {
 	 */
 	public clearMetrics(): void {
 		this.metrics.clear();
-		console.log('Command metrics cleared.'.yellow);
+		logs.info('Command metrics cleared.', { tag: 'CommandValidator' });
 	}
 }
 

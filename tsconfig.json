@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
 		// Module settings for Node.js CommonJS output
-		"target": "ES2022",
-		"module": "CommonJS",
-		"moduleResolution": "node",
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
 		"moduleDetection": "force",
 
 		// "allowJs": true,

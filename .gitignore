@@ -9,4 +9,5 @@ all.dev
 temp_quote.png
 temp_quote.*
 coverage/
-IDEA.md
+logs/
+.issue.read.md

@@ -1,8 +1,14 @@
 import type { Client, ClientEvents } from 'discord.js';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { logs } from '@/services/logs';
 import { EventError, type EventInfo, type EventRegistry } from '@/types';
 import getAllFiles from '@/utils/helpers/getAllFiles';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import { isValidEventName } from '@/utils/validators/isValidEventName';
 
 export class EventManager {
@@ -29,7 +35,7 @@ export class EventManager {
 			await Promise.all(eventFolders.map((folder) => this.processEventFolder(folder)));
 			this.registerEvents();
 		} catch (error) {
-			await global.logger.error(error, 'EventManagerInitError');
+			logs.error(error, { tag: 'EventManager', context: 'init' });
 		}
 	}
 
@@ -41,7 +47,8 @@ export class EventManager {
 		this.eventRegistry.clear();
 		this.loadedEvents.clear();
 		await this.init();
-		global.logger.success('Reload', 'Events reloaded successfully.');
+		await this.init();
+		logs.info('Reload: Events reloaded successfully.', { tag: 'EventManager' });
 	}
 
 	private async processEventFolder(eventFolder: string): Promise<void> {
@@ -71,22 +78,24 @@ export class EventManager {
 				),
 			);
 		} catch (error) {
-			await global.logger.error(error, 'EventFolderProcessError', { eventFolder });
+			logs.error(error, { tag: 'EventManager', context: 'processEventFolder' });
 		}
 	}
 
 	private async loadEventFile(eventFile: string, eventName: keyof ClientEvents): Promise<void> {
 		try {
 			// Delete from require cache to support reloading
-			delete require.cache[require.resolve(eventFile)];
+			// Note: In ESM/Bun, we rely on native hot reloading or re-importing with cache busting if needed.
+			// For now, we simply import.
+			// delete require.cache[require.resolve(eventFile)];
 
 			const eventModule = await import(eventFile);
 			const eventFunction = eventModule.default;
 
 			if (typeof eventFunction !== 'function') {
-				global.logger.warn(
-					'Event Handler',
+				logs.warn(
 					`Skipping invalid event handler in ${path.basename(eventFile)}: default export is not a function.`,
+					{ tag: 'EventManager' },
 				);
 				return;
 			}
@@ -103,12 +112,12 @@ export class EventManager {
 			handlers.push(eventInfo);
 			this.eventRegistry.set(eventName, handlers);
 		} catch (error) {
-			await global.logger.error(error, 'EventFileLoadError', { eventFile });
+			logs.error(error, { tag: 'EventManager', context: 'loadEventFile' });
 		}
 	}
 
 	private registerEvents(): void {
-		const tableData: string[][] = [];
+		let loadedCount = 0;
 
 		for (const [eventName, handlers] of this.eventRegistry.entries()) {
 			const typedEventName = eventName as keyof ClientEvents;
@@ -116,14 +125,8 @@ export class EventManager {
 			// Sort by priority (descending logic: b - a)
 			handlers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
-			handlers.forEach((h) => {
-				tableData.push([
-					eventName,
-					h.fileName,
-					(h.priority ?? 0).toString(),
-					h.once ? 'ONCE' : 'ON',
-					'✅',
-				]);
+			handlers.forEach(() => {
+				loadedCount++;
 			});
 
 			// biome-ignore lint/suspicious/noExplicitAny: Generic event wrapper requires any
@@ -132,9 +135,10 @@ export class EventManager {
 					try {
 						await handlerInfo.function(this.client, ...args);
 					} catch (error) {
-						await global.logger.error(error, 'EventHandlerExecutionError', {
-							eventName: typedEventName,
-							fileName: handlerInfo.fileName,
+						logs.error(error, {
+							tag: 'EventManager',
+							context: `Execution:${typedEventName}`,
+							source: handlerInfo.fileName,
 						});
 					}
 				}
@@ -145,8 +149,10 @@ export class EventManager {
 		}
 
 		if (process.env.NODE_ENV === 'development') {
-			global.logger.info('Event Manager', 'Loaded Events:');
-			global.logger.table(['Event', 'File', 'Priority', 'Type', 'Status'], tableData);
+			logs.info(
+				`Event Manager: Loaded ${loadedCount} events across ${this.eventRegistry.size} types.`,
+				{ tag: 'EventManager' },
+			);
 		}
 	}
 }

@@ -1,23 +1,24 @@
-import type { ErrorHandler } from '@/handlers/errorHandler';
+import type {
+	Command as CommandType,
+	LocalContextMenu as LocalContextMenuType,
+} from './discord/commands';
+import type {
+	Button as ButtonType,
+	Modal as ModalType,
+	SelectMenu as SelectMenuType,
+} from './discord/components';
 
 declare global {
-	// Import command types from our organized structure
-	type Command = import('./discord/commands').Command;
-	type LocalContextMenu = import('./discord/commands').LocalContextMenu;
-	//New type   and old type  with  new name
-	// TODO: Rename LocalContextMenu to ContextMenu throughout the codebase
-	type ContextMenu = import('./discord/commands').LocalContextMenu;
-	type SelectMenu = import('./discord/commands').SelectMenu;
-	type Button = import('./discord/commands').Button;
-	type Modal = import('./discord/commands').Modal;
-	interface Window {
-		errorHandler: ErrorHandler;
-	}
+	// Global command types
+	type Command = CommandType;
+	type LocalContextMenu = LocalContextMenuType;
+	type ContextMenu = LocalContextMenuType; // Alias for backward compatibility
 
-	namespace NodeJS {
-		interface Global {
-			errorHandler: ErrorHandler;
-		}
-	}
-	var errorHandler: ErrorHandler;
+	// Global component types
+	type SelectMenu = SelectMenuType;
+	type Button = ButtonType;
+	type Modal = ModalType;
 }
+
+export {};
+

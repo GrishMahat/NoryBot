@@ -38,7 +38,7 @@ const ticketSchema = new Schema<ITicket>(
 		actionLog: { type: [String], default: [] },
 	},
 	{
-		strict: false,
+		strict: true,
 		timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
 	},
 );

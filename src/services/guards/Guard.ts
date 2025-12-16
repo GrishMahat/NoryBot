@@ -19,5 +19,6 @@ export interface Guard {
 	validate(
 		interaction: Interaction,
 		component: BaseComponent,
+		args: string[],
 	): Promise<InteractionReplyOptions | null>;
 }
