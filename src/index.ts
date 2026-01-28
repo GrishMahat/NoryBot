@@ -2,6 +2,7 @@ import 'dotenv/config';
 import 'colors';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { EventManager } from '@/handlers/eventHandler';
+import { HypixelTrackerService } from '@/services/HypixelTrackerService';
 import { logs } from '@/services/logs';
 
 // Services initialized statically
@@ -16,6 +17,15 @@ const initializeClient = async (): Promise<Client<boolean>> => {
 			GatewayIntentBits.MessageContent,
 		],
 	});
+
+	let trackerStarted = false;
+	const startTracker = () => {
+		if (trackerStarted) return;
+		trackerStarted = true;
+		HypixelTrackerService.getInstance().start(client);
+	};
+
+	client.once('clientReady', startTracker);
 
 	// Attach services
 
