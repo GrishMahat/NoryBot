@@ -10,6 +10,20 @@ import { logs } from '@/services/logs';
 const HYPIXEL_STATUS_ENDPOINT = 'https://api.hypixel.net/status';
 const POLL_INTERVAL_MS = 60_000;
 
+const formatDuration = (ms: number): string => {
+	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+	const days = Math.floor(totalSeconds / 86400);
+	const hours = Math.floor((totalSeconds % 86400) / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const parts: string[] = [];
+
+	if (days > 0) parts.push(`${days}d`);
+	if (hours > 0 || days > 0) parts.push(`${hours}h`);
+	parts.push(`${minutes}m`);
+
+	return parts.join(' ');
+};
+
 type HypixelStatusResponse = {
 	success: boolean;
 	cause?: string;
@@ -114,6 +128,11 @@ export class HypixelTrackerService {
 						tracker.trackedByUserId,
 						tracker,
 						newStatus,
+						{
+							gameType: statusResponse.session?.gameType,
+							previousStatus: tracker.lastOnlineStatus,
+							lastCheckedAt: now,
+						},
 					);
 				}
 
@@ -180,8 +199,15 @@ export class HypixelTrackerService {
 		client: Client,
 		channelId: string,
 		userId: string,
-		tracker: { playerName?: string; playerUuid: string },
+		tracker: {
+			playerName?: string;
+			playerUuid: string;
+			lastStatusChangedAt?: Date;
+			startedAt?: Date;
+			lastError?: string;
+		},
 		status: 'online' | 'offline',
+		meta?: { gameType?: string; previousStatus?: string; lastCheckedAt?: Date },
 	): Promise<void> {
 		const channel = (await client.channels.fetch(channelId).catch(() => null)) as {
 			isTextBased?: () => boolean;
@@ -198,11 +224,42 @@ export class HypixelTrackerService {
 		const name = tracker.playerName ?? tracker.playerUuid;
 		const imageUrl = `https://visage.surgeplay.com/full/${tracker.playerUuid}`;
 		const color = status === 'online' ? 0x57f287 : 0xed4245;
+		const previousStatus = meta?.previousStatus ?? 'unknown';
+		const gameType = meta?.gameType ?? (status === 'online' ? 'Unknown' : 'Offline');
+		const profileUrl = `https://namemc.com/profile/${tracker.playerUuid}`;
+		const changedAt = tracker.lastStatusChangedAt ?? tracker.startedAt ?? meta?.lastCheckedAt;
+		const duration = changedAt ? formatDuration(Date.now() - changedAt.getTime()) : 'Unknown';
+		const apiStatus = tracker.lastError ? 'API error' : 'Data fresh';
+		const apiDetails = tracker.lastError ?? 'No errors reported';
+		const statusLine =
+			previousStatus === 'unknown'
+				? `Status is now **${status}**`
+				: `Status changed from **${previousStatus}** to **${status}**`;
 
 		const embed = new EmbedBuilder()
 			.setTitle(`${name} is now ${status}`)
+			.setDescription(statusLine)
 			.setColor(color)
 			.setImage(imageUrl)
+			.addFields(
+				{ name: 'UUID', value: `\`${tracker.playerUuid}\``, inline: true },
+				{ name: 'Game', value: gameType || 'Unknown', inline: true },
+				{ name: 'Profile', value: `[NameMC](${profileUrl})`, inline: true },
+				{ name: 'Tracked By', value: `<@${userId}>`, inline: true },
+				{ name: 'Status Duration', value: duration, inline: true },
+				{
+					name: 'Last Checked',
+					value: meta?.lastCheckedAt
+						? `<t:${Math.floor(meta.lastCheckedAt.getTime() / 1000)}:R>`
+						: 'Unknown',
+					inline: true,
+				},
+				{
+					name: 'API Status',
+					value: tracker.lastError ? `${apiStatus} (${apiDetails})` : apiStatus,
+					inline: false,
+				},
+			)
 			.setTimestamp();
 
 		const sendChannel = channel as unknown as {

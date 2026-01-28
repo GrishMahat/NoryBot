@@ -6,7 +6,6 @@ import {
 	type Client,
 	InteractionContextType,
 	MessageFlags,
-	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from 'discord.js';
 import HypixelTracker from '@/database/schemas/hypixelTrackerSchema';
