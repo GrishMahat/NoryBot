@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -20,6 +21,23 @@ const createProgressBar = (value: number, total: number, segments = 10): string 
 	const filledChar = '■';
 	const emptyChar = '□';
 	return `[${filledChar.repeat(filled)}${emptyChar.repeat(empty)}]`;
+};
+
+const getLastCommitInfo = (): { shortSha: string; unixTime: number } | null => {
+	try {
+		const output = execSync('git log -1 --pretty=format:%h|%ct', {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+
+		if (!output) return null;
+		const [shortSha, unixTimeRaw] = output.split('|');
+		const unixTime = Number(unixTimeRaw);
+		if (!shortSha || Number.isNaN(unixTime)) return null;
+		return { shortSha, unixTime };
+	} catch {
+		return null;
+	}
 };
 
 const pingCommand: Command = {
@@ -65,6 +83,7 @@ const pingCommand: Command = {
 				// Load avg is often relative to 1 core, or all cores? On Linux it's system load.
 				// A rough approximation for %: (loadAvg / cpuCount) * 100
 				const cpuUsage = Math.min(100, Math.round((loadAvg / cpuCount) * 100));
+				const lastCommit = getLastCommitInfo();
 
 				const embed = new EmbedBuilder()
 					.setAuthor({
@@ -116,6 +135,13 @@ const pingCommand: Command = {
 								`**Runtime**: \`Bun ${process.version}\``,
 								`**Library**: \`Discord.js v${discordVersion}\``,
 							].join(' • '),
+							inline: false,
+						},
+						{
+							name: `${emojiConfig.branch ?? '🔀'} Last Commit`,
+							value: lastCommit
+								? `\`${lastCommit.shortSha}\` • <t:${lastCommit.unixTime}:R>`
+								: 'Unavailable',
 							inline: false,
 						},
 					)
