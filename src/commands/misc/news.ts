@@ -5,6 +5,7 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 import { Pagination } from '@/utils/helpers/Pagination';
 
@@ -87,7 +88,7 @@ const newsCommand: Command = {
 			const pagination = new Pagination(interaction, pages, newsSettings);
 			await pagination.send();
 		} catch (error) {
-			console.error('Error fetching news:', error);
+			logs.error('Error fetching news', { tag: 'News', context: error });
 			await interaction.editReply('An error occurred while fetching the news.');
 		}
 	},

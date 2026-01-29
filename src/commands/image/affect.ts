@@ -7,6 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { affect } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const affectCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -77,7 +78,7 @@ const affectCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Affect image:', error);
+			logs.error('Error while generating affect image', { tag: 'ImageAffect', context: error });
 
 			// Handle error gracefully
 			const errorEmbed = new EmbedBuilder()

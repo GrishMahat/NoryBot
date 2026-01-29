@@ -1,3 +1,5 @@
+import { logs } from '@/services/logs';
+
 /**
  * Formats a timestamp into a human-readable "time ago" string
  * @param timestamp - Unix timestamp in milliseconds
@@ -69,7 +71,7 @@ export function formatTimestamp(
 	try {
 		return new Intl.DateTimeFormat(locale, dateOptions).format(date);
 	} catch (error) {
-		console.error('Error formatting date:', error);
+		logs.error('Error formatting date', { tag: 'DateFormat', context: error });
 		// Fallback to basic formatting
 		return date.toLocaleString(locale, {
 			timeZone,

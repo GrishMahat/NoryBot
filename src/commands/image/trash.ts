@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { trash } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const trashCommand: Command = {
@@ -66,7 +67,7 @@ const trashCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating trash image:', error);
+			logs.error('Error generating trash image', { tag: 'ImageTrash', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { wanted } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const wantedCommand: Command = {
@@ -92,7 +93,7 @@ const wantedCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating wanted poster:', error);
+			logs.error('Error generating wanted poster', { tag: 'ImageWanted', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

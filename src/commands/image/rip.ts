@@ -7,6 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { rip } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const ripCommand: Command = {
@@ -94,7 +95,7 @@ const ripCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating RIP image:', error);
+			logs.error('Error while generating RIP image', { tag: 'ImageRip', context: error });
 
 			// Handle the error if the interaction is deferred
 			if (interaction.deferred || interaction.replied) {

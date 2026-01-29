@@ -22,6 +22,11 @@ export default async (client: Client, interaction: Interaction): Promise<void> =
 			interaction.isModalSubmit()
 		) {
 			await componentManager.handleInteraction(client, interaction);
+		} else if (process.env.NODE_ENV === 'development') {
+			logs.debug('Unhandled interaction type', {
+				tag: 'ComponentsInteractionValidator',
+				context: { type: interaction.type },
+			});
 		}
 	} catch (error) {
 		logs.error(error, { tag: 'ComponentsInteractionValidator', context: 'interactionCreate' });

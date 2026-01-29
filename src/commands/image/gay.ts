@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { gay } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const gayCommand: Command = {
@@ -70,7 +71,7 @@ const gayCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating image:', error);
+			logs.error('Error generating image', { tag: 'ImageGay', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { Batslap } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const batslapCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -93,7 +94,7 @@ const batslapCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Batslap image:', error);
+			logs.error('Error while generating batslap image', { tag: 'ImageBatslap', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

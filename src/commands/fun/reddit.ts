@@ -18,6 +18,7 @@ import {
 	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { RedditListing, RedditPostData } from '@/types/index';
 import { formatTimeAgo } from '@/utils/helpers/misc';
 
@@ -389,7 +390,7 @@ const safeReply = async (
 			});
 		}
 	} catch (error) {
-		console.error('Failed to send or edit reply:', error);
+		logs.error('Failed to send or edit reply', { tag: 'Reddit', context: error });
 	}
 };
 
@@ -548,7 +549,7 @@ const redditCommand: Command = {
 			try {
 				message = await interaction.fetchReply();
 			} catch {
-				console.error('Failed to fetch reply for Reddit collector');
+				logs.error('Failed to fetch reply for Reddit collector', { tag: 'Reddit' });
 				return;
 			}
 
@@ -689,7 +690,7 @@ const redditCommand: Command = {
 							components,
 						});
 					} catch (error) {
-						console.error('Failed to update Reddit display:', error);
+						logs.error('Failed to update Reddit display', { tag: 'Reddit', context: error });
 					}
 				}
 
@@ -750,7 +751,7 @@ const redditCommand: Command = {
 							components,
 						});
 					} catch (error) {
-						console.error('Failed to update Reddit display:', error);
+						logs.error('Failed to update Reddit display', { tag: 'Reddit', context: error });
 					}
 				}
 			});
@@ -781,13 +782,13 @@ const redditCommand: Command = {
 					} catch (error) {
 						// Only log if it's not a "Unknown Message" error (message might be deleted)
 						if (!(error instanceof Error && error.message.includes('Unknown Message'))) {
-							console.error('Failed to disable Reddit components:', error);
+							logs.error('Failed to disable Reddit components', { tag: 'Reddit', context: error });
 						}
 					}
 				}
 			});
 		} catch (error) {
-			console.error('Reddit Command Error:', error);
+			logs.error('Reddit command error', { tag: 'Reddit', context: error });
 			let errorMessage = `❌ Failed to fetch posts from r/${subreddit}`;
 
 			if (error instanceof Error) {

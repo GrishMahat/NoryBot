@@ -9,6 +9,7 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 
 export default {
 	data: new ContextMenuCommandBuilder()
@@ -74,7 +75,7 @@ export default {
 				});
 				addedEmojis.push(emoji.toString());
 			} catch (error) {
-				console.error(`Failed to steal emoji ${name}:`, error);
+				logs.error(`Failed to steal emoji ${name}`, { tag: 'ContextStealEmoji', context: error });
 				failedEmojis.push(name);
 			}
 			processedCount++;

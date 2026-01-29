@@ -12,6 +12,7 @@ import {
 } from 'discord.js';
 import os from 'os';
 import emojiConfig from '@/config/emoji';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const createProgressBar = (value: number, total: number, segments = 10): string => {
@@ -196,7 +197,7 @@ const pingCommand: Command = {
 				interaction.editReply({ components: [disabledRow] }).catch(() => {});
 			});
 		} catch (error) {
-			console.error('Error in ping command:', error);
+			logs.error('Error in ping command', { tag: 'Ping', context: error });
 			await interaction.editReply({
 				content: `${emojiConfig.notag} An error occurred while fetching system statistics.`,
 			});

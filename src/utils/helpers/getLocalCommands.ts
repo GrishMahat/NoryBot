@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 import getAllFiles from './getAllFiles';
 
@@ -40,7 +41,9 @@ async function importCommandFile(
 		const commandModule = await import(commandFile);
 
 		if (!commandModule?.default) {
-			console.error(`Command module at ${commandFile} is missing a default export.`);
+			logs.error(`Command module at ${commandFile} is missing a default export.`, {
+				tag: 'CommandLoader',
+			});
 			return null;
 		}
 
@@ -58,15 +61,19 @@ async function importCommandFile(
 
 		// Make sure we're not returning the toJSON function as a command
 		if (commandObject.data.name === 'toJSON') {
-			console.warn(
+			logs.warn(
 				`Skipping toJSON method that was incorrectly treated as a ${commandObject.data}command.`,
+				{ tag: 'CommandLoader' },
 			);
 			return null;
 		}
 
 		return commandObject;
 	} catch (error) {
-		console.error(`Failed to import command file ${commandFile}:`, error);
+		logs.error(`Failed to import command file ${commandFile}`, {
+			tag: 'CommandLoader',
+			context: error,
+		});
 		return null;
 	}
 }
@@ -88,7 +95,7 @@ export default async function loadCommands(exceptions: string[] = []): Promise<C
 		// Filter out null results and return valid commands
 		return commandResults.filter((command): command is Command => command !== null);
 	} catch (error) {
-		console.error('Error loading commands:'.red, error);
+		logs.error('Error loading commands', { tag: 'CommandLoader', context: error });
 		return [];
 	}
 }

@@ -7,6 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { bobross } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const bobrossCommand: Command = {
@@ -103,7 +104,7 @@ const bobrossCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Bob Ross image:', error);
+			logs.error('Error while generating Bob Ross image', { tag: 'ImageBobRoss', context: error });
 
 			// If the interaction wasn't deferred yet, use reply
 			if (!interaction.deferred) {

@@ -5,6 +5,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const responses = [
@@ -54,7 +55,7 @@ const eightBallCommand: Command = {
 
 			await interaction.reply({ embeds: [embed] });
 		} catch (error) {
-			console.error('Error in 8ball command:', error);
+			logs.error('Error in 8ball command', { tag: '8ball', context: error });
 			await interaction.reply({
 				content: 'There was an error while executing this command!',
 				flags: MessageFlags.Ephemeral,

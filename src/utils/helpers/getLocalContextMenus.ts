@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import { logs } from '@/services/logs';
 import type { LocalContextMenu } from '@/types';
 import getAllFiles from './getAllFiles';
 
@@ -39,7 +40,9 @@ async function importCommandFile(
 		const commandModule = await import(commandFile);
 
 		if (!commandModule?.default) {
-			console.error(`Context menu module at ${commandFile} is missing a default export.`);
+			logs.error(`Context menu module at ${commandFile} is missing a default export.`, {
+				tag: 'ContextMenuLoader',
+			});
 			return null;
 		}
 
@@ -57,7 +60,10 @@ async function importCommandFile(
 
 		return commandObject;
 	} catch (error) {
-		console.error(`Failed to import Context menu file ${commandFile}:`, error);
+		logs.error(`Failed to import context menu file ${commandFile}`, {
+			tag: 'ContextMenuLoader',
+			context: error,
+		});
 		return null;
 	}
 }
@@ -76,7 +82,10 @@ export default async function loadCommands(exceptions: string[] = []): Promise<L
 				commands.push(command);
 			}
 		} catch (error) {
-			console.error(`Error processing command file ${file}:`, error);
+			logs.error(`Error processing command file ${file}`, {
+				tag: 'ContextMenuLoader',
+				context: error,
+			});
 		}
 	}
 

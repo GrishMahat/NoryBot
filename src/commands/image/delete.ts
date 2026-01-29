@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { Delete } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const deleteCommand: Command = {
@@ -71,7 +72,7 @@ const deleteCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating delete image:', error);
+			logs.error('Error generating delete image', { tag: 'ImageDelete', context: error });
 			await interaction.editReply({
 				embeds: [
 					new EmbedBuilder()

@@ -15,6 +15,7 @@ import { Quote } from 'discord-image-utils';
 import { unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import emojiConfig from '@/config/emoji';
+import { logs } from '@/services/logs';
 import type { Command, QuoteResponse } from '@/types';
 
 const quotesCommand: Command = {
@@ -62,7 +63,7 @@ const quotesCommand: Command = {
 					unlinkSync(tempImagePath);
 					tempImagePath = null;
 				} catch (err) {
-					console.error('Failed to delete temp file:', err);
+					logs.error('Failed to delete temp file', { tag: 'Quotes', context: err });
 				}
 			}
 
@@ -115,7 +116,7 @@ const quotesCommand: Command = {
 						try {
 							unlinkSync(newTempPath);
 						} catch (err) {
-							console.error('Failed to delete temp file:', err);
+							logs.error('Failed to delete temp file', { tag: 'Quotes', context: err });
 						}
 					} catch {
 						await i.editReply({
@@ -135,7 +136,7 @@ const quotesCommand: Command = {
 				try {
 					unlinkSync(tempImagePath);
 				} catch (err) {
-					console.error('Failed to delete temp file:', err);
+					logs.error('Failed to delete temp file', { tag: 'Quotes', context: err });
 				}
 			}
 

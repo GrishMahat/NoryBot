@@ -4,6 +4,7 @@ import {
 	type Interaction,
 	type InteractionReplyOptions,
 } from 'discord.js';
+import { config } from '@/config/config';
 import mConfig from '@/config/messageConfig';
 import { logs } from '@/services/logs';
 import type { BaseComponent } from '@/types/discord/components';
@@ -17,8 +18,11 @@ export class PermissionGuard implements Guard {
 		component: BaseComponent,
 		_args: string[],
 	): Promise<InteractionReplyOptions | null> {
+		const { developersId } = config;
+		const isDeveloper = developersId.includes(interaction.user.id);
+
 		// User Permissions Check
-		if (component.userPermissions && component.userPermissions.length > 0) {
+		if (!isDeveloper && component.userPermissions && component.userPermissions.length > 0) {
 			const member = interaction.member as GuildMember;
 			if (!member || !this.checkPermissions(member, component.userPermissions)) {
 				logs.warn(
@@ -30,7 +34,7 @@ export class PermissionGuard implements Guard {
 		}
 
 		// Bot Permissions Check
-		if (component.botPermissions && component.botPermissions.length > 0) {
+		if (!isDeveloper && component.botPermissions && component.botPermissions.length > 0) {
 			const botMember = interaction.guild?.members.me;
 			if (!botMember || !this.checkPermissions(botMember, component.botPermissions)) {
 				logs.warn(`Bot needs permissions: ${component.botPermissions.join(', ')}`, {

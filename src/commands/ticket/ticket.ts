@@ -13,6 +13,7 @@ import {
 	type TextChannel,
 } from 'discord.js';
 import TicketSetup from '@/database/schemas/ticketSetupSchema';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const command: Command = {
@@ -95,7 +96,7 @@ const command: Command = {
 
 				await interaction.reply({ embeds: [embed], ephemeral: true });
 			} catch (error) {
-				console.error(error);
+				logs.error('Ticket setup error', { tag: 'Ticket', context: error });
 				await interaction.reply({
 					content: 'An error occurred while setting up the ticket system.',
 					ephemeral: true,

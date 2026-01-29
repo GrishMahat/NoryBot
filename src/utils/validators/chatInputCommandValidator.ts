@@ -231,6 +231,7 @@ class CommandValidator {
 	): InteractionReplyOptions | null {
 		const { developersId, testServerId, maintenance } = config;
 		const userId = interaction.user.id;
+		const isDeveloper = developersId.includes(userId);
 		const commandName = command.data.name;
 
 		// 1. Maintenance Mode Check (only developers can use commands)
@@ -253,7 +254,7 @@ class CommandValidator {
 		}
 
 		// 3. Developer Only Check
-		if (command.devOnly && !developersId.includes(userId)) {
+		if (command.devOnly && !isDeveloper) {
 			return this.createEmbed(interaction, Colors.Red, mConfig.commandDevOnly);
 		}
 
@@ -273,6 +274,7 @@ class CommandValidator {
 
 		// 6. User Permissions Check
 		if (
+			!isDeveloper &&
 			command.userPermissions?.length &&
 			!this.checkPermissions(interaction, command.userPermissions, 'user')
 		) {
@@ -281,6 +283,7 @@ class CommandValidator {
 
 		// 7. Bot Permissions Check
 		if (
+			!isDeveloper &&
 			command.botPermissions?.length &&
 			!this.checkPermissions(interaction, command.botPermissions, 'bot')
 		) {
@@ -315,8 +318,10 @@ class CommandValidator {
 						),
 					);
 				} catch (replyError) {
-					console.error('Failed to send initialization error reply:', replyError);
-					// logs.error(replyError, ...) // Could log this too but console.error implies low-level panic or keep simple
+					logs.error('Failed to send initialization error reply:', {
+						tag: 'CommandValidator',
+						context: replyError,
+					});
 					logs.error(replyError, {
 						tag: 'CommandValidator',
 						context: 'handleInteraction:replyError',

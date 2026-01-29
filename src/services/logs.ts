@@ -1,5 +1,10 @@
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
+import winston, { format } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import Transport from 'winston-transport';
 
 // --- 1. Public Types & Constants ---
 
@@ -21,64 +26,308 @@ export interface LogOptions {
 	context?: unknown;
 }
 
-// Normalized internal log object (frozen)
-interface NormalizedLog {
-	level: LevelName;
-	message: string;
-	error?: Error;
-	stack?: string;
-	tag?: string;
-	source?: string;
-	ids?: Record<string, string | number>;
-	context?: unknown;
-	timestamp: string;
-}
+// --- Configuration ---
 
-// Decisions
-enum Decision {
-	CONTINUE,
-	CRASH,
-}
-
-// Configuration (Read Once)
 const CONFIG = {
 	NODE_ENV: process.env.NODE_ENV || 'development',
 	LOG_LEVEL: (process.env.LOG_LEVEL || 'INFO') as LevelName,
-	LOG_OUTPUT: process.env.LOG_OUTPUT, // Optional override
+	LOG_OUTPUT: process.env.LOG_OUTPUT, // Optional override ("stdout" or file path)
 };
 
-// Ensure log directory exists if in production
-const LOG_DIR = path.join(process.cwd(), 'logs');
-const LOG_FILE = path.join(LOG_DIR, 'latest.log');
+const ERROR_WEBHOOK = process.env.ERROR_WEBHOOK;
 
-if (CONFIG.NODE_ENV === 'production') {
-	try {
-		if (!fs.existsSync(LOG_DIR)) {
-			fs.mkdirSync(LOG_DIR, { recursive: true });
+const WINSTON_LEVELS = {
+	fatal: 0,
+	error: 1,
+	warn: 2,
+	info: 3,
+	debug: 4,
+	trace: 5,
+} as const;
+
+type WinstonLevel = keyof typeof WINSTON_LEVELS;
+
+const LOG_DIR = path.join(process.cwd(), 'logs');
+
+const REDACT_KEYS = /token|secret|password|authorization|apikey|api_key|clientsecret/i;
+const MAX_CONTEXT_DEPTH = 6;
+const MAX_CONTEXT_LENGTH = 10000;
+
+const ORIGINAL_CONSOLE = {
+	log: console.log,
+	info: console.info,
+	warn: console.warn,
+	error: console.error,
+	debug: console.debug,
+	trace: console.trace,
+};
+
+const ensureLogDir = (): void => {
+	if (!fs.existsSync(LOG_DIR)) {
+		fs.mkdirSync(LOG_DIR, { recursive: true });
+	}
+};
+
+const getWinstonLevel = (levelName: LevelName): WinstonLevel => {
+	const lower = levelName.toLowerCase() as WinstonLevel;
+	return WINSTON_LEVELS[lower] !== undefined ? lower : 'info';
+};
+
+const redactValue = (value: unknown, depth = 0, seen = new WeakSet<object>()): unknown => {
+	if (value === null || value === undefined) return value;
+	if (typeof value !== 'object') return value;
+	if (value instanceof Error) {
+		return {
+			name: value.name,
+			message: value.message,
+			stack: value.stack,
+		};
+	}
+	if (depth >= MAX_CONTEXT_DEPTH) return '[Truncated]';
+	if (seen.has(value as object)) return '[Circular]';
+	seen.add(value as object);
+
+	if (Array.isArray(value)) {
+		return value.map((item) => redactValue(item, depth + 1, seen));
+	}
+
+	const result: Record<string, unknown> = {};
+	for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+		if (REDACT_KEYS.test(key)) {
+			result[key] = '[Redacted]';
+			continue;
 		}
-	} catch (err) {
-		console.error('FATAL: Could not create log directory (Sync)', err);
-		process.exit(1);
+		result[key] = redactValue(val, depth + 1, seen);
+	}
+
+	return result;
+};
+
+const safeStringify = (value: unknown): string => {
+	try {
+		const redacted = redactValue(value);
+		const stringified = JSON.stringify(redacted);
+		if (stringified.length > MAX_CONTEXT_LENGTH) {
+			return `${stringified.slice(0, MAX_CONTEXT_LENGTH)}...[Truncated]`;
+		}
+		return stringified;
+	} catch {
+		return '[Unserializable]';
+	}
+};
+
+const formatForConsole = (value: unknown): string =>
+	util.inspect(value, {
+		depth: 4,
+		colors: false,
+		compact: true,
+		breakLength: 120,
+	});
+
+const baseFormat = format((info) => {
+	info.pid = process.pid;
+	info.env = CONFIG.NODE_ENV;
+	return info;
+});
+
+const redactFormat = format((info) => {
+	if (typeof info.message === 'object') {
+		info.message = safeStringify(info.message);
+	}
+	if (info.context) {
+		info.context = redactValue(info.context);
+	}
+	return info;
+});
+
+const devFormat = format.combine(
+	baseFormat(),
+	redactFormat(),
+	format.errors({ stack: true }),
+	format.splat(),
+	format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+	format.colorize({ all: true }),
+	format.printf((info) => {
+		const metaParts = [
+			info.tag ? `[${info.tag}]` : '',
+			info.source ? `[src:${info.source}]` : '',
+			info.ids ? `[ids:${formatForConsole(info.ids)}]` : '',
+		].filter(Boolean);
+		const meta = metaParts.length ? ` ${metaParts.join(' ')}` : '';
+		const contextValue = info.context ? formatForConsole(info.context) : '';
+		const contextInline =
+			contextValue && contextValue.length <= 200 ? ` | ctx=${contextValue}` : '';
+		const contextBlock =
+			contextValue && contextValue.length > 200 ? `\n  ctx: ${contextValue}` : '';
+		const stack = info.stack ? `\n${info.stack}` : '';
+		return `[${info.timestamp}] [${info.level}]${meta} ${info.message}${contextInline}${contextBlock}${stack}`;
+	}),
+);
+
+const jsonFormat = format.combine(
+	baseFormat(),
+	redactFormat(),
+	format.timestamp(),
+	format.errors({ stack: true }),
+	format.json(),
+);
+
+interface DiscordWebhookTransportOptions extends Transport.TransportStreamOptions {
+	webhookUrl: string;
+	username?: string;
+}
+
+class DiscordWebhookTransport extends Transport {
+	private webhookUrl: string;
+	private username?: string;
+
+	constructor(options: DiscordWebhookTransportOptions) {
+		super(options);
+		this.webhookUrl = options.webhookUrl;
+		this.username = options.username;
+	}
+
+	public async log(info: winston.Logform.TransformableInfo, callback: () => void): Promise<void> {
+		setImmediate(() => {
+			this.emit('logged', info);
+		});
+
+		const payload = this.buildPayload(info);
+		try {
+			await axios.post(this.webhookUrl, payload, {
+				headers: { 'Content-Type': 'application/json' },
+			});
+		} catch (error) {
+			if (CONFIG.NODE_ENV !== 'production') {
+				ORIGINAL_CONSOLE.error('Discord webhook log failed:', error);
+			}
+		}
+
+		callback();
+	}
+
+	private buildPayload(info: winston.Logform.TransformableInfo) {
+		const timestamp = info.timestamp ?? new Date().toISOString();
+		const level = String(info.level).toUpperCase();
+		const tag = info.tag ? ` [${info.tag}]` : '';
+		const source = info.source ? ` [src:${info.source}]` : '';
+		const ids = info.ids ? ` ids=${safeStringify(info.ids)}` : '';
+		const context = info.context ? `\nctx=${safeStringify(info.context)}` : '';
+		const stack = info.stack ? `\n${info.stack}` : '';
+		const message = `${timestamp} [${level}]${tag}${source}${ids}\n${info.message}${context}${stack}`;
+
+		return {
+			username: this.username ?? 'NoryBot Logger',
+			content: this.truncateMessage(message),
+		};
+	}
+
+	private truncateMessage(message: string): string {
+		if (message.length <= 1990) return message;
+		return `${message.slice(0, 1990)}...`;
 	}
 }
 
-// --- The Service ---
+const getTransports = (): winston.transport[] => {
+	const transports: winston.transport[] = [];
+	const output = CONFIG.LOG_OUTPUT?.toLowerCase();
+	const webhookFormat = format.combine(baseFormat(), redactFormat(), format.timestamp());
+
+	if (CONFIG.NODE_ENV === 'production') {
+		if (ERROR_WEBHOOK) {
+			transports.push(
+				new DiscordWebhookTransport({
+					level: 'error',
+					webhookUrl: ERROR_WEBHOOK,
+					format: webhookFormat,
+				}),
+			);
+		}
+		if (output === 'stdout' || output === 'console') {
+			transports.push(
+				new winston.transports.Console({
+					format: jsonFormat,
+				}),
+			);
+			return transports;
+		}
+
+		ensureLogDir();
+		if (CONFIG.LOG_OUTPUT) {
+			transports.push(
+				new winston.transports.File({
+					filename: CONFIG.LOG_OUTPUT,
+					format: jsonFormat,
+				}),
+			);
+			return transports;
+		}
+
+		transports.push(
+			new DailyRotateFile({
+				dirname: LOG_DIR,
+				filename: 'latest-%DATE%.log',
+				datePattern: 'YYYY-MM-DD',
+				zippedArchive: true,
+				maxFiles: '14d',
+				maxSize: '10m',
+				format: jsonFormat,
+			}),
+		);
+		return transports;
+	}
+
+	transports.push(
+		new winston.transports.Console({
+			format: devFormat,
+		}),
+	);
+	if (ERROR_WEBHOOK) {
+		transports.push(
+			new DiscordWebhookTransport({
+				level: 'error',
+				webhookUrl: ERROR_WEBHOOK,
+				format: webhookFormat,
+			}),
+		);
+	}
+
+	if (CONFIG.LOG_OUTPUT) {
+		ensureLogDir();
+		transports.push(
+			new winston.transports.File({
+				filename: CONFIG.LOG_OUTPUT,
+				format: jsonFormat,
+			}),
+		);
+	}
+
+	return transports;
+};
+
+const logger = winston.createLogger({
+	levels: WINSTON_LEVELS,
+	level: getWinstonLevel(CONFIG.LOG_LEVEL),
+	transports: getTransports(),
+	exitOnError: false,
+});
 
 class Logs {
-	// 1. Public API
+	private consoleHooked = false;
+
 	public log(level: LevelName, messageOrError: unknown, options?: LogOptions) {
-		// 1. Normalize
-		const normalized = this.normalize(level, messageOrError, options);
-
-		// 2. Output
-		this.output(normalized);
-
-		// 3. Decide (Errors Only)
-		if (level === 'ERROR' || level === 'FATAL') {
-			const decision = this.decide(normalized);
-			// 4. Act
-			this.act(decision, normalized);
-		}
+		const levelKey = getWinstonLevel(level);
+		const normalized = this.normalize(messageOrError, options);
+		logger.log({
+			level: levelKey,
+			message: normalized.message,
+			tag: normalized.tag,
+			source: normalized.source,
+			ids: normalized.ids,
+			context: normalized.context,
+			error: normalized.error,
+			stack: normalized.stack,
+		});
 	}
 
 	public trace(messageOrError: unknown, options?: LogOptions) {
@@ -105,9 +354,19 @@ class Logs {
 		this.log('FATAL', messageOrError, options);
 	}
 
-	// Phase 1: Normalize
-	private normalize(level: LevelName, input: unknown, options?: LogOptions): NormalizedLog {
-		const timestamp = new Date().toISOString();
+	public hookConsole(): void {
+		if (this.consoleHooked) return;
+		this.consoleHooked = true;
+
+		console.log = (...args: unknown[]) => this.info(this.formatConsoleArgs(args));
+		console.info = (...args: unknown[]) => this.info(this.formatConsoleArgs(args));
+		console.warn = (...args: unknown[]) => this.warn(this.formatConsoleArgs(args));
+		console.error = (...args: unknown[]) => this.error(this.formatConsoleArgs(args));
+		console.debug = (...args: unknown[]) => this.debug(this.formatConsoleArgs(args));
+		console.trace = (...args: unknown[]) => this.trace(this.formatConsoleArgs(args));
+	}
+
+	private normalize(input: unknown, options?: LogOptions) {
 		let message = '';
 		let error: Error | undefined;
 		let stack: string | undefined;
@@ -119,21 +378,10 @@ class Logs {
 		} else if (typeof input === 'string') {
 			message = input;
 		} else {
-			try {
-				message = JSON.stringify(input);
-			} catch {
-				message = String(input);
-			}
+			message = safeStringify(input);
 		}
 
-		// If level is error-like but no Error object provided, create one for stack trace if missing
-		if ((level === 'ERROR' || level === 'FATAL') && !error) {
-			// Optional: We could fabricate an error here to get a stack trace,
-			// but for strictness we just pass what we have.
-		}
-
-		return Object.freeze({
-			level,
+		return {
 			message,
 			error,
 			stack,
@@ -141,78 +389,12 @@ class Logs {
 			source: options?.source,
 			ids: options?.ids,
 			context: options?.context,
-			timestamp,
-		});
-	}
-
-	// Phase 2: Output
-	private output(log: NormalizedLog) {
-		// Check level threshold
-		if (LEVELS[log.level] < LEVELS[CONFIG.LOG_LEVEL]) {
-			return;
-		}
-
-		if (CONFIG.NODE_ENV === 'production') {
-			const line = JSON.stringify(log) + '\n';
-			// Append to file, async, fire-and-forget
-			fs.appendFile(LOG_FILE, line, () => {});
-		} else {
-			// Development: Pretty Print
-			const color = this.getColor(log.level);
-			const prefix = `[${log.timestamp}] [${log.level}]`;
-			const meta = [log.tag ? `[${log.tag}]` : '', log.source ? `[src:${log.source}]` : '']
-				.filter(Boolean)
-				.join(' ');
-
-			console.log(`${color(prefix)} ${meta} ${log.message}`);
-
-			if (log.error) {
-				console.error(log.stack || log.error);
-			}
-			if (log.context) {
-				console.log('Context:', log.context);
-			}
-		}
-	}
-
-	// Phase 3: Decide
-	private decide(log: NormalizedLog): Decision {
-		if (log.level === 'FATAL') {
-			return Decision.CRASH;
-		}
-		// Strict rules: specific boundary errors could trigger CRASH here if needed.
-		// Default to CONTINUE.
-		return Decision.CONTINUE;
-	}
-
-	// Phase 4: Act
-	private act(decision: Decision, log: NormalizedLog) {
-		if (decision === Decision.CONTINUE) return;
-
-		if (decision === Decision.CRASH) {
-			// Last gasp log to console if in prod, just in case file didn't catch it
-			if (CONFIG.NODE_ENV === 'production') {
-				console.error('FATAL CRASH DECISION EXECUTED', log);
-			}
-			process.exit(1);
-		}
-	}
-
-	// Helper for colors (Development only)
-	private getColor(level: LevelName): (str: string) => string {
-		// rudimentary color map for Node console
-		// strictly visual, no logic dependency
-		const colors: Record<LevelName, string> = {
-			TRACE: '\x1b[90m', // Gray
-			DEBUG: '\x1b[35m', // Magenta
-			INFO: '\x1b[36m', // Cyan
-			WARN: '\x1b[33m', // Yellow
-			ERROR: '\x1b[31m', // Red
-			FATAL: '\x1b[41m\x1b[37m', // BgRed
 		};
-		const reset = '\x1b[0m';
-		const code = colors[level] || '';
-		return (str: string) => `${code}${str}${reset}`;
+	}
+
+	private formatConsoleArgs(args: unknown[]): unknown {
+		if (args.length === 1) return args[0];
+		return util.format(...args);
 	}
 }
 

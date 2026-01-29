@@ -9,6 +9,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import HypixelSkyBlockConfig from '@/database/schemas/hypixelSkyBlockSchema';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const HYPIXEL_VALIDATE_ENDPOINT = 'https://api.hypixel.net/v2/status';
@@ -207,7 +208,7 @@ const hypixelCommand: Command = {
 							: `Saved API key ${maskKey(key)} as active (validation failed: ${validation.error ?? 'unknown error'}). ID: ${id}`,
 				});
 			} catch (error) {
-				console.error('Error validating Hypixel API key:', error);
+				logs.error('Error validating Hypixel API key', { tag: 'Hypixel', context: error });
 				await interaction.editReply({
 					content: 'Could not validate the Hypixel API key. Try again later.',
 				});

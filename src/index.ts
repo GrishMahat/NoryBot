@@ -7,6 +7,8 @@ import { logs } from '@/services/logs';
 
 // Services initialized statically
 
+logs.hookConsole();
+
 const initializeClient = async (): Promise<Client<boolean>> => {
 	// Create Discord client with required intents
 	const client = new Client({

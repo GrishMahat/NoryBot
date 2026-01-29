@@ -4,6 +4,7 @@ import {
 	type InteractionReplyOptions,
 	MessageFlags,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 
 /**
  * Safely handles interaction replies by checking the interaction state
@@ -28,7 +29,7 @@ export async function safeReply(
 			});
 		}
 	} catch (error) {
-		console.error('Failed to send or edit reply:', error);
+		logs.error('Failed to send or edit reply', { tag: 'InteractionHandler', context: error });
 	}
 }
 
@@ -48,7 +49,7 @@ export async function safeDefer(
 			});
 		}
 	} catch (error) {
-		console.error('Failed to defer reply:', error);
+		logs.error('Failed to defer reply', { tag: 'InteractionHandler', context: error });
 	}
 }
 
@@ -65,6 +66,6 @@ export async function safeFollowUp(
 		const followUpOptions = typeof options === 'string' ? { content: options } : options;
 		await interaction.followUp(followUpOptions);
 	} catch (error) {
-		console.error('Failed to send follow-up:', error);
+		logs.error('Failed to send follow-up', { tag: 'InteractionHandler', context: error });
 	}
 }

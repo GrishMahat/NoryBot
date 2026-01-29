@@ -19,6 +19,7 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 
 export type PaginationType = 'button' | 'select' | 'both';
 
@@ -184,7 +185,7 @@ export class Pagination {
 				this.createCollector();
 			}
 		} catch (error) {
-			console.error('Failed to start pagination:', error);
+			logs.error('Failed to start pagination', { tag: 'Pagination', context: error });
 		}
 	}
 
@@ -402,7 +403,9 @@ export class Pagination {
 				}
 
 				if (!channel) {
-					console.error('Failed to setup pagination collector: No channel available');
+					logs.error('Failed to setup pagination collector: No channel available', {
+						tag: 'Pagination',
+					});
 					return;
 				}
 
@@ -430,12 +433,18 @@ export class Pagination {
 						this.handleEnd(reason),
 				);
 			} catch (error) {
-				console.error('Failed to setup pagination collector:', error);
+				logs.error('Failed to setup pagination collector', {
+					tag: 'Pagination',
+					context: error,
+				});
 			}
 		};
 
 		setupCollector().catch((error) => {
-			console.error('Failed to setup pagination collector in background:', error);
+			logs.error('Failed to setup pagination collector in background', {
+				tag: 'Pagination',
+				context: error,
+			});
 		});
 	}
 
@@ -473,7 +482,7 @@ export class Pagination {
 
 			await this.updateMessage();
 		} catch (error) {
-			console.warn('Error handling pagination interaction:', error);
+			logs.warn('Error handling pagination interaction', { tag: 'Pagination', context: error });
 		}
 	}
 

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import { logs } from '@/services/logs';
 import type { Button, Modal, SelectMenu } from '@/types';
 import getAllFiles from './getAllFiles';
 
@@ -42,8 +43,9 @@ export async function loadComponents<T extends Component>(
 
 				// Validate the imported object
 				if (!isValidComponent(componentObject, componentType)) {
-					console.warn(
+					logs.warn(
 						`Skipped importing ${componentFile} as it does not export a valid ${componentType.slice(0, -1)} object.`,
+						{ tag: 'ComponentLoader' },
 					);
 					continue;
 				}
@@ -53,14 +55,20 @@ export async function loadComponents<T extends Component>(
 
 				components.push(componentObject);
 			} catch (error) {
-				console.error(`Failed to import ${componentFile}: ${(error as Error).message}`);
+				logs.error(`Failed to import ${componentFile}: ${(error as Error).message}`, {
+					tag: 'ComponentLoader',
+					context: error,
+				});
 			}
 		}
 
-		console.log(`Loaded ${components.length} ${componentType}`.green);
+		logs.info(`Loaded ${components.length} ${componentType}`, { tag: 'ComponentLoader' });
 		return components;
 	} catch (error) {
-		console.error(`Failed to load ${componentType}:`, error);
+		logs.error(`Failed to load ${componentType}`, {
+			tag: 'ComponentLoader',
+			context: error,
+		});
 		return [];
 	}
 }

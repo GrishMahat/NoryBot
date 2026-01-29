@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { hitler } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const hitlerCommand: Command = {
@@ -66,7 +67,7 @@ const hitlerCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating history meme:', error);
+			logs.error('Error generating history meme', { tag: 'ImageHistory', context: error });
 			await interaction.editReply({
 				embeds: [
 					new EmbedBuilder()

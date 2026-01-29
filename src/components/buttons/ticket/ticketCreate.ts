@@ -9,6 +9,7 @@ import {
 } from 'discord.js';
 import Ticket from '@/database/models/ticketSchema';
 import TicketSetup from '@/database/schemas/ticketSetupSchema';
+import { logs } from '@/services/logs';
 import type { Button } from '@/types';
 
 const button: Button = {
@@ -132,7 +133,7 @@ const button: Button = {
 				content: `Ticket created! <#${channel.id}>`,
 			});
 		} catch (error) {
-			console.error(error);
+			logs.error('Ticket create error', { tag: 'TicketCreate', context: error });
 			await interaction.editReply({
 				content: 'Failed to create ticket channel. Check bot permissions.',
 			});

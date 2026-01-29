@@ -10,6 +10,7 @@ import {
 import fs from 'fs/promises';
 import path from 'path';
 import emojiConfig from '@/config/emoji';
+import { logs } from '@/services/logs';
 import { allCurrencies, type Currency, commonCurrencies } from '@/types';
 
 const apiUrl = 'https://v6.exchangerate-api.com/v6/a2ea55b804ba212bc0b44879/latest/USD';
@@ -185,7 +186,7 @@ const currencyCommand: Command = {
 
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
-			console.error('Error in currency converter:', error);
+			logs.error('Error in currency converter', { tag: 'ExchangeRates', context: error });
 			if (!interaction.replied && !interaction.deferred) {
 				await interaction.reply({
 					content: `${emojiConfig.notag} An error occurred while converting currencies. Please try again later.`,
@@ -232,7 +233,10 @@ const currencyCommand: Command = {
 				await interaction.respond(filtered);
 			}
 		} catch (error) {
-			console.error('Error in currency autocomplete:', error);
+			logs.error('Error in currency autocomplete', {
+				tag: 'ExchangeRates',
+				context: error,
+			});
 			await interaction.respond([]);
 		}
 	},
@@ -555,7 +559,7 @@ async function getExchangeRates(): Promise<Record<string, number>> {
 					}
 				}
 			} catch (err) {
-				console.error('Error reading cache file:', err);
+				logs.error('Error reading cache file', { tag: 'ExchangeRates', context: err });
 			}
 		}
 
@@ -570,7 +574,7 @@ async function getExchangeRates(): Promise<Record<string, number>> {
 
 		return { ...newData.rates, timestamp };
 	} catch (error) {
-		console.error('Error fetching exchange rates:', error);
+		logs.error('Error fetching exchange rates', { tag: 'ExchangeRates', context: error });
 		throw new Error('Failed to fetch exchange rates');
 	}
 }

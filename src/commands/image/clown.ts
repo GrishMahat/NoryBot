@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { clown } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const clownCommand: Command = {
@@ -71,7 +72,7 @@ const clownCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Clown image:', error);
+			logs.error('Error while generating clown image', { tag: 'ImageClown', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

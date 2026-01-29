@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { beautiful } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const beautifulCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -80,7 +81,10 @@ const beautifulCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Beautiful image:', error);
+			logs.error('Error while generating beautiful image', {
+				tag: 'ImageBeautiful',
+				context: error,
+			});
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

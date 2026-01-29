@@ -7,6 +7,7 @@ import {
 	// MessageFlags,
 } from 'discord.js';
 import { Music } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const MusicPlayerContextMenu: LocalContextMenu = {
 	data: new ContextMenuCommandBuilder()
@@ -65,7 +66,7 @@ const MusicPlayerContextMenu: LocalContextMenu = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating music image:', error);
+			logs.error('Error generating music image', { tag: 'ContextMusic', context: error });
 			await interaction.editReply({
 				content:
 					'❌ Failed to generate music player visualization. Please try again with a different message.',

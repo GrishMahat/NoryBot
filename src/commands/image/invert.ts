@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { invert } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const invertCommand: Command = {
@@ -54,7 +55,7 @@ const invertCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error in invert command:', error);
+			logs.error('Error in invert command', { tag: 'ImageInvert', context: error });
 			await interaction.editReply('Failed to generate the image.');
 		}
 	},

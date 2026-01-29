@@ -5,6 +5,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const roasts = [
@@ -187,7 +188,7 @@ const roastCommand: Command = {
 				allowedMentions: { users: [target.id] },
 			});
 		} catch (error) {
-			console.error('Error in roast command:', error);
+			logs.error('Error in roast command', { tag: 'Roast', context: error });
 			await interaction.reply({
 				content: 'There was an error while executing this command!',
 				flags: MessageFlags.Ephemeral,

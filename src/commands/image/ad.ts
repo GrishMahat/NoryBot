@@ -7,6 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { ad } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const admixCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -82,7 +83,7 @@ const admixCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Admix image:', error);
+			logs.error('Error while generating admix image', { tag: 'ImageAd', context: error });
 
 			// Ensure the error message is appropriately handled
 			const errorEmbed = new EmbedBuilder()

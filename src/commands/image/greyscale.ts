@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { greyscale } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const greyscaleCommand: Command = {
@@ -56,7 +57,7 @@ const greyscaleCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error in greyscale command:', error);
+			logs.error('Error in greyscale command', { tag: 'ImageGreyscale', context: error });
 			await interaction.editReply('Failed to generate the image.');
 		}
 	},

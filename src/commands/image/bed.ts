@@ -7,6 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { bed } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const bedCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -100,7 +101,7 @@ const bedCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error while generating Bed image:', error);
+			logs.error('Error while generating bed image', { tag: 'ImageBed', context: error });
 
 			// If the interaction wasn't deferred yet, use reply
 			if (!interaction.deferred) {

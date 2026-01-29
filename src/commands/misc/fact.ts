@@ -12,6 +12,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import emojiConfig from '@/config/emoji';
+import { logs } from '@/services/logs';
 
 const factCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -76,7 +77,7 @@ const factCommand: Command = {
 						});
 					}
 				} catch (error) {
-					console.error('Error handling button interaction:', error);
+					logs.error('Error handling button interaction', { tag: 'Fact', context: error });
 					await i.reply({
 						content: `${emojiConfig.notag} An error occurred. Please try again.`,
 						flags: MessageFlags.Ephemeral,
@@ -103,11 +104,11 @@ const factCommand: Command = {
 				try {
 					await interaction.editReply({ components: [newRow] });
 				} catch (error) {
-					console.error('Error disabling buttons:', error);
+					logs.error('Error disabling buttons', { tag: 'Fact', context: error });
 				}
 			});
 		} catch (error) {
-			console.error('Error in fact command:', error);
+			logs.error('Error in fact command', { tag: 'Fact', context: error });
 			await interaction.editReply({
 				content: `${emojiConfig.notag} An error occurred while fetching the fact. Please try again later.`,
 			});
@@ -138,7 +139,7 @@ async function getFact(category: string): Promise<string> {
 		}
 		return response.data.text;
 	} catch (error) {
-		console.error(`Error fetching fact from ${url}:`, error);
+		logs.error(`Error fetching fact from ${url}`, { tag: 'Fact', context: error });
 		throw new Error('Unable to fetch a fact at this time. Please try again later.');
 	}
 }

@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { triggered } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const triggeredCommand: Command = {
@@ -69,7 +70,7 @@ const triggeredCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating triggered image:', error);
+			logs.error('Error generating triggered image', { tag: 'ImageTriggered', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

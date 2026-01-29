@@ -135,8 +135,9 @@ class ContextMenuManager {
 		interaction: Interaction,
 	): InteractionReplyOptions | null {
 		const { developersId, testServerId } = config;
+		const isDeveloper = developersId.includes(interaction.user.id);
 
-		if (menu.devOnly && !developersId.includes(interaction.user.id)) {
+		if (menu.devOnly && !isDeveloper) {
 			return this.createEmbed(interaction, 'Red', mConfig.commandDevOnly, {
 				ephemeral: true,
 			});
@@ -158,6 +159,7 @@ class ContextMenuManager {
 		}
 
 		if (
+			!isDeveloper &&
 			menu.userPermissions?.length &&
 			!this.checkPermissions(interaction, menu.userPermissions, 'user')
 		) {
@@ -167,6 +169,7 @@ class ContextMenuManager {
 		}
 
 		if (
+			!isDeveloper &&
 			menu.botPermissions?.length &&
 			!this.checkPermissions(interaction, menu.botPermissions, 'bot')
 		) {

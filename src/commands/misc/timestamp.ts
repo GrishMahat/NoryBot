@@ -5,6 +5,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import emojiConfig from '@/config/emoji';
+import { logs } from '@/services/logs';
 
 const timestampCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -148,7 +149,7 @@ const timestampCommand: Command = {
 
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
-			console.error('TimestampCommand Error:', error);
+			logs.error('Timestamp command error', { tag: 'Timestamp', context: error });
 			await interaction.editReply({
 				content: `${emojiConfig.notag} An error occurred while processing the timestamp.`,
 			});

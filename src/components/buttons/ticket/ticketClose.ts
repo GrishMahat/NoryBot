@@ -1,6 +1,7 @@
 import { AttachmentBuilder, EmbedBuilder, type TextChannel } from 'discord.js';
 import Ticket from '@/database/models/ticketSchema';
 import TicketSetup from '@/database/schemas/ticketSetupSchema';
+import { logs } from '@/services/logs';
 import type { Button } from '@/types';
 
 const button: Button = {
@@ -62,13 +63,13 @@ const button: Button = {
 			// Delete Channel
 			setTimeout(async () => {
 				if (channel && !channel.guild.members.me?.permissions.has('ManageChannels')) {
-					console.log('Missing permissions to delete channel');
+					logs.warn('Missing permissions to delete channel', { tag: 'TicketClose' });
 					return;
 				}
 				await channel.delete().catch(() => {});
 			}, 5000);
 		} catch (error) {
-			console.error(error);
+			logs.error('Ticket close error', { tag: 'TicketClose', context: error });
 			if (interaction.deferred || interaction.replied) {
 				await interaction
 					.editReply({

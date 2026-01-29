@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { sepia } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const sepiaCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -56,7 +57,7 @@ const sepiaCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error in sepia command:', error);
+			logs.error('Error in sepia command', { tag: 'ImageSepia', context: error });
 			await interaction.editReply('Failed to generate the image.');
 		}
 	},

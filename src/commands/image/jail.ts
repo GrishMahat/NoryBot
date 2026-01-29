@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { jail } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 
 const jailCommand: Command = {
 	data: new SlashCommandBuilder()
@@ -50,7 +51,7 @@ const jailCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error in jail command:', error);
+			logs.error('Error in jail command', { tag: 'ImageJail', context: error });
 			await interaction.editReply('Failed to generate the image.');
 		}
 	},

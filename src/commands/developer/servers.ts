@@ -20,6 +20,7 @@ import {
 	type TextChannel,
 	type User,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 import { formatTimestamp } from '@/utils/helpers/misc';
 import { Pagination } from '@/utils/helpers/Pagination';
@@ -74,7 +75,7 @@ async function generateInvite(guild: Guild): Promise<string | null> {
 		// console.warn(`No suitable channel found for invite in guild ${guild.id}`);
 		return null; // No suitable channel found
 	} catch (error) {
-		console.error(`Could not create invite for guild ${guild.id}:`, error);
+		logs.error(`Could not create invite for guild ${guild.id}`, { tag: 'Servers', context: error });
 		return null; // Error during invite creation
 	}
 }
@@ -197,7 +198,7 @@ const serversCommand: Command = {
 	run: async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 		// Ensure interaction is deferred or replied to
 		if (interaction.deferred || interaction.replied) {
-			console.warn('Interaction already deferred or replied to.');
+			logs.warn('Interaction already deferred or replied to.', { tag: 'Servers' });
 			// Potentially log this unexpected state
 			// return; // Or decide how to handle this state
 		} else {
@@ -231,7 +232,9 @@ const serversCommand: Command = {
 					break;
 				default:
 					// This should technically be unreachable due to SlashCommandBuilder structure
-					console.error(`Reached default case with unknown subcommand: ${subcommand}`);
+					logs.error(`Reached default case with unknown subcommand: ${subcommand}`, {
+						tag: 'Servers',
+					});
 					await interaction.editReply({
 						content: '❌ An unexpected error occurred: Unknown subcommand.',
 					});
@@ -255,10 +258,14 @@ const serversCommand: Command = {
 				components: [],
 			};
 			if (interaction.replied || interaction.deferred) {
-				await interaction.editReply(replyOptions).catch(console.error); // Catch potential error on editReply
+				await interaction.editReply(replyOptions).catch((error) => {
+					logs.error('Failed to edit reply', { tag: 'Servers', context: error });
+				});
 			} else {
 				// Fallback if deferReply failed or wasn't called
-				await interaction.reply(replyOptions).catch(console.error);
+				await interaction.reply(replyOptions).catch((error) => {
+					logs.error('Failed to reply', { tag: 'Servers', context: error });
+				});
 			}
 		}
 	},
@@ -288,7 +295,10 @@ async function handleListSubcommand(
 				try {
 					owner = await guild.fetchOwner();
 				} catch (fetchError) {
-					console.error(`Failed to fetch owner for guild ${guild.id}:`, fetchError);
+					logs.error(`Failed to fetch owner for guild ${guild.id}`, {
+						tag: 'Servers',
+						context: fetchError,
+					});
 					// Proceed without owner info if fetching fails
 				}
 			}
@@ -471,8 +481,9 @@ async function handleLeaveSubcommand(
 		if (confirmation.customId === confirmButtonId) {
 			await guild.leave();
 			// Log the action
-			console.log(
+			logs.info(
 				`Bot left guild ${guild.name} (${serverId}) initiated by ${interaction.user.tag} (${interaction.user.id})`,
+				{ tag: 'Servers' },
 			);
 			await confirmation.update({
 				content: `✅ Successfully left the server **${guild.name}** (ID: \`${serverId}\`).`,
@@ -487,8 +498,10 @@ async function handleLeaveSubcommand(
 		}
 	} catch (error) {
 		// Handle timeout or other errors during awaitMessageComponent
-
-		console.error(`Error or timeout waiting for leave confirmation for guild ${serverId}:`, error);
+		logs.error(`Error or timeout waiting for leave confirmation for guild ${serverId}`, {
+			tag: 'Servers',
+			context: error,
+		});
 		await interaction.editReply({
 			content: `⏱️ No response received within ${CONFIRMATION_TIMEOUT / 1000} seconds, cancelling server leave.`,
 			components: [], // Remove buttons after timeout
@@ -539,7 +552,10 @@ async function handleCheckSubcommand(
 					const owner = await guild.fetchOwner();
 					ownerTag = owner.user.tag;
 				} catch (fetchError) {
-					console.error(`Failed to fetch owner for guild ${guild.id} during check:`, fetchError);
+					logs.error(`Failed to fetch owner for guild ${guild.id} during check`, {
+						tag: 'Servers',
+						context: fetchError,
+					});
 					ownerTag = 'Fetch Failed';
 				}
 				const createdTimestamp = formatTimestamp(guild.createdAt.getTime(), 'relative'); // Relative time
@@ -705,7 +721,7 @@ async function handleInfoSubcommand(
 		await interaction.editReply({ embeds: [embed] });
 	} catch (error) {
 		// errorHandler.handleError(error, "Servers Command - Info Subcommand", interaction.guild?.id, interaction.channel?.id, interaction.user.id);
-		console.error(`Error fetching server info for ${serverId}:`, error);
+		logs.error(`Error fetching server info for ${serverId}`, { tag: 'Servers', context: error });
 		await interaction.editReply({
 			content: '❌ An error occurred while fetching server information.',
 			embeds: [],

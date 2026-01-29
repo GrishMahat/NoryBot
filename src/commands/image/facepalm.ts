@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import { facepalm } from 'discord-image-utils';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const facepalmCommand: Command = {
@@ -68,7 +69,7 @@ const facepalmCommand: Command = {
 				files: [attachment],
 			});
 		} catch (error) {
-			console.error('Error generating facepalm image:', error);
+			logs.error('Error generating facepalm image', { tag: 'ImageFacepalm', context: error });
 
 			const errorEmbed = new EmbedBuilder()
 				.setColor('#FF0000')

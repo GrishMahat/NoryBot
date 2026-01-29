@@ -9,6 +9,7 @@ import {
 	type GuildMember,
 	SlashCommandBuilder,
 } from 'discord.js';
+import { logs } from '@/services/logs';
 import type { Command } from '@/types';
 
 const avatarCommand: Command = {
@@ -146,7 +147,7 @@ const avatarCommand: Command = {
 				});
 			}
 		} catch (error) {
-			console.error('Error in avatar command:', error);
+			logs.error('Error in avatar command', { tag: 'Avatar', context: error });
 			await interaction.editReply({
 				content: '❌ An error occurred while fetching the user avatar.',
 			});
