@@ -19,6 +19,3 @@ declare global {
 	type Button = ButtonType;
 	type Modal = ModalType;
 }
-
-export {};
-
