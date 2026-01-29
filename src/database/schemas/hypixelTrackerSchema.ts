@@ -17,6 +17,7 @@ export interface IHypixelTracker extends Document {
 	lastStatusChangedAt?: Date;
 	status: TrackingStatus;
 	lastError?: string;
+	lastApiIssueNotifiedAt?: Date;
 }
 
 const hypixelTrackerSchema = new Schema<IHypixelTracker>(
@@ -42,6 +43,7 @@ const hypixelTrackerSchema = new Schema<IHypixelTracker>(
 			default: 'active',
 		},
 		lastError: { type: String, required: false },
+		lastApiIssueNotifiedAt: { type: Date, required: false },
 	},
 	{
 		strict: true,

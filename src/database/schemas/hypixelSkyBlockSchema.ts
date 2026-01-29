@@ -10,6 +10,9 @@ export interface IApiKeyEntry {
 	addedBy?: string;
 	addedAt?: Date;
 	lastUsedAt?: Date;
+	invalidCount?: number;
+	lastInvalidAt?: Date;
+	lastInvalidReason?: string;
 	status?: ApiKeyStatus;
 	expiredAt?: Date;
 	disabled?: boolean;
@@ -35,6 +38,9 @@ const apiKeyEntrySchema = new Schema<IApiKeyEntry>(
 		addedBy: { type: String, required: false },
 		addedAt: { type: Date, required: false },
 		lastUsedAt: { type: Date, required: false },
+		invalidCount: { type: Number, default: 0 },
+		lastInvalidAt: { type: Date, required: false },
+		lastInvalidReason: { type: String, required: false },
 		status: {
 			type: String,
 			enum: ['active', 'expired', 'disabled'],
