@@ -29,12 +29,12 @@
 	},
 	"dependencies": {
 		"@discordjs/voice": "^0.19.2",
-		"axios": "^1.17.0",
+		"axios": "^1.18.0",
 		"colors": "^1.4.0",
 		"discord-image-utils": "^0.1.6",
 		"discord.js": "^14.26.4",
 		"dotenv": "^17.4.2",
-		"mongoose": "^9.6.3",
+		"mongoose": "^9.7.0",
 		"winston": "^3.19.0",
 		"winston-daily-rotate-file": "^5.0.0"
 	},
