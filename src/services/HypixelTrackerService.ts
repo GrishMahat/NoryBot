@@ -84,7 +84,7 @@ export class HypixelTrackerService {
 
 			for (const tracker of trackers) {
 				const config = configMap.get(tracker.guildID);
-				if (!config || !config.trackingEnabled || config.apiKeys.length === 0) {
+				if (!config?.trackingEnabled || config.apiKeys.length === 0) {
 					continue;
 				}
 
@@ -260,7 +260,7 @@ export class HypixelTrackerService {
 			isTextBased?: () => boolean;
 			send?: (options: { content?: string; embeds?: EmbedBuilder[] }) => Promise<unknown>;
 		} | null;
-		if (!channel || !channel.isTextBased?.() || !channel.send) {
+		if (!channel?.isTextBased?.() || !channel.send) {
 			logs.warn('Tracking channel missing or not text-based', {
 				tag: 'HypixelTracker',
 				ids: { channelId },
@@ -313,7 +313,7 @@ export class HypixelTrackerService {
 			isTextBased?: () => boolean;
 			send?: (options: { content?: string; embeds?: EmbedBuilder[] }) => Promise<unknown>;
 		} | null;
-		if (!channel || !channel.isTextBased?.() || !channel.send) {
+		if (!channel?.isTextBased?.() || !channel.send) {
 			logs.warn('Tracking channel missing or not text-based', {
 				tag: 'HypixelTracker',
 				ids: { channelId },
@@ -379,7 +379,7 @@ export class HypixelTrackerService {
 			isTextBased?: () => boolean;
 			send?: (options: { content?: string; embeds?: EmbedBuilder[] }) => Promise<unknown>;
 		} | null;
-		if (!channel || !channel.isTextBased?.() || !channel.send) {
+		if (!channel?.isTextBased?.() || !channel.send) {
 			logs.warn('Tracking channel missing or not text-based', {
 				tag: 'HypixelTracker',
 				ids: { channelId },
