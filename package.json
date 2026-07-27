@@ -32,9 +32,9 @@
 		"axios": "^1.18.1",
 		"colors": "^1.4.0",
 		"discord-image-utils": "^0.1.6",
-		"discord.js": "^14.26.5",
+		"discord.js": "^14.27.0",
 		"dotenv": "^17.4.2",
-		"mongoose": "^9.7.4",
+		"mongoose": "^9.8.0",
 		"winston": "^3.19.0",
 		"winston-daily-rotate-file": "^5.0.0"
 	},
