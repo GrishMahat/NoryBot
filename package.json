@@ -39,7 +39,7 @@
 		"winston-daily-rotate-file": "^5.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.3",
+		"@biomejs/biome": "^2.5.9",
 		"@types/node": "^26.1.1",
 		"husky": "^9.1.7",
 		"lint-staged": "^17.0.8",
